@@ -1,5 +1,5 @@
 # Firebase Config
-GoogleService-Info.plist
+**/GoogleService-Info.plist
 
 # Xcode local files
 *.xcodeproj/xcuserdata/
