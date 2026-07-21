@@ -8,12 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		815F2E3A300F67B400F9BB16 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 815F2E39300F67B400F9BB16 /* FirebaseAuth */; };
-		815F2E3C300F67E600F9BB16 /* FirebaseAuthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 815F2E3B300F67E600F9BB16 /* FirebaseAuthManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		81202F58300D546200F20460 /* moodmate.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = moodmate.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		815F2E3B300F67E600F9BB16 /* FirebaseAuthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirebaseAuthManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -39,7 +37,6 @@
 		81202F4F300D546200F20460 = {
 			isa = PBXGroup;
 			children = (
-				815F2E3B300F67E600F9BB16 /* FirebaseAuthManager.swift */,
 				81202F5A300D546200F20460 /* moodmate */,
 				81202F59300D546200F20460 /* Products */,
 			);
@@ -131,7 +128,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				815F2E3C300F67E600F9BB16 /* FirebaseAuthManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
