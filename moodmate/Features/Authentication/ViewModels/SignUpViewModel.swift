@@ -6,49 +6,67 @@
 //
 
 import SwiftUI
+import Combine
+import FirebaseAuth
 
-struct SignUpView: View {
-    @ObservedObject var viewModel: AuthViewModel
+@MainActor
+final class SignUpViewModel: ObservableObject {
+    @Published var name = ""
+    @Published var email = ""
+    @Published var password = ""
+    @Published var confirmPassword = ""
+    @Published var isLoading = false
+    @Published var alertMessage = ""
+    @Published var showAlert = false
 
-    var body: some View {
-        VStack(spacing: 16) {
-            CustomTextField(
-                placeholder: "Name",
-                text: $viewModel.name,
-                icon: "person",
-                autocapitalization: .words
-            )
+    private let authService: AuthServiceProtocol
 
-            CustomTextField(
-                placeholder: "Email Address",
-                text: $viewModel.email,
-                icon: "envelope",
-                keyboardType: .emailAddress,
-                autocapitalization: .never
-            )
+    init(authService: AuthServiceProtocol) {
+        self.authService = authService
+    }
 
-            CustomSecureField(
-                placeholder: "Password",
-                text: $viewModel.password,
-                icon: "lock"
-            )
+    convenience init() {
+        self.init(authService: FirebaseAuthService.shared)
+    }
 
-            CustomSecureField(
-                placeholder: "Confirm Password",
-                text: $viewModel.confirmPassword,
-                icon: "lock.shield"
-            )
+    func submit() {
+        guard validateInputs() else { return }
 
-            AuthActionButton(title: "Create Account", isLoading: viewModel.isLoading) {
-                viewModel.submit()
+        isLoading = true
+
+        Task {
+            do {
+                _ = try await authService.signUp(email: email, password: password)
+                self.isLoading = false
+                let displayName = self.name.trimmingCharacters(in: .whitespacesAndNewlines)
+                self.alertMessage = "Account created! Welcome to MoodMate\(displayName.isEmpty ? "" : ", " + displayName)."
+                self.showAlert = true
+            } catch {
+                self.isLoading = false
+                self.alertMessage = error.localizedDescription
+                self.showAlert = true
             }
         }
-        .alert(isPresented: $viewModel.showAlert) {
-            Alert(title: Text("MoodMate"), message: Text(viewModel.alertMessage), dismissButton: .default(Text("OK")))
-        }
     }
-}
 
-#Preview {
-    SignUpView(viewModel: AuthViewModel())
+    private func validateInputs() -> Bool {
+        guard !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+              !email.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+              !password.isEmpty else {
+            setAlert("Please fill in all fields.")
+            return false
+        }
+
+        guard password == confirmPassword else {
+            setAlert("Passwords do not match.")
+            return false
+        }
+
+        return true
+    }
+
+    private func setAlert(_ message: String) {
+        alertMessage = message
+        showAlert = true
+    }
 }

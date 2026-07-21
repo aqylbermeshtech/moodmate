@@ -9,26 +9,22 @@ import SwiftUI
 import Combine
 import FirebaseAuth
 
-enum AuthMode {
-    case signIn
-    case signUp
-}
-
 @MainActor
-final class AuthViewModel: ObservableObject {
-    @Published var authMode: AuthMode = .signIn
-    @Published var name = ""
+final class SignInViewModel: ObservableObject {
     @Published var email = ""
     @Published var password = ""
-    @Published var confirmPassword = ""
-    @Published var showAlert = false
-    @Published var alertMessage = ""
     @Published var isLoading = false
+    @Published var alertMessage = ""
+    @Published var showAlert = false
 
-    func toggleMode() {
-        withAnimation(.spring(response: 0.35, dampingFraction: 0.9)) {
-            authMode = authMode == .signIn ? .signUp : .signIn
-        }
+    private let authService: AuthServiceProtocol
+
+    init(authService: AuthServiceProtocol) {
+        self.authService = authService
+    }
+
+    convenience init() {
+        self.init(authService: FirebaseAuthService.shared)
     }
 
     func submit() {
@@ -38,50 +34,23 @@ final class AuthViewModel: ObservableObject {
 
         Task {
             do {
-                if authMode == .signIn {
-                    let user = try await FirebaseAuthService.shared.signIn(email: email, password: password)
-                    await MainActor.run {
-                        self.isLoading = false
-                        self.alertMessage = "Welcome back to MoodMate!"
-                        self.showAlert = true
-                    }
-                } else {
-                    let user = try await FirebaseAuthService.shared.signUp(email: email, password: password)
-                    await MainActor.run {
-                        self.isLoading = false
-                        self.alertMessage = "Account created! Welcome to MoodMate, \(self.name)."
-                        self.showAlert = true
-                    }
-                }
+                _ = try await authService.signIn(email: email, password: password)
+                self.isLoading = false
+                self.alertMessage = "Welcome back to MoodMate!"
+                self.showAlert = true
             } catch {
-                await MainActor.run {
-                    self.isLoading = false
-                    self.alertMessage = error.localizedDescription
-                    self.showAlert = true
-                }
+                self.isLoading = false
+                self.alertMessage = error.localizedDescription
+                self.showAlert = true
             }
         }
     }
 
     private func validateInputs() -> Bool {
-        switch authMode {
-        case .signIn:
-            guard !email.isEmpty, !password.isEmpty else {
-                setAlert("Please enter both email and password.")
-                return false
-            }
-        case .signUp:
-            guard !name.isEmpty, !email.isEmpty, !password.isEmpty else {
-                setAlert("Please fill in all fields.")
-                return false
-            }
-
-            guard password == confirmPassword else {
-                setAlert("Passwords do not match.")
-                return false
-            }
+        guard !email.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, !password.isEmpty else {
+            setAlert("Please enter both email and password.")
+            return false
         }
-
         return true
     }
 
@@ -89,63 +58,4 @@ final class AuthViewModel: ObservableObject {
         alertMessage = message
         showAlert = true
     }
-}
-
-struct AuthActionButton: View {
-    let title: String
-    let isLoading: Bool
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            if isLoading {
-                ProgressView()
-                    .progressViewStyle(.circular)
-                    .tint(.white)
-            } else {
-                Text(title)
-                    .font(.headline)
-                    .foregroundStyle(.white)
-            }
-        }
-        .frame(maxWidth: .infinity)
-        .frame(height: 52)
-        .background(Color.teal)
-        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-        .shadow(color: .black.opacity(0.08), radius: 10, x: 0, y: 6)
-        .disabled(isLoading)
-    }
-}
-
-struct SignInView: View {
-    @ObservedObject var viewModel: AuthViewModel
-
-    var body: some View {
-        VStack(spacing: 16) {
-            CustomTextField(
-                placeholder: "Email Address",
-                text: $viewModel.email,
-                icon: "envelope",
-                keyboardType: .emailAddress,
-                autocapitalization: .never
-            )
-
-            CustomSecureField(
-                placeholder: "Password",
-                text: $viewModel.password,
-                icon: "lock"
-            )
-
-            AuthActionButton(title: "Sign In", isLoading: viewModel.isLoading) {
-                viewModel.submit()
-            }
-        }
-        .alert(isPresented: $viewModel.showAlert) {
-            Alert(title: Text("MoodMate"), message: Text(viewModel.alertMessage), dismissButton: .default(Text("OK")))
-        }
-    }
-}
-
-#Preview {
-    SignInView(viewModel: AuthViewModel())
 }

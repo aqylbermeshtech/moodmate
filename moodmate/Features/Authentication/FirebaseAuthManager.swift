@@ -8,8 +8,15 @@
 import Foundation
 import FirebaseAuth
 
-final class FirebaseAuthService {
-    static let shared = FirebaseAuthService()
+protocol AuthServiceProtocol {
+    func signIn(email: String, password: String) async throws -> User
+    func signUp(email: String, password: String) async throws -> User
+    func signOut() throws
+    var currentUser: User? { get }
+}
+
+final class FirebaseAuthService: AuthServiceProtocol {
+    nonisolated static let shared = FirebaseAuthService()
     private init() {}
     private var authListenerHandles: [AuthStateDidChangeListenerHandle] = []
 
