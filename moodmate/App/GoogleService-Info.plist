@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>220784883430-5i1064lhss5fjpnl50kpb687gl3aqv61.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.220784883430-5i1064lhss5fjpnl50kpb687gl3aqv61</string>
+	<key>API_KEY</key>
+	<string>AIzaSyAewBU7lJLsLUqcaHvHBKSyO-Vc-gUNKXc</string>
+	<key>GCM_SENDER_ID</key>
+	<string>220784883430</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.lalalala.moodmate</string>
+	<key>PROJECT_ID</key>
+	<string>moodmate-6888e</string>
+	<key>STORAGE_BUCKET</key>
+	<string>moodmate-6888e.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:220784883430:ios:946bd06e0a1dae4f946d27</string>
+</dict>
+</plist>

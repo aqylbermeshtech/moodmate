@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Combine
+import FirebaseAuth
 
 enum AuthMode {
     case signIn
@@ -36,13 +37,28 @@ final class AuthViewModel: ObservableObject {
         isLoading = true
 
         Task {
-            try? await Task.sleep(for: .seconds(1))
-            await MainActor.run {
-                self.isLoading = false
-                self.alertMessage = self.authMode == .signIn
-                    ? "Welcome back to MoodMate!"
-                    : "Account created! Welcome to MoodMate, \(self.name)."
-                self.showAlert = true
+            do {
+                if authMode == .signIn {
+                    let user = try await FirebaseAuthService.shared.signIn(email: email, password: password)
+                    await MainActor.run {
+                        self.isLoading = false
+                        self.alertMessage = "Welcome back to MoodMate!"
+                        self.showAlert = true
+                    }
+                } else {
+                    let user = try await FirebaseAuthService.shared.signUp(email: email, password: password)
+                    await MainActor.run {
+                        self.isLoading = false
+                        self.alertMessage = "Account created! Welcome to MoodMate, \(self.name)."
+                        self.showAlert = true
+                    }
+                }
+            } catch {
+                await MainActor.run {
+                    self.isLoading = false
+                    self.alertMessage = error.localizedDescription
+                    self.showAlert = true
+                }
             }
         }
     }

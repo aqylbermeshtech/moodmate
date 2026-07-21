@@ -1,0 +1,18 @@
+# Firebase Config
+GoogleService-Info.plist
+
+# Xcode local files
+*.xcodeproj/xcuserdata/
+*.xcworkspace/xcuserdata/
+.DS_Store
+
+# Build artifacts & DerivedData
+build/
+DerivedData/
+
+# Swift Package Manager build folder
+.build/
+
+# Secrets / Environment files
+.env
+*.plist.secret

@@ -6,8 +6,14 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		815F2E3A300F67B400F9BB16 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 815F2E39300F67B400F9BB16 /* FirebaseAuth */; };
+		815F2E3C300F67E600F9BB16 /* FirebaseAuthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 815F2E3B300F67E600F9BB16 /* FirebaseAuthManager.swift */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		81202F58300D546200F20460 /* moodmate.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = moodmate.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		815F2E3B300F67E600F9BB16 /* FirebaseAuthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirebaseAuthManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -23,6 +29,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				815F2E3A300F67B400F9BB16 /* FirebaseAuth in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -32,6 +39,7 @@
 		81202F4F300D546200F20460 = {
 			isa = PBXGroup;
 			children = (
+				815F2E3B300F67E600F9BB16 /* FirebaseAuthManager.swift */,
 				81202F5A300D546200F20460 /* moodmate */,
 				81202F59300D546200F20460 /* Products */,
 			);
@@ -65,6 +73,7 @@
 			);
 			name = moodmate;
 			packageProductDependencies = (
+				815F2E39300F67B400F9BB16 /* FirebaseAuth */,
 			);
 			productName = moodmate;
 			productReference = 81202F58300D546200F20460 /* moodmate.app */;
@@ -94,6 +103,9 @@
 			);
 			mainGroup = 81202F4F300D546200F20460;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				815F2E36300F663700F9BB16 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 81202F59300D546200F20460 /* Products */;
 			projectDirPath = "";
@@ -119,6 +131,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				815F2E3C300F67E600F9BB16 /* FirebaseAuthManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -332,6 +345,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		815F2E36300F663700F9BB16 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.16.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		815F2E39300F67B400F9BB16 /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 815F2E36300F663700F9BB16 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 81202F50300D546200F20460 /* Project object */;
 }
