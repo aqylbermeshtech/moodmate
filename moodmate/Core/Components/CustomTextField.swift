@@ -22,7 +22,7 @@ struct CustomTextField: View {
 
             TextField(placeholder, text: $text)
                 .keyboardType(keyboardType)
-                .textInputAutocapitalization(autocapitalization)
+                .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
         }
         .padding(.horizontal, 14)

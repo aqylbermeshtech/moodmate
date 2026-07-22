@@ -21,7 +21,7 @@ struct moodmateApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     var body: some Scene {
         WindowGroup {
-            MoodMateAuthView()
+            RootView()
         }
     }
 }
