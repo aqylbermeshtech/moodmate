@@ -12,7 +12,27 @@ struct HomeView: View {
     @State private var selectedTab: HomeTab = .home
     
     var body: some View {
-        ZStack(alignment: .bottom) {
+        // Screen content switcher
+        Group {
+            switch selectedTab {
+            case .home:
+                NavigationStack {
+                    homeFeedView
+                }
+            case .discover:
+                TabPlaceholderView(title: "Discover", systemImage: "sparkles") {}
+            case .add:
+                TabPlaceholderView(title: "Log a Moment", systemImage: "plus.circle") {}
+            case .insights:
+                TabPlaceholderView(title: "Insights & Analytics", systemImage: "chart.bar.xaxis") {}
+            case .profile:
+                NavigationStack {
+                    ProfileView(userId: nil)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background {
             // Shared premium background gradient
             LinearGradient(
                 gradient: Gradient(colors: [Color.teal.opacity(0.18), Color.purple.opacity(0.12)]),
@@ -20,29 +40,8 @@ struct HomeView: View {
                 endPoint: .bottomTrailing
             )
             .ignoresSafeArea()
-            
-            // Screen content switcher
-            Group {
-                switch selectedTab {
-                case .home:
-                    NavigationStack {
-                        homeFeedView
-                    }
-                case .discover:
-                    TabPlaceholderView(title: "Discover", systemImage: "sparkles") {}
-                case .add:
-                    TabPlaceholderView(title: "Log a Moment", systemImage: "plus.circle") {}
-                case .insights:
-                    TabPlaceholderView(title: "Insights & Analytics", systemImage: "chart.bar.xaxis") {}
-                case .profile:
-                    NavigationStack {
-                        ProfileView(userId: nil)
-                    }
-                }
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            
-            // Overlaid Glassmorphic Bottom Floating Tab Bar
+        }
+        .safeAreaBar(edge: .bottom) {
             BottomNavigationBar(selectedTab: $selectedTab) {
                 viewModel.showMoodPickerSheet = true
             }
@@ -78,9 +77,10 @@ struct HomeView: View {
                 // Vertical Feed: Today's Feed
                 feedSection
             }
-            .padding(.bottom, 100) // Padding for tab bar overlay
+
         }
         .scrollIndicators(.hidden)
+        .scrollEdgeEffectStyle(.soft, for: .bottom)
     }
     
     // MARK: - Friends Section

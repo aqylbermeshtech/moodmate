@@ -7,12 +7,15 @@
 
 import SwiftUI
 
-enum HomeTab: Int, CaseIterable {
+// MARK: - Tab Enum
+enum HomeTab: Int, CaseIterable, Identifiable {
     case home
     case discover
     case add
     case insights
     case profile
+    
+    var id: Int { rawValue }
     
     var iconName: String {
         switch self {
@@ -35,27 +38,30 @@ enum HomeTab: Int, CaseIterable {
     }
 }
 
+// MARK: - Glass Bottom Navigation Bar
 struct BottomNavigationBar: View {
     @Binding var selectedTab: HomeTab
     var onAddTap: () -> Void
     
+    @Namespace private var activeTabAnimation
+    
     var body: some View {
-        HStack {
-            ForEach(HomeTab.allCases, id: \.self) { tab in
+        HStack(spacing: 0) {
+            ForEach(HomeTab.allCases) { tab in
                 if tab == .add {
-                    // Floating Action Button in the center
+                    // Elevated Center Action Button
                     Button(action: onAddTap) {
                         ZStack {
                             Circle()
                                 .fill(
                                     LinearGradient(
-                                        colors: [Color.teal, Color.teal.opacity(0.85)],
+                                        colors: [.teal, .teal.opacity(0.85)],
                                         startPoint: .topLeading,
                                         endPoint: .bottomTrailing
                                     )
                                 )
                                 .frame(width: 52, height: 52)
-                                .shadow(color: Color.teal.opacity(0.35), radius: 8, x: 0, y: 4)
+                                .shadow(color: .teal.opacity(0.35), radius: 8, x: 0, y: 4)
                             
                             Image(systemName: tab.iconName)
                                 .font(.system(size: 20, weight: .bold))
@@ -63,52 +69,75 @@ struct BottomNavigationBar: View {
                         }
                     }
                     .buttonStyle(ScaleButtonStyle())
-                    .offset(y: -12) // Slightly raised
+                    .offset(y: -12)
                     .frame(maxWidth: .infinity)
                 } else {
-                    // Standard tab item
-                    Button(action: {
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                    // Glass Tab Item with Sliding Highlight
+                    Button {
+                        withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
                             selectedTab = tab
                         }
-                    }) {
+                    } label: {
                         VStack(spacing: 4) {
                             Image(systemName: tab.iconName)
-                                .font(.system(size: 20, weight: selectedTab == tab ? .bold : .medium))
-                                .foregroundStyle(selectedTab == tab ? Color.teal : Color.secondary.opacity(0.65))
-                                .scaleEffect(selectedTab == tab ? 1.15 : 1.0)
+                                .font(.system(size: 18, weight: selectedTab == tab ? .bold : .medium))
                             
-                            Text(tab.label)
-                                .font(.system(size: 10, weight: selectedTab == tab ? .bold : .medium))
-                                .foregroundStyle(selectedTab == tab ? Color.teal : Color.secondary.opacity(0.65))
+                            if selectedTab == tab {
+                                Text(tab.label)
+                                    .font(.system(size: 10, weight: .bold))
+                                    .transition(.scale.combined(with: .opacity))
+                            }
                         }
+                        .foregroundStyle(selectedTab == tab ? Color.teal : Color.secondary.opacity(0.7))
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 8)
+                        .background {
+                            if selectedTab == tab {
+                                Capsule()
+                                    .fill(Color.teal.opacity(0.12))
+                                    .matchedGeometryEffect(id: "ACTIVE_TAB_HIGHLIGHT", in: activeTabAnimation)
+                            }
+                        }
                     }
-                    .buttonStyle(PlainButtonStyle())
+                    .buttonStyle(.plain)
                 }
             }
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 8)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 6)
         .background {
-            // Glassmorphic background
-            RoundedRectangle(cornerRadius: 28, style: .continuous)
-                .fill(Color(.systemBackground).opacity(0.72))
-                .background(.ultraThinMaterial)
+            // Liquid Glass Capsule Container
+            Capsule()
+                .fill(.ultraThinMaterial)
+                .overlay(
+                    Capsule()
+                        .stroke(
+                            LinearGradient(
+                                colors: [.white.opacity(0.35), .white.opacity(0.08)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1
+                        )
+                )
         }
-        .overlay(
-            RoundedRectangle(cornerRadius: 28, style: .continuous)
-                .stroke(Color.white.opacity(0.18), lineWidth: 1)
-        )
-        .shadow(color: .black.opacity(0.06), radius: 16, x: 0, y: 10)
-        .padding(.horizontal, 24)
+        .shadow(color: .black.opacity(0.08), radius: 16, x: 0, y: 8)
+        .padding(.horizontal, 20)
     }
 }
 
+
+// MARK: - Preview
 #Preview {
     ZStack {
-        Color.purple.opacity(0.15).ignoresSafeArea()
+        // Gradient background to test the Glass effect
+        LinearGradient(
+            colors: [.purple.opacity(0.3), .blue.opacity(0.2)],
+            startPoint: .top,
+            endPoint: .bottom
+        )
+        .ignoresSafeArea()
+        
         VStack {
             Spacer()
             BottomNavigationBar(selectedTab: .constant(.home), onAddTap: {})
