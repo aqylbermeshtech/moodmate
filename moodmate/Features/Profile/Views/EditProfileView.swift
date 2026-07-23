@@ -163,13 +163,6 @@ struct EditProfileView: View {
             .navigationTitle("Edit Profile")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
-                        dismiss()
-                    }
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(.secondary)
-                }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
                         saveChanges()
