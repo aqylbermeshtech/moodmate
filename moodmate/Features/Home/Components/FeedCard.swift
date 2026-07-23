@@ -17,69 +17,74 @@ struct FeedCard: View {
         VStack(alignment: .leading, spacing: 14) {
             // Header
             HStack(spacing: 10) {
-                // Mini user avatar
-                ZStack {
-                    Circle()
-                        .fill(
-                            LinearGradient(
-                                colors: [
-                                    Color(hex: post.user.avatarColorHex).opacity(0.85),
-                                    Color(hex: post.user.avatarColorHex)
-                                ],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                    
-                    Text(getInitials(post.user.name))
-                        .font(.system(size: 13, weight: .bold, design: .rounded))
-                        .foregroundStyle(.white)
-                }
-                .frame(width: 38, height: 38)
-                .overlay(
-                    Circle()
-                        .stroke(
-                            Color(hex: post.user.currentMoodColorHex ?? "38B2AC").opacity(0.4),
-                            lineWidth: 1.5
-                        )
-                )
-                
-                VStack(alignment: .leading, spacing: 2) {
-                    HStack(spacing: 4) {
-                        Text(post.user.name)
-                            .font(.system(size: 14, weight: .semibold, design: .rounded))
-                            .foregroundStyle(.primary)
-                        
-                        Text("@\(post.user.username)")
-                            .font(.system(size: 11))
-                            .foregroundStyle(.secondary.opacity(0.7))
-                    }
-                    
-                    HStack(spacing: 6) {
-                        // Mood Badge
-                        if let mood = post.user.currentMoodEmoji, let text = post.user.currentMoodText {
-                            HStack(spacing: 4) {
-                                Text(mood)
-                                    .font(.system(size: 10))
-                                Text(text)
-                                    .font(.system(size: 10, weight: .bold))
-                            }
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2.5)
-                            .background(Color(hex: post.user.currentMoodColorHex ?? "38B2AC").opacity(0.08))
-                            .foregroundStyle(Color(hex: post.user.currentMoodColorHex ?? "38B2AC"))
-                            .clipShape(Capsule())
+                NavigationLink(destination: ProfileView(userId: post.user.id)) {
+                    HStack(spacing: 10) {
+                        // Mini user avatar
+                        ZStack {
+                            Circle()
+                                .fill(
+                                    LinearGradient(
+                                        colors: [
+                                            Color(hex: post.user.avatarColorHex).opacity(0.85),
+                                            Color(hex: post.user.avatarColorHex)
+                                        ],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                            
+                            Text(getInitials(post.user.name))
+                                .font(.system(size: 13, weight: .bold, design: .rounded))
+                                .foregroundStyle(.white)
                         }
+                        .frame(width: 38, height: 38)
+                        .overlay(
+                            Circle()
+                                .stroke(
+                                    Color(hex: post.user.currentMoodColorHex ?? "38B2AC").opacity(0.4),
+                                    lineWidth: 1.5
+                                )
+                        )
                         
-                        Text("•")
-                            .font(.system(size: 10))
-                            .foregroundStyle(.secondary.opacity(0.5))
-                        
-                        Text(post.timeAgo)
-                            .font(.system(size: 11))
-                            .foregroundStyle(.secondary.opacity(0.8))
+                        VStack(alignment: .leading, spacing: 2) {
+                            HStack(spacing: 4) {
+                                Text(post.user.name)
+                                    .font(.system(size: 14, weight: .semibold, design: .rounded))
+                                    .foregroundStyle(.primary)
+                                
+                                Text("@\(post.user.username)")
+                                    .font(.system(size: 11))
+                                    .foregroundStyle(.secondary.opacity(0.7))
+                            }
+                            
+                            HStack(spacing: 6) {
+                                // Mood Badge
+                                if let mood = post.user.currentMoodEmoji, let text = post.user.currentMoodText {
+                                    HStack(spacing: 4) {
+                                        Text(mood)
+                                            .font(.system(size: 10))
+                                        Text(text)
+                                            .font(.system(size: 10, weight: .bold))
+                                    }
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 2.5)
+                                    .background(Color(hex: post.user.currentMoodColorHex ?? "38B2AC").opacity(0.08))
+                                    .foregroundStyle(Color(hex: post.user.currentMoodColorHex ?? "38B2AC"))
+                                    .clipShape(Capsule())
+                                }
+                                
+                                Text("•")
+                                    .font(.system(size: 10))
+                                    .foregroundStyle(.secondary.opacity(0.5))
+                                
+                                Text(post.timeAgo)
+                                    .font(.system(size: 11))
+                                    .foregroundStyle(.secondary.opacity(0.8))
+                            }
+                        }
                     }
                 }
+                .buttonStyle(PlainButtonStyle())
                 
                 Spacer()
                 
@@ -156,7 +161,7 @@ struct FeedCard: View {
                     HStack(spacing: 6) {
                         Image(systemName: post.isLiked ? "heart.fill" : "heart")
                             .font(.system(size: 18, weight: .medium))
-                            .foregroundStyle(post.isLiked ? .red : .primary.opacity(0.8))
+                            .foregroundStyle(post.isLiked ? Color.red : Color.primary.opacity(0.8))
                         
                         Text("\(post.likesCount)")
                             .font(.system(size: 13, weight: .semibold, design: .rounded))
@@ -185,7 +190,7 @@ struct FeedCard: View {
                 Button(action: onBookmark) {
                     Image(systemName: post.isBookmarked ? "bookmark.fill" : "bookmark")
                         .font(.system(size: 18, weight: .medium))
-                        .foregroundStyle(post.isBookmarked ? Color(hex: "FAB005") : .primary.opacity(0.8))
+                        .foregroundStyle(post.isBookmarked ? Color(hex: "FAB005") : Color.primary.opacity(0.8))
                 }
                 .buttonStyle(ScaleButtonStyle())
             }
@@ -201,8 +206,8 @@ struct FeedCard: View {
                         .font(.system(size: 13))
                         .foregroundStyle(.primary.opacity(0.9))
                 }
-                .lineLimit(3)
-                .multilineTextAlignment(.leading)
+                    .lineLimit(3)
+                    .multilineTextAlignment(.leading)
             }
             .padding(.horizontal, 16)
             

@@ -10,7 +10,6 @@ import SwiftUI
 struct HomeView: View {
     @StateObject private var viewModel = HomeViewModel()
     @State private var selectedTab: HomeTab = .home
-    @State private var showSignOutDialog = false
     
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -26,7 +25,9 @@ struct HomeView: View {
             Group {
                 switch selectedTab {
                 case .home:
-                    homeFeedView
+                    NavigationStack {
+                        homeFeedView
+                    }
                 case .discover:
                     TabPlaceholderView(title: "Discover", systemImage: "sparkles") {}
                 case .add:
@@ -34,8 +35,8 @@ struct HomeView: View {
                 case .insights:
                     TabPlaceholderView(title: "Insights & Analytics", systemImage: "chart.bar.xaxis") {}
                 case .profile:
-                    TabPlaceholderView(title: "Your Profile", systemImage: "person.crop.circle") {
-                        showSignOutDialog = true
+                    NavigationStack {
+                        ProfileView(userId: nil)
                     }
                 }
             }
@@ -52,12 +53,6 @@ struct HomeView: View {
                 .presentationDetents([.height(380)])
                 .presentationDragIndicator(.hidden)
         }
-        .confirmationDialog("Are you sure you want to sign out?", isPresented: $showSignOutDialog, titleVisibility: .visible) {
-            Button("Sign Out", role: .destructive) {
-                viewModel.signOut()
-            }
-            Button("Cancel", role: .cancel) {}
-        }
     }
     
     // MARK: - Home Feed Layout
@@ -66,7 +61,9 @@ struct HomeView: View {
             LazyVStack(spacing: 24) {
                 // Header (Greeting, Date, Avatar)
                 GreetingHeader(viewModel: viewModel) {
-                    showSignOutDialog = true
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                        selectedTab = .profile
+                    }
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 16)
