@@ -12,25 +12,37 @@ struct HomeView: View {
     @State private var selectedTab: HomeTab = .home
     
     var body: some View {
-        // Screen content switcher
-        Group {
-            switch selectedTab {
-            case .home:
-                NavigationStack {
-                    homeFeedView
-                }
-            case .discover:
-                TabPlaceholderView(title: "Discover", systemImage: "sparkles") {}
-            case .add:
-                TabPlaceholderView(title: "Log a Moment", systemImage: "plus.circle") {}
-            case .insights:
-                TabPlaceholderView(title: "Insights & Analytics", systemImage: "chart.bar.xaxis") {}
-            case .profile:
-                NavigationStack {
-                    ProfileView(userId: nil)
-                }
+        ZStack {
+            NavigationStack {
+                homeFeedView
             }
+            .opacity(selectedTab == .home ? 1 : 0)
+            .allowsHitTesting(selectedTab == .home)
+            .zIndex(selectedTab == .home ? 1 : 0)
+            
+            TabPlaceholderView(title: "Discover", systemImage: "sparkles") {}
+                .opacity(selectedTab == .discover ? 1 : 0)
+                .allowsHitTesting(selectedTab == .discover)
+                .zIndex(selectedTab == .discover ? 1 : 0)
+            
+            TabPlaceholderView(title: "Log a Moment", systemImage: "plus.circle") {}
+                .opacity(selectedTab == .add ? 1 : 0)
+                .allowsHitTesting(selectedTab == .add)
+                .zIndex(selectedTab == .add ? 1 : 0)
+            
+            TabPlaceholderView(title: "Insights & Analytics", systemImage: "chart.bar.xaxis") {}
+                .opacity(selectedTab == .insights ? 1 : 0)
+                .allowsHitTesting(selectedTab == .insights)
+                .zIndex(selectedTab == .insights ? 1 : 0)
+            
+            NavigationStack {
+                ProfileView(userId: nil)
+            }
+            .opacity(selectedTab == .profile ? 1 : 0)
+            .allowsHitTesting(selectedTab == .profile)
+            .zIndex(selectedTab == .profile ? 1 : 0)
         }
+        .animation(nil, value: selectedTab)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background {
             // Shared premium background gradient
@@ -60,9 +72,7 @@ struct HomeView: View {
             LazyVStack(spacing: 24) {
                 // Header (Greeting, Date, Avatar)
                 GreetingHeader(viewModel: viewModel) {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
-                        selectedTab = .profile
-                    }
+                    selectedTab = .profile
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 16)

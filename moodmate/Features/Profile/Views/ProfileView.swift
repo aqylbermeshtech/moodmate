@@ -29,7 +29,7 @@ struct ProfileView: View {
             )
             .ignoresSafeArea()
             
-            if viewModel.isLoading {
+            if viewModel.isLoading || viewModel.isWaitingForAuthentication {
                 ProgressView("Loading Profile...")
                     .font(.system(.body, design: .rounded))
                     .tint(.teal)
@@ -107,7 +107,7 @@ struct ProfileView: View {
                 }
             }
         }
-        .onAppear {
+        .task {
             viewModel.loadProfile()
         }
         .alert("Share Profile", isPresented: $showShareAlert) {

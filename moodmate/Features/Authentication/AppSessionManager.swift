@@ -17,12 +17,14 @@ final class AppSessionManager: ObservableObject {
     static let shared = AppSessionManager()
     
     private init() {
-        // Initialize listener
         FirebaseAuthService.shared.addAuthStateListener { [weak self] user in
             guard let self = self else { return }
-            DispatchQueue.main.async {
+            Task { @MainActor in
                 self.currentUser = user
                 self.isAuthenticated = user != nil
+                if let user {
+                    ProfileService.shared.syncWithFirebaseUser(user: user)
+                }
             }
         }
     }

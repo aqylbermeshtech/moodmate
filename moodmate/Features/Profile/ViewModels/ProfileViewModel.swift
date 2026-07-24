@@ -18,7 +18,7 @@ final class ProfileViewModel: ObservableObject {
     @Published var followers: [UserProfile] = []
     @Published var following: [UserProfile] = []
     
-    @Published var isLoading = false
+    @Published var isLoading = true
     @Published var isLazyLoadingPosts = false
     @Published var hasMorePosts = true
     
@@ -27,46 +27,63 @@ final class ProfileViewModel: ObservableObject {
     init(userId: String? = nil) {
         self.userId = userId
         
-        // Listen to Auth State changes to refresh the current user profile when they sign in/out
         if userId == nil {
-            FirebaseAuthService.shared.addAuthStateListener { [weak self] user in
-                guard let self = self else { return }
-                Task { @MainActor in
-                    if let user = user {
+            AppSessionManager.shared.$currentUser
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] user in
+                    guard let self else { return }
+                    if let user {
                         ProfileService.shared.syncWithFirebaseUser(user: user)
                         self.loadProfile()
                     } else {
                         self.profile = nil
                         self.posts = []
+                        self.isLoading = false
                     }
                 }
-            }
+                .store(in: &cancellables)
         }
     }
     
     var isOwnProfile: Bool {
         guard let profileId = profile?.id else { return false }
-        return profileId == getCurrentUserId()
+        return profileId == authenticatedUserId
+    }
+    
+    var isWaitingForAuthentication: Bool {
+        userId == nil && authenticatedUserId == nil
     }
     
     func getCurrentUserId() -> String {
-        return Auth.auth().currentUser?.uid ?? "current_user_mock"
+        authenticatedUserId ?? "current_user_mock"
     }
     
     func loadProfile() {
         isLoading = true
         
-        let actualUserId = userId ?? getCurrentUserId()
-        
-        // Sync with firebase user details if it is current user
-        if actualUserId == getCurrentUserId(), let fbUser = Auth.auth().currentUser {
-            ProfileService.shared.syncWithFirebaseUser(user: fbUser)
+        if userId == nil {
+            guard let authenticatedUserId,
+                  let firebaseUser = Auth.auth().currentUser else {
+                // Auth session is still restoring; keep showing the loading state.
+                return
+            }
+            
+            ProfileService.shared.syncWithFirebaseUser(user: firebaseUser)
+            loadProfileData(for: authenticatedUserId)
+            return
         }
         
-        self.profile = ProfileService.shared.getProfile(forId: actualUserId)
-        self.posts = ProfileService.shared.getPosts(forId: actualUserId)
-        self.hasMorePosts = true // Reset lazy loading
-        
+        loadProfileData(for: userId!)
+    }
+    
+    private var authenticatedUserId: String? {
+        Auth.auth().currentUser?.uid
+    }
+    
+    private func loadProfileData(for profileId: String) {
+        self.profile = ProfileService.shared.getProfile(forId: profileId)
+        self.posts = ProfileService.shared.getPosts(forId: profileId)
+        self.hasMorePosts = true
         self.isLoading = false
     }
     

@@ -90,6 +90,8 @@ final class ProfileService {
     
     func syncWithFirebaseUser(user: User) {
         let currentId = user.uid
+        migrateMockProfileToAuthenticatedUser(currentId: currentId)
+        
         var profile = profiles[currentId] ?? UserProfile(
             id: currentId,
             displayName: user.displayName ?? "John Doe",
@@ -134,8 +136,26 @@ final class ProfileService {
     
     // MARK: - Private Helpers
     
+    private static let mockUserId = "current_user_mock"
+    
     private func getCurrentUserId() -> String {
-        return Auth.auth().currentUser?.uid ?? "current_user_mock"
+        return Auth.auth().currentUser?.uid ?? Self.mockUserId
+    }
+    
+    private func migrateMockProfileToAuthenticatedUser(currentId: String) {
+        guard currentId != Self.mockUserId,
+              profiles[currentId] == nil,
+              let mockProfile = profiles[Self.mockUserId] else {
+            return
+        }
+        
+        var migratedProfile = mockProfile
+        migratedProfile.id = currentId
+        profiles[currentId] = migratedProfile
+        
+        if posts[currentId] == nil, let mockPosts = posts[Self.mockUserId] {
+            posts[currentId] = mockPosts
+        }
     }
     
     private func setupMockData() {

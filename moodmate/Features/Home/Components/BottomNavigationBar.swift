@@ -41,9 +41,8 @@ enum HomeTab: Int, CaseIterable, Identifiable {
 // MARK: - Glass Bottom Navigation Bar
 struct BottomNavigationBar: View {
     @Binding var selectedTab: HomeTab
-    var onAddTap: () -> Void
-    
     @Namespace private var activeTabAnimation
+    var onAddTap: () -> Void
     
     var body: some View {
         HStack(spacing: 0) {
@@ -72,7 +71,6 @@ struct BottomNavigationBar: View {
                     .offset(y: -12)
                     .frame(maxWidth: .infinity)
                 } else {
-                    // Glass Tab Item with Sliding Highlight
                     Button {
                         withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
                             selectedTab = tab
@@ -82,6 +80,7 @@ struct BottomNavigationBar: View {
                             Image(systemName: tab.iconName)
                                 .font(.system(size: 18, weight: selectedTab == tab ? .bold : .medium))
                             
+                            // 1. Restored the dynamic Text transition
                             if selectedTab == tab {
                                 Text(tab.label)
                                     .font(.system(size: 10, weight: .bold))

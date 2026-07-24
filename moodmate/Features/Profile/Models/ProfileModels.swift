@@ -8,7 +8,7 @@
 import Foundation
 
 struct UserProfile: Identifiable, Equatable, Codable {
-    let id: String
+    var id: String
     var displayName: String
     var username: String
     var avatarColorHex: String
