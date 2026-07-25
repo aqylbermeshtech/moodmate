@@ -1,0 +1,257 @@
+//
+//  SearchResultsView.swift
+//  moodmate
+//
+//  Created by Nurtore on 26.07.2026.
+//
+
+import SwiftUI
+
+struct SearchResultsView: View {
+    let results: [SearchResult]
+    @Binding var scope: SearchScope
+    let searchText: String
+    var onSelectResult: (SearchResult) -> Void
+    var onFollowUser: (String) -> Void
+    var onLikePost: (String) -> Void
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            // Scope Picker
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(SearchScope.allCases, id: \.self) { item in
+                        Button {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                scope = item
+                            }
+                        } label: {
+                            Text(item.rawValue)
+                                .font(.system(size: 13, weight: .bold, design: .rounded))
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 8)
+                                .background {
+                                    if scope == item {
+                                        Capsule().fill(Color.teal)
+                                    } else {
+                                        Capsule().fill(Color(.systemBackground).opacity(0.78))
+                                    }
+                                }
+                                .foregroundStyle(scope == item ? .white : .primary)
+                                .overlay(
+                                    Capsule()
+                                        .stroke(
+                                            scope == item ? Color.clear : Color.secondary.opacity(0.15),
+                                            lineWidth: 1
+                                        )
+                                )
+                        }
+                        .buttonStyle(ScaleButtonStyle())
+                    }
+                }
+                .padding(.horizontal, 20)
+                .padding(.vertical, 10)
+            }
+            
+            if results.isEmpty {
+                VStack(spacing: 16) {
+                    Spacer(minLength: 40)
+                    
+                    Image(systemName: "magnifyingglass")
+                        .font(.system(size: 40))
+                        .foregroundStyle(.secondary.opacity(0.5))
+                    
+                    Text("No results for \"\(searchText)\"")
+                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                        .foregroundStyle(.secondary)
+                    
+                    Spacer(minLength: 40)
+                }
+            } else {
+                List {
+                    ForEach(results) { result in
+                        SearchResultRow(
+                            result: result,
+                            onFollowUser: onFollowUser,
+                            onLikePost: onLikePost
+                        )
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            onSelectResult(result)
+                        }
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                        .listRowInsets(EdgeInsets(top: 4, leading: 20, bottom: 4, trailing: 20))
+                    }
+                }
+                .listStyle(.plain)
+                .scrollContentBackground(.hidden)
+            }
+        }
+    }
+}
+
+private struct SearchResultRow: View {
+    let result: SearchResult
+    var onFollowUser: (String) -> Void
+    var onLikePost: (String) -> Void
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            switch result.type {
+            case .user:
+                ZStack {
+                    Circle()
+                        .fill(Color(hex: result.avatarColorHex ?? "38B2AC"))
+                    Text(getInitials(result.userName ?? ""))
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                        .foregroundStyle(.white)
+                }
+                .frame(width: 44, height: 44)
+                
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack(spacing: 4) {
+                        Text(result.userName ?? "")
+                            .font(.system(size: 15, weight: .bold, design: .rounded))
+                        
+                        if let emoji = result.userMoodEmoji {
+                            Text(emoji)
+                                .font(.system(size: 12))
+                        }
+                    }
+                    
+                    Text("@\(result.username ?? "")")
+                        .font(.system(size: 13))
+                        .foregroundStyle(.secondary)
+                }
+                
+                Spacer()
+                
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(.tertiary)
+                
+            case .post:
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color(hex: result.postGradientStartHex ?? "38B2AC"),
+                                Color(hex: result.postGradientEndHex ?? "805AD5")
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 44, height: 44)
+                    .overlay(
+                        Image(systemName: "quote.bubble.fill")
+                            .font(.system(size: 16))
+                            .foregroundStyle(.white.opacity(0.8))
+                    )
+                
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(result.postQuote ?? result.postCaption ?? "")
+                        .font(.system(size: 14, weight: .medium))
+                        .lineLimit(1)
+                    
+                    Text("by \(result.userName ?? "User")")
+                        .font(.system(size: 12))
+                        .foregroundStyle(.secondary)
+                }
+                
+                Spacer()
+                
+                HStack(spacing: 3) {
+                    Image(systemName: "heart.fill")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.red.opacity(0.8))
+                    Text("\(result.postLikesCount ?? 0)")
+                        .font(.system(size: 11, weight: .semibold, design: .rounded))
+                        .foregroundStyle(.secondary)
+                }
+                
+            case .mood:
+                ZStack {
+                    Circle()
+                        .fill(Color(hex: result.moodColorHex ?? "38B2AC").opacity(0.15))
+                    Text(result.moodEmoji ?? "😊")
+                        .font(.system(size: 20))
+                }
+                .frame(width: 44, height: 44)
+                
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(result.moodName ?? "")
+                        .font(.system(size: 15, weight: .bold, design: .rounded))
+                    
+                    Text("\(result.moodPostCount ?? 0) posts")
+                        .font(.system(size: 12))
+                        .foregroundStyle(.secondary)
+                }
+                
+                Spacer()
+                
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(.tertiary)
+                
+            case .hashtag:
+                ZStack {
+                    Circle()
+                        .fill(Color.teal.opacity(0.12))
+                    Text("#")
+                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .foregroundStyle(.teal)
+                }
+                .frame(width: 44, height: 44)
+                
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("#\(result.hashtagName ?? "")")
+                        .font(.system(size: 15, weight: .bold, design: .rounded))
+                    
+                    Text("\(result.hashtagPostCount ?? 0) posts")
+                        .font(.system(size: 12))
+                        .foregroundStyle(.secondary)
+                }
+                
+                Spacer()
+                
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(.tertiary)
+            }
+        }
+        .padding(.vertical, 8)
+        .padding(.horizontal, 12)
+        .background(Color(.systemBackground).opacity(0.78))
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(Color.secondary.opacity(0.1), lineWidth: 1)
+        )
+    }
+    
+    private func getInitials(_ name: String) -> String {
+        let parts = name.split(separator: " ")
+        if parts.count >= 2, let first = parts[0].first, let second = parts[1].first {
+            return "\(first)\(second)".uppercased()
+        } else if let first = name.first {
+            return String(first).uppercased()
+        }
+        return "?"
+    }
+}
+
+#Preview {
+    SearchResultsView(
+        results: [
+            SearchResult(id: "1", type: .user, userName: "Luna Park", username: "luna_glow", avatarColorHex: "ED64A6", userMoodEmoji: "🌙"),
+            SearchResult(id: "2", type: .hashtag, hashtagName: "MorningWalk", hashtagPostCount: 3421)
+        ],
+        scope: .constant(.all),
+        searchText: "Luna",
+        onSelectResult: { _ in },
+        onFollowUser: { _ in },
+        onLikePost: { _ in }
+    )
+}

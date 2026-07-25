@@ -1,0 +1,154 @@
+//
+//  SuggestedUserCard.swift
+//  moodmate
+//
+//  Created by Nurtore on 26.07.2026.
+//
+
+import SwiftUI
+
+struct SuggestedUserCard: View {
+    let user: SuggestedUser
+    var onFollow: () -> Void
+    
+    var body: some View {
+        VStack(spacing: 12) {
+            // Avatar
+            ZStack(alignment: .bottomTrailing) {
+                ZStack {
+                    Circle()
+                        .stroke(
+                            LinearGradient(
+                                colors: [
+                                    Color(hex: user.moodColorHex ?? "38B2AC"),
+                                    Color(hex: user.avatarColorHex)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 2.5
+                        )
+                        .frame(width: 62, height: 62)
+                    
+                    ZStack {
+                        Circle()
+                            .fill(
+                                LinearGradient(
+                                    colors: [Color(hex: user.avatarColorHex).opacity(0.85), Color(hex: user.avatarColorHex)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                        
+                        Text(getInitials(user.displayName))
+                            .font(.system(size: 18, weight: .bold, design: .rounded))
+                            .foregroundStyle(.white)
+                    }
+                    .frame(width: 52, height: 52)
+                }
+                
+                if let emoji = user.moodEmoji {
+                    ZStack {
+                        Circle()
+                            .fill(Color(.systemBackground))
+                            .frame(width: 22, height: 22)
+                            .shadow(color: .black.opacity(0.12), radius: 3, x: 0, y: 1.5)
+                        
+                        Text(emoji)
+                            .font(.system(size: 12))
+                    }
+                }
+            }
+            
+            // User info
+            VStack(spacing: 2) {
+                Text(user.displayName)
+                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .foregroundStyle(.primary)
+                    .lineLimit(1)
+                
+                Text("@\(user.username)")
+                    .font(.system(size: 11))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                
+                if let moodText = user.moodText, let emoji = user.moodEmoji {
+                    HStack(spacing: 3) {
+                        Text(emoji)
+                            .font(.system(size: 9))
+                        Text(moodText)
+                            .font(.system(size: 9, weight: .bold))
+                    }
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(Color(hex: user.moodColorHex ?? "38B2AC").opacity(0.08))
+                    .foregroundStyle(Color(hex: user.moodColorHex ?? "38B2AC"))
+                    .clipShape(Capsule())
+                    .padding(.top, 2)
+                }
+            }
+            
+            // Follow button
+            Button(action: onFollow) {
+                Text(user.isFollowing ? "Following" : "Follow")
+                    .font(.system(size: 12, weight: .bold, design: .rounded))
+                    .foregroundStyle(user.isFollowing ? Color.secondary : Color.white)
+                    .padding(.horizontal, 18)
+                    .padding(.vertical, 7)
+                    .background {
+                        if user.isFollowing {
+                            Capsule()
+                                .fill(Color(.secondarySystemBackground))
+                        } else {
+                            Capsule()
+                                .fill(Color.teal)
+                        }
+                    }
+            }
+            .buttonStyle(ScaleButtonStyle())
+        }
+        .frame(width: 130)
+        .padding(.vertical, 16)
+        .padding(.horizontal, 8)
+        .background(Color(.systemBackground).opacity(0.78))
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(Color.secondary.opacity(0.1), lineWidth: 1)
+        )
+        .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 4)
+    }
+    
+    private func getInitials(_ name: String) -> String {
+        let parts = name.split(separator: " ")
+        if parts.count >= 2, let first = parts[0].first, let second = parts[1].first {
+            return "\(first)\(second)".uppercased()
+        } else if let first = name.first {
+            return String(first).uppercased()
+        }
+        return "?"
+    }
+}
+
+#Preview {
+    HStack(spacing: 12) {
+        SuggestedUserCard(
+            user: SuggestedUser(
+                id: "1", displayName: "Luna Park", username: "luna_glow",
+                avatarColorHex: "ED64A6", bio: "Night owl.", moodEmoji: "🌙",
+                moodText: "Dreamy", moodColorHex: "805AD5", isFollowing: false
+            ),
+            onFollow: {}
+        )
+        SuggestedUserCard(
+            user: SuggestedUser(
+                id: "2", displayName: "River Stone", username: "river_flows",
+                avatarColorHex: "38B2AC", bio: "Kayaker.", moodEmoji: "🌊",
+                moodText: "Flowing", moodColorHex: "4DABF7", isFollowing: true
+            ),
+            onFollow: {}
+        )
+    }
+    .padding()
+    .background(Color.teal.opacity(0.1))
+}

@@ -20,7 +20,7 @@ struct HomeView: View {
             .allowsHitTesting(selectedTab == .home)
             .zIndex(selectedTab == .home ? 1 : 0)
             
-            TabPlaceholderView(title: "Discover", systemImage: "sparkles") {}
+            DiscoverView()
                 .opacity(selectedTab == .discover ? 1 : 0)
                 .allowsHitTesting(selectedTab == .discover)
                 .zIndex(selectedTab == .discover ? 1 : 0)
@@ -30,10 +30,12 @@ struct HomeView: View {
                 .allowsHitTesting(selectedTab == .add)
                 .zIndex(selectedTab == .add ? 1 : 0)
             
-            TabPlaceholderView(title: "Insights & Analytics", systemImage: "chart.bar.xaxis") {}
-                .opacity(selectedTab == .insights ? 1 : 0)
-                .allowsHitTesting(selectedTab == .insights)
-                .zIndex(selectedTab == .insights ? 1 : 0)
+            InsightsView(onAddPostTap: {
+                viewModel.showMoodPickerSheet = true
+            })
+            .opacity(selectedTab == .insights ? 1 : 0)
+            .allowsHitTesting(selectedTab == .insights)
+            .zIndex(selectedTab == .insights ? 1 : 0)
             
             NavigationStack {
                 ProfileView(userId: nil)

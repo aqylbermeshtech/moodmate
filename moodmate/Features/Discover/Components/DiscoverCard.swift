@@ -1,0 +1,152 @@
+//
+//  DiscoverCard.swift
+//  moodmate
+//
+//  Created by Nurtore on 26.07.2026.
+//
+
+import SwiftUI
+
+struct DiscoverCard: View {
+    let post: DiscoverPost
+    var onLike: () -> Void
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            // Gradient visual with quote overlay
+            ZStack(alignment: .bottomLeading) {
+                // Gradient background
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color(hex: post.gradientStartHex),
+                                Color(hex: post.gradientEndHex)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(height: post.heightClass.heightValue)
+                
+                // Organic overlay shapes for premium effect
+                GeometryReader { geo in
+                    Circle()
+                        .fill(Color.white.opacity(0.1))
+                        .frame(width: geo.size.width * 0.5, height: geo.size.width * 0.5)
+                        .blur(radius: 18)
+                        .offset(x: geo.size.width * 0.2, y: -geo.size.height * 0.1)
+                }
+                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                
+                // Quote text
+                VStack(alignment: .leading, spacing: 6) {
+                    // Mood badge
+                    HStack(spacing: 4) {
+                        Text(post.moodEmoji)
+                            .font(.system(size: 10))
+                        Text(post.moodText)
+                            .font(.system(size: 10, weight: .bold))
+                    }
+                    .padding(.horizontal, 7)
+                    .padding(.vertical, 3)
+                    .background(.ultraThinMaterial)
+                    .clipShape(Capsule())
+                    
+                    Text(post.quoteText)
+                        .font(.system(size: 14, weight: .bold, design: .serif))
+                        .foregroundStyle(.white)
+                        .lineLimit(3)
+                        .shadow(color: .black.opacity(0.3), radius: 4, x: 0, y: 2)
+                }
+                .padding(12)
+            }
+            
+            // Bottom info
+            VStack(alignment: .leading, spacing: 6) {
+                HStack(spacing: 6) {
+                    // Mini avatar
+                    ZStack {
+                        Circle()
+                            .fill(Color(hex: post.avatarColorHex))
+                        
+                        Text(getInitials(post.userName))
+                            .font(.system(size: 8, weight: .bold, design: .rounded))
+                            .foregroundStyle(.white)
+                    }
+                    .frame(width: 20, height: 20)
+                    
+                    Text(post.userName)
+                        .font(.system(size: 11, weight: .semibold, design: .rounded))
+                        .foregroundStyle(.primary)
+                        .lineLimit(1)
+                    
+                    Spacer()
+                }
+                
+                HStack(spacing: 4) {
+                    Button(action: onLike) {
+                        HStack(spacing: 3) {
+                            Image(systemName: post.isLiked ? "heart.fill" : "heart")
+                                .font(.system(size: 11, weight: .medium))
+                                .foregroundStyle(post.isLiked ? .red : .secondary)
+                            
+                            Text("\(post.likesCount)")
+                                .font(.system(size: 10, weight: .semibold, design: .rounded))
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .buttonStyle(ScaleButtonStyle())
+                }
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 8)
+        }
+        .background(Color(.systemBackground).opacity(0.78))
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(Color.secondary.opacity(0.1), lineWidth: 1)
+        )
+        .shadow(color: .black.opacity(0.06), radius: 8, x: 0, y: 4)
+    }
+    
+    private func getInitials(_ name: String) -> String {
+        let parts = name.split(separator: " ")
+        if parts.count >= 2, let first = parts[0].first, let second = parts[1].first {
+            return "\(first)\(second)".uppercased()
+        } else if let first = name.first {
+            return String(first).uppercased()
+        }
+        return "?"
+    }
+}
+
+#Preview {
+    HStack(alignment: .top, spacing: 12) {
+        DiscoverCard(
+            post: DiscoverPost(
+                id: "1", userId: "u1", userName: "Luna Park", username: "luna_glow",
+                avatarColorHex: "ED64A6", moodEmoji: "😊", moodText: "Happy",
+                moodColorHex: "38B2AC", quoteText: "Stars can't shine without darkness.",
+                caption: "Night thoughts.", gradientStartHex: "38B2AC", gradientEndHex: "805AD5",
+                likesCount: 42, commentsCount: 5, isLiked: false,
+                heightClass: .tall, createdAt: Date()
+            ),
+            onLike: {}
+        )
+        
+        DiscoverCard(
+            post: DiscoverPost(
+                id: "2", userId: "u2", userName: "River Stone", username: "river",
+                avatarColorHex: "38B2AC", moodEmoji: "😌", moodText: "Calm",
+                moodColorHex: "4A5568", quoteText: "Be here now.",
+                caption: "Flowing.", gradientStartHex: "667EEA", gradientEndHex: "764BA2",
+                likesCount: 18, commentsCount: 2, isLiked: true,
+                heightClass: .compact, createdAt: Date()
+            ),
+            onLike: {}
+        )
+    }
+    .padding()
+}
