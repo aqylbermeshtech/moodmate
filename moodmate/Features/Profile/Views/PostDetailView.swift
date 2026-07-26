@@ -29,12 +29,8 @@ struct PostDetailView: View {
     var body: some View {
         ZStack(alignment: .bottom) {
             // Background
-            LinearGradient(
-                colors: [Color.teal.opacity(0.12), Color.purple.opacity(0.08)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+            Color.theme.backgroundGradient
+                .ignoresSafeArea()
             
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
@@ -44,7 +40,7 @@ struct PostDetailView: View {
                     // Comments Section Title
                     Text("Comments (\(comments.count))")
                         .font(.system(size: 16, weight: .bold, design: .rounded))
-                        .foregroundStyle(.primary)
+                        .foregroundStyle(Color.theme.primaryText)
                         .padding(.horizontal, 20)
                         .padding(.top, 4)
                     
@@ -53,13 +49,13 @@ struct PostDetailView: View {
                         VStack(spacing: 8) {
                             Image(systemName: "bubble.left.and.bubble.right")
                                 .font(.system(size: 32))
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Color.theme.secondaryText)
                             Text("No comments yet")
                                 .font(.system(size: 14, weight: .semibold))
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Color.theme.secondaryText)
                             Text("Be the first to share your thoughts!")
                                 .font(.system(size: 12))
-                                .foregroundStyle(.secondary.opacity(0.7))
+                                .foregroundStyle(Color.theme.tertiaryText)
                         }
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 24)
@@ -118,11 +114,11 @@ struct PostDetailView: View {
                     HStack(spacing: 4) {
                         Text(user.displayName)
                             .font(.system(size: 14, weight: .semibold, design: .rounded))
-                            .foregroundStyle(.primary)
+                            .foregroundStyle(Color.theme.primaryText)
                         
                         Text("@\(user.username)")
                             .font(.system(size: 11))
-                            .foregroundStyle(.secondary.opacity(0.7))
+                            .foregroundStyle(Color.theme.secondaryText)
                     }
                     
                     HStack(spacing: 6) {
@@ -135,18 +131,18 @@ struct PostDetailView: View {
                             }
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2.5)
-                            .background(Color(hex: user.currentMoodColorHex ?? "38B2AC").opacity(0.08))
-                            .foregroundStyle(Color(hex: user.currentMoodColorHex ?? "38B2AC"))
+                            .background(Color.adaptiveMoodColor(hex: user.currentMoodColorHex ?? "38B2AC").opacity(0.15))
+                            .foregroundStyle(Color.adaptiveMoodColor(hex: user.currentMoodColorHex ?? "38B2AC"))
                             .clipShape(Capsule())
                         }
                         
                         Text("•")
                             .font(.system(size: 10))
-                            .foregroundStyle(.secondary.opacity(0.5))
+                            .foregroundStyle(Color.theme.tertiaryText)
                         
                         Text(formatDate(post.createdAt))
                             .font(.system(size: 11))
-                            .foregroundStyle(.secondary.opacity(0.8))
+                            .foregroundStyle(Color.theme.secondaryText)
                     }
                 }
                 
@@ -160,15 +156,15 @@ struct PostDetailView: View {
                     .fill(
                         LinearGradient(
                             colors: [
-                                Color(hex: post.postGradientStartHex),
-                                Color(hex: post.postGradientEndHex)
+                                Color.adaptiveMoodColor(hex: post.postGradientStartHex),
+                                Color.adaptiveMoodColor(hex: post.postGradientEndHex)
                             ],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
                     )
                     .frame(height: 220)
-                    .shadow(color: Color(hex: post.postGradientStartHex).opacity(0.12), radius: 10, x: 0, y: 6)
+                    .shadow(color: Color.theme.shadow, radius: 10, x: 0, y: 6)
                 
                 // Abstract Circles
                 GeometryReader { geo in
@@ -217,11 +213,11 @@ struct PostDetailView: View {
                     HStack(spacing: 6) {
                         Image(systemName: isLiked ? "heart.fill" : "heart")
                             .font(.system(size: 18, weight: .medium))
-                            .foregroundStyle(isLiked ? Color.red : Color.primary.opacity(0.8))
+                            .foregroundStyle(isLiked ? Color.red : Color.theme.primaryText.opacity(0.8))
                         
                         Text("\(likesCount)")
                             .font(.system(size: 13, weight: .semibold, design: .rounded))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Color.theme.secondaryText)
                     }
                 }
                 .buttonStyle(ScaleButtonStyle())
@@ -230,11 +226,11 @@ struct PostDetailView: View {
                 HStack(spacing: 6) {
                     Image(systemName: "bubble.right")
                         .font(.system(size: 18, weight: .medium))
-                        .foregroundStyle(.primary.opacity(0.8))
+                        .foregroundStyle(Color.theme.primaryText.opacity(0.8))
                     
                     Text("\(comments.count)")
                         .font(.system(size: 13, weight: .semibold, design: .rounded))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.theme.secondaryText)
                 }
                 
                 Spacer()
@@ -243,7 +239,7 @@ struct PostDetailView: View {
                 Button(action: toggleBookmark) {
                     Image(systemName: isBookmarked ? "bookmark.fill" : "bookmark")
                         .font(.system(size: 18, weight: .medium))
-                        .foregroundStyle(isBookmarked ? Color(hex: "FAB005") : Color.primary.opacity(0.8))
+                        .foregroundStyle(isBookmarked ? Color(hex: "FAB005") : Color.theme.primaryText.opacity(0.8))
                 }
                 .buttonStyle(ScaleButtonStyle())
             }
@@ -252,17 +248,17 @@ struct PostDetailView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("\(user.displayName)  \(post.caption)")
                     .font(.system(size: 13))
-                    .foregroundStyle(Color.primary.opacity(0.9))
+                    .foregroundStyle(Color.theme.primaryText)
                     .multilineTextAlignment(.leading)
             }
             .padding(.horizontal, 16)
         }
         .padding(.vertical, 16)
-        .background(Color(.systemBackground).opacity(0.5))
+        .background(Color.theme.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .stroke(Color.secondary.opacity(0.1), lineWidth: 1)
+                .stroke(Color.theme.border, lineWidth: 1)
         )
         .padding(.horizontal, 16)
     }
@@ -290,27 +286,31 @@ struct PostDetailView: View {
                 HStack(spacing: 4) {
                     Text(comment.name)
                         .font(.system(size: 13, weight: .semibold, design: .rounded))
-                        .foregroundStyle(.primary)
+                        .foregroundStyle(Color.theme.primaryText)
                     
                     Text("@\(comment.username)")
                         .font(.system(size: 10))
-                        .foregroundStyle(.secondary.opacity(0.7))
+                        .foregroundStyle(Color.theme.secondaryText)
                     
                     Spacer()
                     
                     Text(comment.timeAgo)
                         .font(.system(size: 10))
-                        .foregroundStyle(.secondary.opacity(0.6))
+                        .foregroundStyle(Color.theme.tertiaryText)
                 }
                 
                 Text(comment.text)
                     .font(.system(size: 13))
-                    .foregroundStyle(.primary.opacity(0.9))
+                    .foregroundStyle(Color.theme.primaryText.opacity(0.9))
             }
         }
         .padding(10)
-        .background(Color(.systemBackground).opacity(0.4))
+        .background(Color.theme.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .stroke(Color.theme.border, lineWidth: 1)
+        )
     }
     
     // MARK: - Bottom Input Bar
@@ -319,12 +319,13 @@ struct PostDetailView: View {
             TextField("Write a comment...", text: $commentText)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
-                .background(Color(.systemBackground))
+                .background(Color.theme.surface)
                 .clipShape(Capsule())
                 .overlay(
                     Capsule()
-                        .stroke(Color.secondary.opacity(0.18), lineWidth: 1)
+                        .stroke(Color.theme.border, lineWidth: 1)
                 )
+                .foregroundStyle(Color.theme.primaryText)
             
             Button(action: addComment) {
                 ZStack {
@@ -343,9 +344,7 @@ struct PostDetailView: View {
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
         .background(
-            Color(.systemBackground)
-                .opacity(0.85)
-                .background(.ultraThinMaterial)
+            Color.theme.cardBackground
         )
     }
     

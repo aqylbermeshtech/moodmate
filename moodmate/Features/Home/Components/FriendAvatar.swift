@@ -54,9 +54,9 @@ struct FriendAvatar: View {
                     if let emoji = user.currentMoodEmoji {
                         ZStack {
                             Circle()
-                                .fill(Color(.systemBackground))
+                                .fill(Color.theme.surface)
                                 .frame(width: 24, height: 24)
-                                .shadow(color: .black.opacity(0.12), radius: 3, x: 0, y: 1.5)
+                                .shadow(color: Color.theme.shadow, radius: 3, x: 0, y: 1.5)
                             
                             Text(emoji)
                                 .font(.system(size: 14))
@@ -68,7 +68,7 @@ struct FriendAvatar: View {
                 // User Name label
                 Text(user.name)
                     .font(.system(size: 12, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.primary.opacity(0.8))
+                    .foregroundStyle(Color.theme.primaryText.opacity(0.85))
                     .lineLimit(1)
                     .frame(maxWidth: 72)
             }

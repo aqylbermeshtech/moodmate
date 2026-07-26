@@ -18,11 +18,11 @@ struct WeeklyTrendChart: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Mood Score Trend")
                     .font(.system(size: 18, weight: .bold, design: .rounded))
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(Color.theme.primaryText)
                 
                 Text(dateFilterSubtitle)
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.theme.secondaryText)
             }
             
             // Chart Area
@@ -62,7 +62,7 @@ struct WeeklyTrendChart: View {
                         x: .value("Day", point.dayLabel),
                         y: .value("Score", point.averageScore)
                     )
-                    .foregroundStyle(Color(hex: point.colorHex))
+                    .foregroundStyle(Color.adaptiveMoodColor(hex: point.colorHex))
                     .annotation(position: .top, spacing: 4) {
                         Text(point.primaryMoodEmoji)
                             .font(.system(size: 14))
@@ -73,12 +73,12 @@ struct WeeklyTrendChart: View {
             .chartYAxis {
                 AxisMarks(position: .leading, values: [1, 3, 5]) { value in
                     AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5, dash: [4, 4]))
-                        .foregroundStyle(Color.primary.opacity(0.12))
+                        .foregroundStyle(Color.theme.divider)
                     AxisValueLabel {
                         if let intVal = value.as(Int.self) {
                             Text(moodNameForScore(intVal))
                                 .font(.system(size: 10, weight: .semibold, design: .rounded))
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Color.theme.secondaryText)
                         }
                     }
                 }
@@ -90,7 +90,7 @@ struct WeeklyTrendChart: View {
                         if let day = value.as(String.self) {
                             Text(day)
                                 .font(.system(size: 11, weight: .bold, design: .rounded))
-                                .foregroundStyle(.primary)
+                                .foregroundStyle(Color.theme.primaryText)
                         }
                     }
                 }
@@ -100,20 +100,13 @@ struct WeeklyTrendChart: View {
         .padding(18)
         .background {
             RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(.ultraThinMaterial)
+                .fill(Color.theme.cardBackground)
                 .overlay(
                     RoundedRectangle(cornerRadius: 24, style: .continuous)
-                        .stroke(
-                            LinearGradient(
-                                colors: [.white.opacity(0.4), .white.opacity(0.1)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            ),
-                            lineWidth: 1
-                        )
+                        .stroke(Color.theme.border, lineWidth: 1)
                 )
         }
-        .shadow(color: .black.opacity(0.04), radius: 10, x: 0, y: 5)
+        .shadow(color: Color.theme.shadow, radius: 10, x: 0, y: 5)
         .padding(.horizontal, 20)
     }
     

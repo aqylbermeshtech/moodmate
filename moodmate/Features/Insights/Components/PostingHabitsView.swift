@@ -17,11 +17,11 @@ struct PostingHabitsView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Posting Habits & Activity")
                     .font(.system(size: 18, weight: .bold, design: .rounded))
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(Color.theme.primaryText)
                 
                 Text("When and how often you share your mood")
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.theme.secondaryText)
             }
             
             // Metrics Row
@@ -35,7 +35,7 @@ struct PostingHabitsView: View {
             HStack(spacing: 16) {
                 Label("Longest break: \(habits.longestBreakDays) days", systemImage: "arrow.pause.circle.fill")
                     .font(.system(size: 12, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.theme.secondaryText)
                 
                 Spacer()
                 
@@ -48,7 +48,7 @@ struct PostingHabitsView: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text("Posts by Time of Day")
                     .font(.system(size: 12, weight: .bold, design: .rounded))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.theme.secondaryText)
                 
                 Chart(habits.hourlyBreakdown) { point in
                     BarMark(
@@ -71,7 +71,7 @@ struct PostingHabitsView: View {
                             if let label = value.as(String.self) {
                                 Text(label)
                                     .font(.system(size: 10, weight: .bold, design: .rounded))
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(Color.theme.secondaryText)
                             }
                         }
                     }
@@ -81,20 +81,13 @@ struct PostingHabitsView: View {
         .padding(18)
         .background {
             RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(.ultraThinMaterial)
+                .fill(Color.theme.cardBackground)
                 .overlay(
                     RoundedRectangle(cornerRadius: 24, style: .continuous)
-                        .stroke(
-                            LinearGradient(
-                                colors: [.white.opacity(0.4), .white.opacity(0.1)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            ),
-                            lineWidth: 1
-                        )
+                        .stroke(Color.theme.border, lineWidth: 1)
                 )
         }
-        .shadow(color: .black.opacity(0.04), radius: 10, x: 0, y: 5)
+        .shadow(color: Color.theme.shadow, radius: 10, x: 0, y: 5)
         .padding(.horizontal, 20)
     }
 }
@@ -112,19 +105,19 @@ private struct HabitMetricBadge: View {
             
             Text(value)
                 .font(.system(size: 15, weight: .bold, design: .rounded))
-                .foregroundStyle(.primary)
+                .foregroundStyle(Color.theme.primaryText)
                 .minimumScaleFactor(0.8)
                 .lineLimit(1)
             
             Text(title)
                 .font(.system(size: 11, weight: .medium))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.theme.secondaryText)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 10)
         .background {
             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(Color.primary.opacity(0.03))
+                .fill(Color.theme.groupedBackground)
         }
     }
 }

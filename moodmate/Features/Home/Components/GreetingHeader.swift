@@ -16,15 +16,15 @@ struct GreetingHeader: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(viewModel.greetingText)
                     .font(.system(size: 16, weight: .regular))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.theme.secondaryText)
                 
                 Text("\(viewModel.currentUserDisplayName) 👋")
                     .font(.system(size: 28, weight: .bold, design: .rounded))
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(Color.theme.primaryText)
                 
                 Text(viewModel.formattedDate)
                     .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(.secondary.opacity(0.8))
+                    .foregroundStyle(Color.theme.tertiaryText)
             }
             
             Spacer()
@@ -44,10 +44,10 @@ struct GreetingHeader: View {
                 }
                 .frame(width: 50, height: 50)
                 .clipShape(Circle())
-                .shadow(color: .black.opacity(0.06), radius: 8, x: 0, y: 4)
+                .shadow(color: Color.theme.shadow, radius: 8, x: 0, y: 4)
                 .overlay(
                     Circle()
-                        .stroke(Color.white, lineWidth: 2)
+                        .stroke(Color.theme.border, lineWidth: 2)
                 )
             }
             .buttonStyle(ScaleButtonStyle())

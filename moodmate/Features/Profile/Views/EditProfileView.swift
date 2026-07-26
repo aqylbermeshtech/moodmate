@@ -31,12 +31,8 @@ struct EditProfileView: View {
         NavigationStack {
             ZStack {
                 // Premium background gradient
-                LinearGradient(
-                    colors: [Color.teal.opacity(0.12), Color.purple.opacity(0.08)],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .ignoresSafeArea()
+                Color.theme.backgroundGradient
+                    .ignoresSafeArea()
                 
                 ScrollView {
                     VStack(spacing: 28) {
@@ -60,13 +56,13 @@ struct EditProfileView: View {
                             }
                             .overlay(
                                 Circle()
-                                    .stroke(Color.white, lineWidth: 3)
+                                    .stroke(Color.theme.border, lineWidth: 3)
                                     .frame(width: 104, height: 104)
                             )
                             
                             Text("Avatar Preview")
                                 .font(.system(size: 13, weight: .medium))
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Color.theme.secondaryText)
                         }
                         .padding(.top, 16)
                         
@@ -74,7 +70,7 @@ struct EditProfileView: View {
                         VStack(alignment: .leading, spacing: 10) {
                             Text("Theme Color")
                                 .font(.system(size: 14, weight: .bold, design: .rounded))
-                                .foregroundStyle(.primary)
+                                .foregroundStyle(Color.theme.primaryText)
                                 .padding(.horizontal, 4)
                             
                             ScrollView(.horizontal, showsIndicators: false) {
@@ -92,7 +88,7 @@ struct EditProfileView: View {
                                                 
                                                 if avatarColorHex == hex {
                                                     Circle()
-                                                        .stroke(Color.primary, lineWidth: 2)
+                                                        .stroke(Color.theme.primaryText, lineWidth: 2)
                                                         .frame(width: 46, height: 46)
                                                 }
                                             }
@@ -110,7 +106,7 @@ struct EditProfileView: View {
                             VStack(alignment: .leading, spacing: 6) {
                                 Text("Display Name")
                                     .font(.system(size: 13, weight: .bold, design: .rounded))
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(Color.theme.secondaryText)
                                     .padding(.horizontal, 4)
                                 
                                 CustomTextField(
@@ -123,7 +119,7 @@ struct EditProfileView: View {
                             VStack(alignment: .leading, spacing: 6) {
                                 Text("Username")
                                     .font(.system(size: 13, weight: .bold, design: .rounded))
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(Color.theme.secondaryText)
                                     .padding(.horizontal, 4)
                                 
                                 CustomTextField(
@@ -137,7 +133,7 @@ struct EditProfileView: View {
                             VStack(alignment: .leading, spacing: 6) {
                                 Text("Bio")
                                     .font(.system(size: 13, weight: .bold, design: .rounded))
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(Color.theme.secondaryText)
                                     .padding(.horizontal, 4)
                                 
                                 // Text area for Bio with Custom Style matching TextFields
@@ -145,13 +141,15 @@ struct EditProfileView: View {
                                     .frame(height: 90)
                                     .padding(.horizontal, 10)
                                     .padding(.vertical, 8)
-                                    .background(Color(.systemBackground).opacity(0.94))
+                                    .scrollContentBackground(.hidden)
+                                    .background(Color.theme.surface)
                                     .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                                     .overlay(
                                         RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                            .stroke(Color.secondary.opacity(0.18), lineWidth: 1)
+                                            .stroke(Color.theme.border, lineWidth: 1)
                                     )
                                     .font(.system(size: 15))
+                                    .foregroundStyle(Color.theme.primaryText)
                             }
                         }
                     }

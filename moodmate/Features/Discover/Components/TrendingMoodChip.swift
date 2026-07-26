@@ -24,7 +24,7 @@ struct TrendingMoodChip: View {
                     
                     Text(formattedCount(mood.postCount))
                         .font(.system(size: 10, weight: .medium))
-                        .foregroundStyle(isSelected ? .white.opacity(0.8) : .secondary)
+                        .foregroundStyle(isSelected ? .white.opacity(0.85) : Color.theme.secondaryText)
                 }
             }
             .padding(.horizontal, 14)
@@ -32,17 +32,17 @@ struct TrendingMoodChip: View {
             .background {
                 if isSelected {
                     Capsule()
-                        .fill(Color(hex: mood.colorHex))
+                        .fill(Color.adaptiveMoodColor(hex: mood.colorHex))
                 } else {
                     Capsule()
-                        .fill(Color(hex: mood.colorHex).opacity(0.1))
+                        .fill(Color.adaptiveMoodColor(hex: mood.colorHex).opacity(0.18))
                 }
             }
-            .foregroundStyle(isSelected ? .white : Color(hex: mood.colorHex))
+            .foregroundStyle(isSelected ? .white : Color.adaptiveMoodColor(hex: mood.colorHex))
             .overlay(
                 Capsule()
                     .stroke(
-                        isSelected ? Color.clear : Color(hex: mood.colorHex).opacity(0.2),
+                        isSelected ? Color.clear : Color.adaptiveMoodColor(hex: mood.colorHex).opacity(0.3),
                         lineWidth: 1
                     )
             )

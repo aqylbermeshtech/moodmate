@@ -50,11 +50,11 @@ struct FeedCard: View {
                             HStack(spacing: 4) {
                                 Text(post.user.name)
                                     .font(.system(size: 14, weight: .semibold, design: .rounded))
-                                    .foregroundStyle(.primary)
+                                    .foregroundStyle(Color.theme.primaryText)
                                 
                                 Text("@\(post.user.username)")
                                     .font(.system(size: 11))
-                                    .foregroundStyle(.secondary.opacity(0.7))
+                                    .foregroundStyle(Color.theme.secondaryText)
                             }
                             
                             HStack(spacing: 6) {
@@ -68,18 +68,18 @@ struct FeedCard: View {
                                     }
                                     .padding(.horizontal, 6)
                                     .padding(.vertical, 2.5)
-                                    .background(Color(hex: post.user.currentMoodColorHex ?? "38B2AC").opacity(0.08))
-                                    .foregroundStyle(Color(hex: post.user.currentMoodColorHex ?? "38B2AC"))
+                                    .background(Color.adaptiveMoodColor(hex: post.user.currentMoodColorHex ?? "38B2AC").opacity(0.15))
+                                    .foregroundStyle(Color.adaptiveMoodColor(hex: post.user.currentMoodColorHex ?? "38B2AC"))
                                     .clipShape(Capsule())
                                 }
                                 
                                 Text("•")
                                     .font(.system(size: 10))
-                                    .foregroundStyle(.secondary.opacity(0.5))
+                                    .foregroundStyle(Color.theme.tertiaryText)
                                 
                                 Text(post.timeAgo)
                                     .font(.system(size: 11))
-                                    .foregroundStyle(.secondary.opacity(0.8))
+                                    .foregroundStyle(Color.theme.secondaryText)
                             }
                         }
                     }
@@ -91,7 +91,7 @@ struct FeedCard: View {
                 Button(action: {}) {
                     Image(systemName: "ellipsis")
                         .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.theme.secondaryText)
                 }
                 .buttonStyle(PlainButtonStyle())
             }
@@ -104,15 +104,15 @@ struct FeedCard: View {
                     .fill(
                         LinearGradient(
                             colors: [
-                                Color(hex: post.postGradientStartHex),
-                                Color(hex: post.postGradientEndHex)
+                                Color.adaptiveMoodColor(hex: post.postGradientStartHex),
+                                Color.adaptiveMoodColor(hex: post.postGradientEndHex)
                             ],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
                     )
                     .frame(height: 220)
-                    .shadow(color: Color(hex: post.postGradientStartHex).opacity(0.12), radius: 10, x: 0, y: 6)
+                    .shadow(color: Color.theme.shadow, radius: 10, x: 0, y: 6)
                 
                 // Overlay organic abstract shape for premium styling
                 GeometryReader { geo in
@@ -161,11 +161,11 @@ struct FeedCard: View {
                     HStack(spacing: 6) {
                         Image(systemName: post.isLiked ? "heart.fill" : "heart")
                             .font(.system(size: 18, weight: .medium))
-                            .foregroundStyle(post.isLiked ? Color.red : Color.primary.opacity(0.8))
+                            .foregroundStyle(post.isLiked ? Color.red : Color.theme.primaryText.opacity(0.8))
                         
                         Text("\(post.likesCount)")
                             .font(.system(size: 13, weight: .semibold, design: .rounded))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Color.theme.secondaryText)
                     }
                 }
                 .buttonStyle(ScaleButtonStyle())
@@ -175,11 +175,11 @@ struct FeedCard: View {
                     HStack(spacing: 6) {
                         Image(systemName: "bubble.right")
                             .font(.system(size: 18, weight: .medium))
-                            .foregroundStyle(.primary.opacity(0.8))
+                            .foregroundStyle(Color.theme.primaryText.opacity(0.8))
                         
                         Text("\(post.commentsCount)")
                             .font(.system(size: 13, weight: .semibold, design: .rounded))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Color.theme.secondaryText)
                     }
                 }
                 .buttonStyle(PlainButtonStyle())
@@ -190,7 +190,7 @@ struct FeedCard: View {
                 Button(action: onBookmark) {
                     Image(systemName: post.isBookmarked ? "bookmark.fill" : "bookmark")
                         .font(.system(size: 18, weight: .medium))
-                        .foregroundStyle(post.isBookmarked ? Color(hex: "FAB005") : Color.primary.opacity(0.8))
+                        .foregroundStyle(post.isBookmarked ? Color(hex: "FAB005") : Color.theme.primaryText.opacity(0.8))
                 }
                 .buttonStyle(ScaleButtonStyle())
             }
@@ -204,7 +204,7 @@ struct FeedCard: View {
                     Text("  ") +
                     Text(post.caption)
                         .font(.system(size: 13))
-                        .foregroundStyle(.primary.opacity(0.9))
+                        .foregroundStyle(Color.theme.primaryText.opacity(0.9))
                 }
                     .lineLimit(3)
                     .multilineTextAlignment(.leading)
@@ -213,7 +213,7 @@ struct FeedCard: View {
             
             Divider()
                 .padding(.top, 10)
-                .opacity(0.3)
+                .background(Color.theme.divider)
         }
         .padding(.top, 8)
     }

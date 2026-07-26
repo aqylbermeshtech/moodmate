@@ -24,7 +24,7 @@ struct MoodCard: View {
                         
                         Text("How are you feeling today?")
                             .font(.system(size: 20, weight: .bold, design: .rounded))
-                            .foregroundStyle(viewModel.selectedMoodEmoji != nil ? .white : .primary)
+                            .foregroundStyle(viewModel.selectedMoodEmoji != nil ? .white : Color.theme.primaryText)
                     }
                     Spacer()
                 }
@@ -33,7 +33,7 @@ struct MoodCard: View {
                     // Large Mood Emoji with subtle animation
                     ZStack {
                         Circle()
-                            .fill(viewModel.selectedMoodEmoji != nil ? .white.opacity(0.2) : Color.teal.opacity(0.08))
+                            .fill(viewModel.selectedMoodEmoji != nil ? .white.opacity(0.2) : Color.theme.accent.opacity(0.08))
                             .frame(width: 80, height: 80)
                         
                         Text(viewModel.selectedMoodEmoji ?? "💭")
@@ -53,11 +53,11 @@ struct MoodCard: View {
                         } else {
                             Text("No mood selected")
                                 .font(.system(size: 18, weight: .semibold, design: .rounded))
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Color.theme.secondaryText)
                             
                             Text("Tap to check in")
                                 .font(.system(size: 13))
-                                .foregroundStyle(.secondary.opacity(0.8))
+                                .foregroundStyle(Color.theme.tertiaryText)
                         }
                     }
                     
@@ -78,7 +78,7 @@ struct MoodCard: View {
                     .background(viewModel.selectedMoodEmoji != nil ? .white : Color.teal)
                     .foregroundStyle(viewModel.selectedMoodEmoji != nil ? Color(hex: viewModel.selectedMoodColorHex ?? "38B2AC") : .white)
                     .clipShape(Capsule())
-                    .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
+                    .shadow(color: Color.theme.shadow, radius: 4, x: 0, y: 2)
                 }
             }
             .padding(20)
@@ -86,13 +86,13 @@ struct MoodCard: View {
                 if let hex = viewModel.selectedMoodColorHex {
                     // Vibrant gradient based on selected mood
                     LinearGradient(
-                        colors: [Color(hex: hex), Color(hex: hex).opacity(0.75)],
+                        colors: [Color.adaptiveMoodColor(hex: hex), Color.adaptiveMoodColor(hex: hex, darkOpacityMultiplier: 0.75)],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
                 } else {
-                    // Standard background matching auth cards
-                    Color(.systemBackground).opacity(0.78)
+                    // Standard background matching theme cards
+                    Color.theme.cardBackground
                 }
             }
             .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
@@ -101,14 +101,14 @@ struct MoodCard: View {
                     .stroke(
                         viewModel.selectedMoodEmoji != nil 
                             ? Color.white.opacity(0.2) 
-                            : Color.secondary.opacity(0.12),
+                            : Color.theme.border,
                         lineWidth: 1
                     )
             )
             .shadow(
                 color: viewModel.selectedMoodEmoji != nil 
                     ? Color(hex: viewModel.selectedMoodColorHex!).opacity(0.3) 
-                    : .black.opacity(0.04),
+                    : Color.theme.shadow,
                 radius: 12,
                 x: 0,
                 y: 8

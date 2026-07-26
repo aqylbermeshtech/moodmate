@@ -24,26 +24,23 @@ struct MoodMateAuthView: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack {
-                LinearGradient(
-                    gradient: Gradient(colors: [Color.teal.opacity(0.28), Color.purple.opacity(0.2)]),
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .ignoresSafeArea()
+                Color.theme.backgroundGradient
+                    .ignoresSafeArea()
 
                 ScrollView {
                     VStack(spacing: 24) {
                         VStack(spacing: 10) {
                             Image(systemName: "leaf.circle.fill")
                                 .font(.system(size: 44))
-                                .foregroundStyle(.teal)
+                                .foregroundStyle(Color.theme.accent)
 
                             Text("MoodMate")
                                 .font(.system(size: 34, weight: .bold, design: .rounded))
+                                .foregroundStyle(Color.theme.primaryText)
 
                             Text(authMode == .signUp ? "Let’s begin your mindful routine." : "Welcome back. How are you feeling today?")
                                 .font(.subheadline)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Color.theme.secondaryText)
                                 .multilineTextAlignment(.center)
                                 .padding(.horizontal)
                         }

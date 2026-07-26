@@ -15,15 +15,8 @@ struct DiscoverView: View {
         NavigationStack {
             ZStack {
                 // Background gradient matching HomeView palette
-                LinearGradient(
-                    colors: [
-                        Color.teal.opacity(0.18),
-                        Color.purple.opacity(0.12)
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .ignoresSafeArea()
+                Color.theme.backgroundGradient
+                    .ignoresSafeArea()
                 
                 VStack(spacing: 0) {
                     // Header & Search Bar
@@ -316,11 +309,11 @@ private struct SectionHeader: View {
         VStack(alignment: .leading, spacing: 2) {
             Text(title)
                 .font(.system(size: 18, weight: .bold, design: .rounded))
-                .foregroundStyle(.primary)
+                .foregroundStyle(Color.theme.primaryText)
             
             Text(subtitle)
                 .font(.system(size: 12, weight: .medium))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.theme.secondaryText)
         }
         .padding(.horizontal, 20)
     }

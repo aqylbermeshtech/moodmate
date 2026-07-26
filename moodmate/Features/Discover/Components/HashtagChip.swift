@@ -20,7 +20,7 @@ struct HashtagChip: View {
                 
                 Text(formattedCount(hashtag.postCount))
                     .font(.system(size: 10, weight: .medium))
-                    .foregroundStyle(isSelected ? .white.opacity(0.7) : .secondary)
+                    .foregroundStyle(isSelected ? .white.opacity(0.8) : Color.theme.secondaryText)
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
@@ -28,14 +28,14 @@ struct HashtagChip: View {
                 if isSelected {
                     Capsule().fill(Color.teal)
                 } else {
-                    Capsule().fill(Color(.systemBackground).opacity(0.78))
+                    Capsule().fill(Color.theme.surface)
                 }
             }
-            .foregroundStyle(isSelected ? .white : .teal)
+            .foregroundStyle(isSelected ? .white : Color.teal)
             .overlay(
                 Capsule()
                     .stroke(
-                        isSelected ? Color.clear : Color.teal.opacity(0.2),
+                        isSelected ? Color.clear : Color.teal.opacity(0.3),
                         lineWidth: 1
                     )
             )

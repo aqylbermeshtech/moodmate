@@ -9,6 +9,7 @@ import SwiftUI
 
 struct RootView: View {
     @StateObject private var sessionManager = AppSessionManager.shared
+    @StateObject private var themeManager = ThemeManager.shared
     
     var body: some View {
         Group {
@@ -21,6 +22,7 @@ struct RootView: View {
             }
         }
         .animation(.spring(response: 0.45, dampingFraction: 0.8), value: sessionManager.isAuthenticated)
+        .preferredColorScheme(themeManager.selectedAppearance.colorScheme)
     }
 }
 

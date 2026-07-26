@@ -78,7 +78,7 @@ struct DiscoverCard: View {
                     
                     Text(post.userName)
                         .font(.system(size: 11, weight: .semibold, design: .rounded))
-                        .foregroundStyle(.primary)
+                        .foregroundStyle(Color.theme.primaryText)
                         .lineLimit(1)
                     
                     Spacer()
@@ -89,11 +89,11 @@ struct DiscoverCard: View {
                         HStack(spacing: 3) {
                             Image(systemName: post.isLiked ? "heart.fill" : "heart")
                                 .font(.system(size: 11, weight: .medium))
-                                .foregroundStyle(post.isLiked ? .red : .secondary)
+                                .foregroundStyle(post.isLiked ? .red : Color.theme.secondaryText)
                             
                             Text("\(post.likesCount)")
                                 .font(.system(size: 10, weight: .semibold, design: .rounded))
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Color.theme.secondaryText)
                         }
                     }
                     .buttonStyle(ScaleButtonStyle())
@@ -102,13 +102,13 @@ struct DiscoverCard: View {
             .padding(.horizontal, 10)
             .padding(.vertical, 8)
         }
-        .background(Color(.systemBackground).opacity(0.78))
+        .background(Color.theme.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(Color.secondary.opacity(0.1), lineWidth: 1)
+                .stroke(Color.theme.border, lineWidth: 1)
         )
-        .shadow(color: .black.opacity(0.06), radius: 8, x: 0, y: 4)
+        .shadow(color: Color.theme.shadow, radius: 8, x: 0, y: 4)
     }
     
     private func getInitials(_ name: String) -> String {

@@ -35,7 +35,7 @@ struct CategoryCard: View {
                         .shadow(
                             color: isSelected
                                 ? Color(hex: category.gradientStartHex).opacity(0.4)
-                                : Color.black.opacity(0.06),
+                                : Color.theme.shadow,
                             radius: isSelected ? 10 : 6,
                             x: 0,
                             y: 4
@@ -48,7 +48,7 @@ struct CategoryCard: View {
                 
                 Text(category.name)
                     .font(.system(size: 11, weight: isSelected ? .bold : .semibold, design: .rounded))
-                    .foregroundStyle(isSelected ? .primary : .secondary)
+                    .foregroundStyle(isSelected ? Color.theme.primaryText : Color.theme.secondaryText)
                     .lineLimit(1)
             }
             .frame(width: 76)

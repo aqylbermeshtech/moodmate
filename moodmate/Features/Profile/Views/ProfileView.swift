@@ -22,16 +22,13 @@ struct ProfileView: View {
     var body: some View {
         ZStack {
             // Premium background gradient
-            LinearGradient(
-                colors: [Color.teal.opacity(0.12), Color.purple.opacity(0.08)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+            Color.theme.backgroundGradient
+                .ignoresSafeArea()
             
             if viewModel.isLoading || viewModel.isWaitingForAuthentication {
                 ProgressView("Loading Profile...")
                     .font(.system(.body, design: .rounded))
+                    .foregroundStyle(Color.theme.secondaryText)
                     .tint(.teal)
             } else if let profile = viewModel.profile {
                 ScrollView {
@@ -74,12 +71,13 @@ struct ProfileView: View {
                 VStack(spacing: 16) {
                     Image(systemName: "person.crop.circle.badge.exclamationmark")
                         .font(.system(size: 64))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.theme.secondaryText)
                     Text("Profile Not Found")
                         .font(.system(size: 20, weight: .bold, design: .rounded))
+                        .foregroundStyle(Color.theme.primaryText)
                     Text("Could not load user profile details. Please try again.")
                         .font(.system(size: 14))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.theme.secondaryText)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 40)
                     Button("Retry") {
@@ -102,7 +100,7 @@ struct ProfileView: View {
                     NavigationLink(destination: SettingsView(viewModel: viewModel)) {
                         Image(systemName: "gearshape.fill")
                             .font(.system(size: 18))
-                            .foregroundStyle(.primary)
+                            .foregroundStyle(Color.theme.primaryText)
                     }
                 }
             }
@@ -145,16 +143,16 @@ struct ProfileView: View {
                 .shadow(color: Color(hex: profile.avatarColorHex).opacity(0.25), radius: 10, x: 0, y: 6)
                 .overlay(
                     Circle()
-                        .stroke(Color.white, lineWidth: 3)
+                        .stroke(Color.theme.border, lineWidth: 3)
                 )
                 
                 // Mood Emoji badge overlay
                 if let moodEmoji = profile.currentMoodEmoji {
                     ZStack {
                         Circle()
-                            .fill(Color(.systemBackground))
+                            .fill(Color.theme.surface)
                             .frame(width: 32, height: 32)
-                            .shadow(color: .black.opacity(0.12), radius: 4, x: 0, y: 2)
+                            .shadow(color: Color.theme.shadow, radius: 4, x: 0, y: 2)
                         
                         Text(moodEmoji)
                             .font(.system(size: 18))
@@ -167,16 +165,16 @@ struct ProfileView: View {
             VStack(spacing: 4) {
                 Text(profile.displayName)
                     .font(.system(size: 24, weight: .bold, design: .rounded))
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(Color.theme.primaryText)
                 
                 Text("@\(profile.username)")
                     .font(.system(size: 14))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.theme.secondaryText)
                 
                 if !profile.bio.isEmpty {
                     Text(profile.bio)
                         .font(.system(size: 14))
-                        .foregroundStyle(.primary.opacity(0.85))
+                        .foregroundStyle(Color.theme.primaryText.opacity(0.85))
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 24)
                         .padding(.top, 4)
@@ -195,17 +193,17 @@ struct ProfileView: View {
                 }
                 .padding(.horizontal, 10)
                 .padding(.vertical, 5)
-                .background(Color.orange.opacity(0.08))
+                .background(Color.orange.opacity(0.12))
                 .clipShape(Capsule())
             }
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 16)
-        .background(Color(.systemBackground).opacity(0.4))
+        .background(Color.theme.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .stroke(Color.secondary.opacity(0.08), lineWidth: 1)
+                .stroke(Color.theme.border, lineWidth: 1)
         )
     }
     
@@ -216,7 +214,7 @@ struct ProfileView: View {
             
             Divider()
                 .frame(height: 30)
-                .background(Color.secondary.opacity(0.3))
+                .background(Color.theme.divider)
             
             NavigationLink(destination: FollowListView(type: .followers, viewModel: viewModel)) {
                 statsItem(title: "Followers", count: profile.followersCount)
@@ -225,7 +223,7 @@ struct ProfileView: View {
             
             Divider()
                 .frame(height: 30)
-                .background(Color.secondary.opacity(0.3))
+                .background(Color.theme.divider)
             
             NavigationLink(destination: FollowListView(type: .following, viewModel: viewModel)) {
                 statsItem(title: "Following", count: profile.followingCount)
@@ -234,17 +232,17 @@ struct ProfileView: View {
             
             Divider()
                 .frame(height: 30)
-                .background(Color.secondary.opacity(0.3))
+                .background(Color.theme.divider)
             
             statsItem(title: "Streak", count: profile.moodStreak)
         }
         .padding(.vertical, 14)
         .frame(maxWidth: .infinity)
-        .background(Color(.systemBackground).opacity(0.4))
+        .background(Color.theme.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(Color.secondary.opacity(0.08), lineWidth: 1)
+                .stroke(Color.theme.border, lineWidth: 1)
         )
     }
     
@@ -252,10 +250,10 @@ struct ProfileView: View {
         VStack(spacing: 4) {
             Text("\(count)")
                 .font(.system(size: 17, weight: .bold, design: .rounded))
-                .foregroundStyle(.primary)
+                .foregroundStyle(Color.theme.primaryText)
             Text(title)
                 .font(.system(size: 11, weight: .medium))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.theme.secondaryText)
         }
         .frame(maxWidth: .infinity)
     }
@@ -291,10 +289,10 @@ struct ProfileView: View {
                         Text(profile.isFollowing ? "Following" : "Follow")
                             .font(.system(size: 14, weight: .bold, design: .rounded))
                     }
-                    .foregroundStyle(profile.isFollowing ? Color.primary : Color.white)
+                    .foregroundStyle(profile.isFollowing ? Color.theme.primaryText : Color.white)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
-                    .background(profile.isFollowing ? Color.secondary.opacity(0.15) : Color.teal)
+                    .background(profile.isFollowing ? Color.theme.groupedBackground : Color.teal)
                     .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                     .shadow(color: profile.isFollowing ? Color.clear : Color.teal.opacity(0.2), radius: 6, x: 0, y: 3)
                 }
@@ -311,14 +309,14 @@ struct ProfileView: View {
                     Text("Share")
                         .font(.system(size: 14, weight: .bold, design: .rounded))
                 }
-                .foregroundStyle(.primary)
+                .foregroundStyle(Color.theme.primaryText)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
-                .background(Color(.systemBackground).opacity(0.6))
+                .background(Color.theme.cardBackground)
                 .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                 .overlay(
                     RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .stroke(Color.secondary.opacity(0.12), lineWidth: 1)
+                        .stroke(Color.theme.border, lineWidth: 1)
                 )
             }
             .buttonStyle(ScaleButtonStyle())
@@ -330,7 +328,7 @@ struct ProfileView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Mood History")
                 .font(.system(size: 15, weight: .bold, design: .rounded))
-                .foregroundStyle(.primary)
+                .foregroundStyle(Color.theme.primaryText)
             
             HStack(spacing: 8) {
                 // Show last 7 days of mood entries
@@ -338,13 +336,13 @@ struct ProfileView: View {
                     VStack(spacing: 8) {
                         Text(dayOfWeekAbbreviation(for: entry.date))
                             .font(.system(size: 10, weight: .bold))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Color.theme.secondaryText)
                         
                         ZStack {
                             Circle()
                                 .fill(
                                     LinearGradient(
-                                        colors: [Color(hex: entry.colorHex).opacity(0.8), Color(hex: entry.colorHex)],
+                                        colors: [Color.adaptiveMoodColor(hex: entry.colorHex).opacity(0.8), Color.adaptiveMoodColor(hex: entry.colorHex)],
                                         startPoint: .topLeading,
                                         endPoint: .bottomTrailing
                                     )
@@ -365,11 +363,11 @@ struct ProfileView: View {
             }
             .padding(.vertical, 12)
             .padding(.horizontal, 8)
-            .background(Color(.systemBackground).opacity(0.4))
+            .background(Color.theme.cardBackground)
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .stroke(Color.secondary.opacity(0.08), lineWidth: 1)
+                    .stroke(Color.theme.border, lineWidth: 1)
             )
         }
     }
@@ -379,7 +377,7 @@ struct ProfileView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Analytics & Insights")
                 .font(.system(size: 15, weight: .bold, design: .rounded))
-                .foregroundStyle(.primary)
+                .foregroundStyle(Color.theme.primaryText)
             
             VStack(spacing: 16) {
                 // 7-day Bar Chart Visualization
@@ -392,7 +390,7 @@ struct ProfileView: View {
                             RoundedRectangle(cornerRadius: 6, style: .continuous)
                                 .fill(
                                     LinearGradient(
-                                        colors: [Color(hex: entry.colorHex), Color(hex: entry.colorHex).opacity(0.6)],
+                                        colors: [Color.adaptiveMoodColor(hex: entry.colorHex), Color.adaptiveMoodColor(hex: entry.colorHex).opacity(0.6)],
                                         startPoint: .top,
                                         endPoint: .bottom
                                     )
@@ -402,28 +400,29 @@ struct ProfileView: View {
                             
                             Text(dayOfWeekAbbreviation(for: entry.date))
                                 .font(.system(size: 9, weight: .bold))
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Color.theme.secondaryText)
                         }
                     }
                 }
                 .frame(height: 140)
                 .padding(.top, 10)
                 
-                Divider().opacity(0.3)
+                Divider()
+                    .background(Color.theme.divider)
                 
                 // Insights summary
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("MOST COMMON MOOD")
                             .font(.system(size: 9, weight: .bold))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Color.theme.secondaryText)
                         
                         HStack(spacing: 6) {
                             Text(mostCommonMoodEmoji(profile.moodHistory))
                                 .font(.system(size: 20))
                             Text(mostCommonMoodText(profile.moodHistory))
                                 .font(.system(size: 14, weight: .bold, design: .rounded))
-                                .foregroundStyle(.primary)
+                                .foregroundStyle(Color.theme.primaryText)
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -431,7 +430,7 @@ struct ProfileView: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("WEEKLY PROGRESS")
                             .font(.system(size: 9, weight: .bold))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Color.theme.secondaryText)
                         
                         Text("7 / 7 check-ins")
                             .font(.system(size: 14, weight: .bold, design: .rounded))
@@ -441,11 +440,11 @@ struct ProfileView: View {
                 }
             }
             .padding(16)
-            .background(Color(.systemBackground).opacity(0.4))
+            .background(Color.theme.cardBackground)
             .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .stroke(Color.secondary.opacity(0.08), lineWidth: 1)
+                    .stroke(Color.theme.border, lineWidth: 1)
             )
         }
     }
@@ -455,13 +454,13 @@ struct ProfileView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Achievements")
                 .font(.system(size: 15, weight: .bold, design: .rounded))
-                .foregroundStyle(.primary)
+                .foregroundStyle(Color.theme.primaryText)
                 .padding(.horizontal, 20)
             
             if profile.achievements.isEmpty {
                 Text("No achievements unlocked yet.")
                     .font(.system(size: 13))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.theme.secondaryText)
                     .padding(.horizontal, 20)
             } else {
                 ScrollView(.horizontal, showsIndicators: false) {
@@ -480,7 +479,7 @@ struct ProfileView: View {
         HStack(spacing: 12) {
             ZStack {
                 Circle()
-                    .fill(Color.teal.opacity(0.1))
+                    .fill(Color.teal.opacity(0.12))
                     .frame(width: 48, height: 48)
                 
                 Image(systemName: achievement.icon)
@@ -491,22 +490,22 @@ struct ProfileView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(achievement.title)
                     .font(.system(size: 14, weight: .bold, design: .rounded))
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(Color.theme.primaryText)
                 
                 Text(achievement.description)
                     .font(.system(size: 11))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.theme.secondaryText)
                     .lineLimit(2)
                     .frame(width: 140, alignment: .leading)
             }
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
-        .background(Color(.systemBackground).opacity(0.4))
+        .background(Color.theme.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(Color.secondary.opacity(0.08), lineWidth: 1)
+                .stroke(Color.theme.border, lineWidth: 1)
         )
     }
     
@@ -515,17 +514,17 @@ struct ProfileView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Logged Moments")
                 .font(.system(size: 15, weight: .bold, design: .rounded))
-                .foregroundStyle(.primary)
+                .foregroundStyle(Color.theme.primaryText)
                 .padding(.horizontal, 20)
             
             if viewModel.posts.isEmpty {
                 VStack(spacing: 10) {
                     Image(systemName: "doc.text.image.fill")
                         .font(.system(size: 40))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.theme.secondaryText)
                     Text("No moments logged yet")
                         .font(.system(size: 14, weight: .semibold, design: .rounded))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.theme.secondaryText)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 40)

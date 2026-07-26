@@ -22,10 +22,11 @@ struct TabPlaceholderView: View {
             
             Text(title)
                 .font(.system(size: 22, weight: .bold, design: .rounded))
+                .foregroundStyle(Color.theme.primaryText)
             
             Text("This screen is currently under active development. Stay tuned for mindfulness updates!")
                 .font(.system(size: 14))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.theme.secondaryText)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 40)
             

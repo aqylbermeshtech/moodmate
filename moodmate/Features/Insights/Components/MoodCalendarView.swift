@@ -52,7 +52,7 @@ struct MoodCalendarView: View {
         }
         .padding(18)
         .background(cardBackground)
-        .shadow(color: .black.opacity(0.04), radius: 10, x: 0, y: 5)
+        .shadow(color: Color.theme.shadow, radius: 10, x: 0, y: 5)
         .padding(.horizontal, 20)
     }
     
@@ -63,7 +63,7 @@ struct MoodCalendarView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Monthly Mood Calendar")
                     .font(.system(size: 18, weight: .bold, design: .rounded))
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(Color.theme.primaryText)
                 
                 Text(monthYearTitle)
                     .font(.system(size: 13, weight: .semibold, design: .rounded))
@@ -78,9 +78,9 @@ struct MoodCalendarView: View {
                 } label: {
                     Image(systemName: "chevron.left")
                         .font(.system(size: 14, weight: .bold))
-                        .foregroundStyle(.primary)
+                        .foregroundStyle(Color.theme.primaryText)
                         .padding(8)
-                        .background(Color.primary.opacity(0.06))
+                        .background(Color.theme.groupedBackground)
                         .clipShape(Circle())
                 }
                 
@@ -89,9 +89,9 @@ struct MoodCalendarView: View {
                 } label: {
                     Image(systemName: "chevron.right")
                         .font(.system(size: 14, weight: .bold))
-                        .foregroundStyle(.primary)
+                        .foregroundStyle(Color.theme.primaryText)
                         .padding(8)
-                        .background(Color.primary.opacity(0.06))
+                        .background(Color.theme.groupedBackground)
                         .clipShape(Circle())
                 }
             }
@@ -103,7 +103,7 @@ struct MoodCalendarView: View {
             ForEach(daysOfWeek, id: \.self) { day in
                 Text(day)
                     .font(.system(size: 11, weight: .bold, design: .rounded))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.theme.secondaryText)
                     .frame(maxWidth: .infinity)
             }
         }
@@ -131,14 +131,14 @@ struct MoodCalendarView: View {
             VStack(spacing: 2) {
                 Text("\(calendar.component(.day, from: date))")
                     .font(.system(size: 11, weight: .bold, design: .rounded))
-                    .foregroundStyle(record != nil ? Color.primary : Color.secondary.opacity(0.6))
+                    .foregroundStyle(record != nil ? Color.theme.primaryText : Color.theme.tertiaryText)
                 
                 if let record = record {
                     Text(record.moodEmoji)
                         .font(.system(size: 14))
                 } else {
                     Circle()
-                        .fill(Color.secondary.opacity(0.2))
+                        .fill(Color.theme.divider)
                         .frame(width: 4, height: 4)
                         .padding(.vertical, 4)
                 }
@@ -151,8 +151,8 @@ struct MoodCalendarView: View {
     }
     
     private func cellBackground(for record: MoodRecord?) -> some View {
-        let fillColor = record.map { Color(hex: $0.colorHex).opacity(0.18) } ?? Color.primary.opacity(0.03)
-        let strokeColor = record.map { Color(hex: $0.colorHex).opacity(0.4) } ?? Color.clear
+        let fillColor = record.map { Color.adaptiveMoodColor(hex: $0.colorHex).opacity(0.18) } ?? Color.theme.groupedBackground
+        let strokeColor = record.map { Color.adaptiveMoodColor(hex: $0.colorHex).opacity(0.4) } ?? Color.clear
         
         return RoundedRectangle(cornerRadius: 12, style: .continuous)
             .fill(fillColor)
@@ -164,17 +164,10 @@ struct MoodCalendarView: View {
     
     private var cardBackground: some View {
         RoundedRectangle(cornerRadius: 24, style: .continuous)
-            .fill(.ultraThinMaterial)
+            .fill(Color.theme.cardBackground)
             .overlay(
                 RoundedRectangle(cornerRadius: 24, style: .continuous)
-                    .stroke(
-                        LinearGradient(
-                            colors: [.white.opacity(0.4), .white.opacity(0.1)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: 1
-                    )
+                    .stroke(Color.theme.border, lineWidth: 1)
             )
     }
     

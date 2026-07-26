@@ -15,15 +15,8 @@ struct InsightsView: View {
         NavigationStack {
             ZStack {
                 // Background gradient matching Home & Discover
-                LinearGradient(
-                    colors: [
-                        Color.teal.opacity(0.18),
-                        Color.purple.opacity(0.12)
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .ignoresSafeArea()
+                Color.theme.backgroundGradient
+                    .ignoresSafeArea()
                 
                 VStack(spacing: 0) {
                     // Header Bar & Date Filter Picker
@@ -145,7 +138,7 @@ struct InsightsView: View {
                 
                 Text(greetingMessage)
                     .font(.system(size: 13, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.theme.secondaryText)
             }
             
             Spacer()

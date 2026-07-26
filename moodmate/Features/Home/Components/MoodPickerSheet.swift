@@ -21,9 +21,10 @@ struct MoodPickerSheet: View {
             VStack(spacing: 6) {
                 Text("How are you feeling today?")
                     .font(.system(size: 22, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color.theme.primaryText)
                 Text("Select a mood to update your daily check-in")
                     .font(.system(size: 14))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.theme.secondaryText)
             }
             .padding(.top, 6)
             
@@ -40,17 +41,17 @@ struct MoodPickerSheet: View {
                             
                             Text(option.text)
                                 .font(.system(size: 14, weight: .semibold, design: .rounded))
-                                .foregroundStyle(.primary)
+                                .foregroundStyle(Color.theme.primaryText)
                         }
                         .frame(width: 100, height: 100)
                         .background(
                             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                .fill(viewModel.selectedMoodEmoji == option.emoji ? Color(hex: option.colorHex).opacity(0.12) : Color(.secondarySystemBackground))
+                                .fill(viewModel.selectedMoodEmoji == option.emoji ? Color.adaptiveMoodColor(hex: option.colorHex).opacity(0.2) : Color.theme.surface)
                         )
                         .overlay(
                             RoundedRectangle(cornerRadius: 16, style: .continuous)
                                 .stroke(
-                                    viewModel.selectedMoodEmoji == option.emoji ? Color(hex: option.colorHex) : Color.clear,
+                                    viewModel.selectedMoodEmoji == option.emoji ? Color(hex: option.colorHex) : Color.theme.border,
                                     lineWidth: 2
                                 )
                         )

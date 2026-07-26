@@ -34,14 +34,14 @@ struct SearchResultsView: View {
                                     if scope == item {
                                         Capsule().fill(Color.teal)
                                     } else {
-                                        Capsule().fill(Color(.systemBackground).opacity(0.78))
+                                        Capsule().fill(Color.theme.surface)
                                     }
                                 }
-                                .foregroundStyle(scope == item ? .white : .primary)
+                                .foregroundStyle(scope == item ? .white : Color.theme.primaryText)
                                 .overlay(
                                     Capsule()
                                         .stroke(
-                                            scope == item ? Color.clear : Color.secondary.opacity(0.15),
+                                            scope == item ? Color.clear : Color.theme.border,
                                             lineWidth: 1
                                         )
                                 )
@@ -59,11 +59,11 @@ struct SearchResultsView: View {
                     
                     Image(systemName: "magnifyingglass")
                         .font(.system(size: 40))
-                        .foregroundStyle(.secondary.opacity(0.5))
+                        .foregroundStyle(Color.theme.secondaryText)
                     
                     Text("No results for \"\(searchText)\"")
                         .font(.system(size: 16, weight: .semibold, design: .rounded))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.theme.secondaryText)
                     
                     Spacer(minLength: 40)
                 }
@@ -113,6 +113,7 @@ private struct SearchResultRow: View {
                     HStack(spacing: 4) {
                         Text(result.userName ?? "")
                             .font(.system(size: 15, weight: .bold, design: .rounded))
+                            .foregroundStyle(Color.theme.primaryText)
                         
                         if let emoji = result.userMoodEmoji {
                             Text(emoji)
@@ -122,22 +123,22 @@ private struct SearchResultRow: View {
                     
                     Text("@\(result.username ?? "")")
                         .font(.system(size: 13))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.theme.secondaryText)
                 }
                 
                 Spacer()
                 
                 Image(systemName: "chevron.right")
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(.tertiary)
+                    .foregroundStyle(Color.theme.tertiaryText)
                 
             case .post:
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
                     .fill(
                         LinearGradient(
                             colors: [
-                                Color(hex: result.postGradientStartHex ?? "38B2AC"),
-                                Color(hex: result.postGradientEndHex ?? "805AD5")
+                                Color.adaptiveMoodColor(hex: result.postGradientStartHex ?? "38B2AC"),
+                                Color.adaptiveMoodColor(hex: result.postGradientEndHex ?? "805AD5")
                             ],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
@@ -153,11 +154,12 @@ private struct SearchResultRow: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(result.postQuote ?? result.postCaption ?? "")
                         .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(Color.theme.primaryText)
                         .lineLimit(1)
                     
                     Text("by \(result.userName ?? "User")")
                         .font(.system(size: 12))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.theme.secondaryText)
                 }
                 
                 Spacer()
@@ -168,13 +170,13 @@ private struct SearchResultRow: View {
                         .foregroundStyle(.red.opacity(0.8))
                     Text("\(result.postLikesCount ?? 0)")
                         .font(.system(size: 11, weight: .semibold, design: .rounded))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.theme.secondaryText)
                 }
                 
             case .mood:
                 ZStack {
                     Circle()
-                        .fill(Color(hex: result.moodColorHex ?? "38B2AC").opacity(0.15))
+                        .fill(Color.adaptiveMoodColor(hex: result.moodColorHex ?? "38B2AC").opacity(0.2))
                     Text(result.moodEmoji ?? "😊")
                         .font(.system(size: 20))
                 }
@@ -183,17 +185,18 @@ private struct SearchResultRow: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(result.moodName ?? "")
                         .font(.system(size: 15, weight: .bold, design: .rounded))
+                        .foregroundStyle(Color.theme.primaryText)
                     
                     Text("\(result.moodPostCount ?? 0) posts")
                         .font(.system(size: 12))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.theme.secondaryText)
                 }
                 
                 Spacer()
                 
                 Image(systemName: "chevron.right")
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(.tertiary)
+                    .foregroundStyle(Color.theme.tertiaryText)
                 
             case .hashtag:
                 ZStack {
@@ -208,26 +211,27 @@ private struct SearchResultRow: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("#\(result.hashtagName ?? "")")
                         .font(.system(size: 15, weight: .bold, design: .rounded))
+                        .foregroundStyle(Color.theme.primaryText)
                     
                     Text("\(result.hashtagPostCount ?? 0) posts")
                         .font(.system(size: 12))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.theme.secondaryText)
                 }
                 
                 Spacer()
                 
                 Image(systemName: "chevron.right")
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(.tertiary)
+                    .foregroundStyle(Color.theme.tertiaryText)
             }
         }
         .padding(.vertical, 8)
         .padding(.horizontal, 12)
-        .background(Color(.systemBackground).opacity(0.78))
+        .background(Color.theme.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .stroke(Color.secondary.opacity(0.1), lineWidth: 1)
+                .stroke(Color.theme.border, lineWidth: 1)
         )
     }
     

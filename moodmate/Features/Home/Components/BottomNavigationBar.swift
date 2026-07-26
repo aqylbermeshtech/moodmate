@@ -87,13 +87,13 @@ struct BottomNavigationBar: View {
                                     .transition(.scale.combined(with: .opacity))
                             }
                         }
-                        .foregroundStyle(selectedTab == tab ? Color.teal : Color.secondary.opacity(0.7))
+                        .foregroundStyle(selectedTab == tab ? Color.teal : Color.theme.secondaryText)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 8)
                         .background {
                             if selectedTab == tab {
                                 Capsule()
-                                    .fill(Color.teal.opacity(0.12))
+                                    .fill(Color.teal.opacity(0.15))
                                     .matchedGeometryEffect(id: "ACTIVE_TAB_HIGHLIGHT", in: activeTabAnimation)
                             }
                         }
@@ -107,20 +107,13 @@ struct BottomNavigationBar: View {
         .background {
             // Liquid Glass Capsule Container
             Capsule()
-                .fill(.ultraThinMaterial)
+                .fill(Color.theme.cardBackground)
                 .overlay(
                     Capsule()
-                        .stroke(
-                            LinearGradient(
-                                colors: [.white.opacity(0.35), .white.opacity(0.08)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            ),
-                            lineWidth: 1
-                        )
+                        .stroke(Color.theme.border, lineWidth: 1)
                 )
         }
-        .shadow(color: .black.opacity(0.08), radius: 16, x: 0, y: 8)
+        .shadow(color: Color.theme.shadow, radius: 16, x: 0, y: 8)
         .padding(.horizontal, 20)
     }
 }

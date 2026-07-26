@@ -50,9 +50,9 @@ struct SuggestedUserCard: View {
                 if let emoji = user.moodEmoji {
                     ZStack {
                         Circle()
-                            .fill(Color(.systemBackground))
+                            .fill(Color.theme.surface)
                             .frame(width: 22, height: 22)
-                            .shadow(color: .black.opacity(0.12), radius: 3, x: 0, y: 1.5)
+                            .shadow(color: Color.theme.shadow, radius: 3, x: 0, y: 1.5)
                         
                         Text(emoji)
                             .font(.system(size: 12))
@@ -64,12 +64,12 @@ struct SuggestedUserCard: View {
             VStack(spacing: 2) {
                 Text(user.displayName)
                     .font(.system(size: 13, weight: .bold, design: .rounded))
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(Color.theme.primaryText)
                     .lineLimit(1)
                 
                 Text("@\(user.username)")
                     .font(.system(size: 11))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.theme.secondaryText)
                     .lineLimit(1)
                 
                 if let moodText = user.moodText, let emoji = user.moodEmoji {
@@ -81,8 +81,8 @@ struct SuggestedUserCard: View {
                     }
                     .padding(.horizontal, 6)
                     .padding(.vertical, 2)
-                    .background(Color(hex: user.moodColorHex ?? "38B2AC").opacity(0.08))
-                    .foregroundStyle(Color(hex: user.moodColorHex ?? "38B2AC"))
+                    .background(Color.adaptiveMoodColor(hex: user.moodColorHex ?? "38B2AC").opacity(0.15))
+                    .foregroundStyle(Color.adaptiveMoodColor(hex: user.moodColorHex ?? "38B2AC"))
                     .clipShape(Capsule())
                     .padding(.top, 2)
                 }
@@ -92,13 +92,13 @@ struct SuggestedUserCard: View {
             Button(action: onFollow) {
                 Text(user.isFollowing ? "Following" : "Follow")
                     .font(.system(size: 12, weight: .bold, design: .rounded))
-                    .foregroundStyle(user.isFollowing ? Color.secondary : Color.white)
+                    .foregroundStyle(user.isFollowing ? Color.theme.secondaryText : Color.white)
                     .padding(.horizontal, 18)
                     .padding(.vertical, 7)
                     .background {
                         if user.isFollowing {
                             Capsule()
-                                .fill(Color(.secondarySystemBackground))
+                                .fill(Color.theme.groupedBackground)
                         } else {
                             Capsule()
                                 .fill(Color.teal)
@@ -110,13 +110,13 @@ struct SuggestedUserCard: View {
         .frame(width: 130)
         .padding(.vertical, 16)
         .padding(.horizontal, 8)
-        .background(Color(.systemBackground).opacity(0.78))
+        .background(Color.theme.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(Color.secondary.opacity(0.1), lineWidth: 1)
+                .stroke(Color.theme.border, lineWidth: 1)
         )
-        .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 4)
+        .shadow(color: Color.theme.shadow, radius: 8, x: 0, y: 4)
     }
     
     private func getInitials(_ name: String) -> String {

@@ -47,13 +47,8 @@ struct HomeView: View {
         .animation(nil, value: selectedTab)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background {
-            // Shared premium background gradient
-            LinearGradient(
-                gradient: Gradient(colors: [Color.teal.opacity(0.18), Color.purple.opacity(0.12)]),
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+            Color.theme.backgroundGradient
+                .ignoresSafeArea()
         }
         .safeAreaBar(edge: .bottom) {
             BottomNavigationBar(selectedTab: $selectedTab) {
@@ -100,7 +95,7 @@ struct HomeView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Friends Today")
                 .font(.system(size: 16, weight: .bold, design: .rounded))
-                .foregroundStyle(.primary)
+                .foregroundStyle(Color.theme.primaryText)
                 .padding(.horizontal, 20)
             
             ScrollView(.horizontal, showsIndicators: false) {
@@ -128,7 +123,7 @@ struct HomeView: View {
         VStack(alignment: .leading, spacing: 14) {
             Text("Today's Feed")
                 .font(.system(size: 16, weight: .bold, design: .rounded))
-                .foregroundStyle(.primary)
+                .foregroundStyle(Color.theme.primaryText)
                 .padding(.horizontal, 20)
             
             LazyVStack(spacing: 24) {

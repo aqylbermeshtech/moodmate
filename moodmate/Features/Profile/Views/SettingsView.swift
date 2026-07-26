@@ -10,23 +10,19 @@ import SwiftUI
 struct SettingsView: View {
     @ObservedObject var viewModel: ProfileViewModel
     @Environment(\.dismiss) var dismiss
+    @StateObject private var themeManager = ThemeManager.shared
     
     @State private var notificationsEnabled = true
     @State private var weeklyDigestEnabled = true
-    @State private var appTheme = "System"
     @State private var showSignOutConfirmation = false
     
-    let themes = ["System", "Light", "Dark"]
+    let themes = AppAppearance.allCases
     
     var body: some View {
         ZStack {
             // Premium background gradient
-            LinearGradient(
-                colors: [Color.teal.opacity(0.12), Color.purple.opacity(0.08)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+            Color.theme.backgroundGradient
+                .ignoresSafeArea()
             
             ScrollView {
                 VStack(spacing: 24) {
@@ -35,7 +31,7 @@ struct SettingsView: View {
                     VStack(alignment: .leading, spacing: 0) {
                         Text("Account Settings")
                             .font(.system(size: 13, weight: .bold, design: .rounded))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Color.theme.secondaryText)
                             .padding(.leading, 8)
                             .padding(.bottom, 8)
                         
@@ -44,24 +40,26 @@ struct SettingsView: View {
                                 settingRow(icon: "person.circle", title: "Edit Profile", subtitle: "Update bio, name, or color")
                             }
                             
-                            Divider().padding(.horizontal, 16)
+                            Divider()
+                                .background(Color.theme.divider)
+                                .padding(.horizontal, 16)
                             
                             settingRow(icon: "lock.shield", title: "Privacy & Security", subtitle: "Manage accounts & visibility")
                                 .opacity(0.8)
                         }
-                        .background(Color(.systemBackground).opacity(0.7))
+                        .background(Color.theme.cardBackground)
                         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                         .overlay(
                             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                .stroke(Color.secondary.opacity(0.1), lineWidth: 1)
+                                .stroke(Color.theme.border, lineWidth: 1)
                         )
                     }
                     
-                    // SECTION 2: Notifications card
+                    // SECTION 2: Notifications & Appearance card
                     VStack(alignment: .leading, spacing: 0) {
                         Text("Preferences")
                             .font(.system(size: 13, weight: .bold, design: .rounded))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Color.theme.secondaryText)
                             .padding(.leading, 8)
                             .padding(.bottom, 8)
                         
@@ -72,10 +70,10 @@ struct SettingsView: View {
                                     VStack(alignment: .leading, spacing: 2) {
                                         Text("Daily Reminders")
                                             .font(.system(size: 15, weight: .semibold, design: .rounded))
-                                            .foregroundStyle(.primary)
+                                            .foregroundStyle(Color.theme.primaryText)
                                         Text("Remind me to check in my mood")
                                             .font(.system(size: 11))
-                                            .foregroundStyle(.secondary)
+                                            .foregroundStyle(Color.theme.secondaryText)
                                     }
                                 } icon: {
                                     Image(systemName: "bell.badge.fill")
@@ -89,7 +87,9 @@ struct SettingsView: View {
                             .padding(.horizontal, 16)
                             .padding(.vertical, 14)
                             
-                            Divider().padding(.horizontal, 16)
+                            Divider()
+                                .background(Color.theme.divider)
+                                .padding(.horizontal, 16)
                             
                             // Weekly Digest Toggle
                             HStack {
@@ -97,10 +97,10 @@ struct SettingsView: View {
                                     VStack(alignment: .leading, spacing: 2) {
                                         Text("Weekly Report")
                                             .font(.system(size: 15, weight: .semibold, design: .rounded))
-                                            .foregroundStyle(.primary)
+                                            .foregroundStyle(Color.theme.primaryText)
                                         Text("Receive weekly insights & patterns")
                                             .font(.system(size: 11))
-                                            .foregroundStyle(.secondary)
+                                            .foregroundStyle(Color.theme.secondaryText)
                                     }
                                 } icon: {
                                     Image(systemName: "chart.bar.doc.horizontal.fill")
@@ -114,7 +114,9 @@ struct SettingsView: View {
                             .padding(.horizontal, 16)
                             .padding(.vertical, 14)
                             
-                            Divider().padding(.horizontal, 16)
+                            Divider()
+                                .background(Color.theme.divider)
+                                .padding(.horizontal, 16)
                             
                             // App Theme Picker
                             HStack {
@@ -122,10 +124,10 @@ struct SettingsView: View {
                                     VStack(alignment: .leading, spacing: 2) {
                                         Text("App Theme")
                                             .font(.system(size: 15, weight: .semibold, design: .rounded))
-                                            .foregroundStyle(.primary)
+                                            .foregroundStyle(Color.theme.primaryText)
                                         Text("Customize interface display mode")
                                             .font(.system(size: 11))
-                                            .foregroundStyle(.secondary)
+                                            .foregroundStyle(Color.theme.secondaryText)
                                     }
                                 } icon: {
                                     Image(systemName: "paintpalette.fill")
@@ -133,9 +135,12 @@ struct SettingsView: View {
                                         .foregroundStyle(.pink)
                                 }
                                 Spacer()
-                                Picker("", selection: $appTheme) {
-                                    ForEach(themes, id: \.self) {
-                                        Text($0)
+                                Picker("", selection: Binding(
+                                    get: { themeManager.selectedAppearance },
+                                    set: { themeManager.selectedAppearance = $0 }
+                                )) {
+                                    ForEach(themes) { theme in
+                                        Text(theme.rawValue).tag(theme)
                                     }
                                 }
                                 .pickerStyle(MenuPickerStyle())
@@ -144,11 +149,11 @@ struct SettingsView: View {
                             .padding(.horizontal, 16)
                             .padding(.vertical, 10)
                         }
-                        .background(Color(.systemBackground).opacity(0.7))
+                        .background(Color.theme.cardBackground)
                         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                         .overlay(
                             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                .stroke(Color.secondary.opacity(0.1), lineWidth: 1)
+                                .stroke(Color.theme.border, lineWidth: 1)
                         )
                     }
                     
@@ -156,26 +161,30 @@ struct SettingsView: View {
                     VStack(alignment: .leading, spacing: 0) {
                         Text("Support")
                             .font(.system(size: 13, weight: .bold, design: .rounded))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Color.theme.secondaryText)
                             .padding(.leading, 8)
                             .padding(.bottom, 8)
                         
                         VStack(spacing: 0) {
                             settingRow(icon: "questionmark.circle.fill", title: "Help Center", subtitle: "FAQs and app guides")
                             
-                            Divider().padding(.horizontal, 16)
+                            Divider()
+                                .background(Color.theme.divider)
+                                .padding(.horizontal, 16)
                             
                             settingRow(icon: "doc.text.fill", title: "Terms of Service", subtitle: "Terms of using MoodMate")
                             
-                            Divider().padding(.horizontal, 16)
+                            Divider()
+                                .background(Color.theme.divider)
+                                .padding(.horizontal, 16)
                             
                             settingRow(icon: "shield.righthalf.filled", title: "Privacy Policy", subtitle: "Your data rights & rules")
                         }
-                        .background(Color(.systemBackground).opacity(0.7))
+                        .background(Color.theme.cardBackground)
                         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                         .overlay(
                             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                .stroke(Color.secondary.opacity(0.1), lineWidth: 1)
+                                .stroke(Color.theme.border, lineWidth: 1)
                         )
                     }
                     
@@ -235,17 +244,17 @@ struct SettingsView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(.system(size: 15, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(Color.theme.primaryText)
                 Text(subtitle)
                     .font(.system(size: 11))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.theme.secondaryText)
             }
             
             Spacer()
             
             Image(systemName: "chevron.right")
                 .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(.secondary.opacity(0.6))
+                .foregroundStyle(Color.theme.tertiaryText)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 14)

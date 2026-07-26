@@ -36,11 +36,11 @@ struct DiscoverErrorView: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
-            .background(Color(.systemBackground).opacity(0.78))
+            .background(Color.theme.cardBackground)
             .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .stroke(Color.orange.opacity(0.2), lineWidth: 1)
+                    .stroke(Color.orange.opacity(0.3), lineWidth: 1)
             )
             .padding(.horizontal, 20)
         } else {
@@ -48,21 +48,22 @@ struct DiscoverErrorView: View {
             VStack(spacing: 20) {
                 ZStack {
                     Circle()
-                        .fill(Color.red.opacity(0.06))
+                        .fill(Color.theme.error.opacity(0.1))
                         .frame(width: 100, height: 100)
                     
                     Image(systemName: "wifi.exclamationmark")
                         .font(.system(size: 40))
-                        .foregroundStyle(.red.opacity(0.7).gradient)
+                        .foregroundStyle(Color.theme.error)
                 }
                 
                 VStack(spacing: 8) {
                     Text("Something went wrong")
                         .font(.system(size: 20, weight: .bold, design: .rounded))
+                        .foregroundStyle(Color.theme.primaryText)
                     
                     Text(message)
                         .font(.system(size: 14))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.theme.secondaryText)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 40)
                 }

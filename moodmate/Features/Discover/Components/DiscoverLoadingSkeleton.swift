@@ -101,13 +101,13 @@ struct DiscoverLoadingSkeleton: View {
     
     private func skeletonPill(width: CGFloat? = nil, height: CGFloat = 16) -> some View {
         RoundedRectangle(cornerRadius: height / 2, style: .continuous)
-            .fill(Color(.systemGray5))
+            .fill(Color.theme.secondaryBackground)
             .frame(width: width, height: height)
     }
     
     private func skeletonRect(width: CGFloat? = nil, height: CGFloat = 100, cornerRadius: CGFloat = 12) -> some View {
         RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-            .fill(Color(.systemGray5))
+            .fill(Color.theme.secondaryBackground)
             .frame(width: width, height: height)
     }
 }

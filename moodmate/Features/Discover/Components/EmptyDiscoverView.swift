@@ -34,13 +34,13 @@ struct EmptyDiscoverView: View {
             VStack(spacing: 8) {
                 Text(hasActiveFilter ? "No results found" : "Nothing to discover yet")
                     .font(.system(size: 20, weight: .bold, design: .rounded))
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(Color.theme.primaryText)
                 
                 Text(hasActiveFilter
                      ? "Try a different filter or clear your current selection to explore more content."
                      : "Start exploring moods, people, and moments. The community is waiting for you!")
                     .font(.system(size: 14))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.theme.secondaryText)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 32)
             }

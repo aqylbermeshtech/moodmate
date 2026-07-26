@@ -33,12 +33,8 @@ struct FollowListView: View {
     var body: some View {
         ZStack {
             // Premium background gradient
-            LinearGradient(
-                colors: [Color.teal.opacity(0.12), Color.purple.opacity(0.08)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+            Color.theme.backgroundGradient
+                .ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Custom Search Bar
@@ -76,26 +72,27 @@ struct FollowListView: View {
     private var searchBarField: some View {
         HStack(spacing: 10) {
             Image(systemName: "magnifyingglass")
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.theme.secondaryText)
             
             TextField("Search users...", text: $searchText)
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
+                .foregroundStyle(Color.theme.primaryText)
             
             if !searchText.isEmpty {
                 Button(action: { searchText = "" }) {
                     Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.theme.secondaryText)
                 }
             }
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
-        .background(Color(.systemBackground).opacity(0.8))
+        .background(Color.theme.surface)
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(Color.secondary.opacity(0.15), lineWidth: 1)
+                .stroke(Color.theme.border, lineWidth: 1)
         )
     }
     
@@ -124,24 +121,24 @@ struct FollowListView: View {
                 if let emoji = user.currentMoodEmoji {
                     ZStack {
                         Circle()
-                            .fill(Color(.systemBackground))
+                            .fill(Color.theme.surface)
                             .frame(width: 18, height: 18)
                         Text(emoji)
                             .font(.system(size: 11))
                     }
                     .offset(x: 2, y: 2)
-                    .shadow(radius: 2)
+                    .shadow(color: Color.theme.shadow, radius: 2)
                 }
             }
             
             VStack(alignment: .leading, spacing: 2) {
                 Text(user.displayName)
                     .font(.system(size: 15, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(Color.theme.primaryText)
                 
                 Text("@\(user.username)")
                     .font(.system(size: 12))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.theme.secondaryText)
             }
             
             Spacer()
@@ -153,13 +150,13 @@ struct FollowListView: View {
                 }) {
                     Text(user.isFollowing ? "Following" : "Follow")
                         .font(.system(size: 13, weight: .semibold, design: .rounded))
-                        .foregroundStyle(user.isFollowing ? Color.primary : Color.white)
+                        .foregroundStyle(user.isFollowing ? Color.theme.primaryText : Color.white)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 6)
                         .background(
                             Group {
                                 if user.isFollowing {
-                                    Color.secondary.opacity(0.15)
+                                    Color.theme.groupedBackground
                                 } else {
                                     Color.teal
                                 }
@@ -172,11 +169,11 @@ struct FollowListView: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 10)
-        .background(Color(.systemBackground).opacity(0.6))
+        .background(Color.theme.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .stroke(Color.secondary.opacity(0.1), lineWidth: 1)
+                .stroke(Color.theme.border, lineWidth: 1)
         )
     }
     
@@ -186,10 +183,10 @@ struct FollowListView: View {
             Spacer()
             Image(systemName: "person.2.slash.fill")
                 .font(.system(size: 44))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.theme.secondaryText)
             Text(searchText.isEmpty ? "No users here yet" : "No results match '\(searchText)'")
                 .font(.system(size: 16, weight: .bold, design: .rounded))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.theme.secondaryText)
             Spacer()
         }
         .padding(.bottom, 60)

@@ -51,11 +51,11 @@ struct DiscoverSearchBar: View {
                 }
                 .padding(.horizontal, 12)
                 .padding(.vertical, 10)
-                .background(Color(.systemBackground).opacity(0.78))
+                .background(Color.theme.surface)
                 .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                 .overlay(
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .stroke(isFocused ? Color.teal.opacity(0.4) : Color.secondary.opacity(0.15), lineWidth: 1)
+                        .stroke(isFocused ? Color.teal.opacity(0.4) : Color.theme.border, lineWidth: 1)
                 )
                 
                 if isSearchActive {
@@ -85,7 +85,7 @@ struct DiscoverSearchBar: View {
                     HStack {
                         Text("Recent Searches")
                             .font(.system(size: 13, weight: .bold, design: .rounded))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Color.theme.secondaryText)
                         
                         Spacer()
                         
@@ -109,17 +109,17 @@ struct DiscoverSearchBar: View {
                             HStack(spacing: 10) {
                                 Image(systemName: "clock.arrow.circlepath")
                                     .font(.system(size: 13))
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(Color.theme.secondaryText)
                                 
                                 Text(search)
                                     .font(.system(size: 14))
-                                    .foregroundStyle(.primary)
+                                    .foregroundStyle(Color.theme.primaryText)
                                 
                                 Spacer()
                                 
                                 Image(systemName: "arrow.up.left")
                                     .font(.system(size: 11))
-                                    .foregroundStyle(.secondary.opacity(0.6))
+                                    .foregroundStyle(Color.theme.tertiaryText)
                             }
                             .padding(.vertical, 8)
                             .padding(.horizontal, 4)

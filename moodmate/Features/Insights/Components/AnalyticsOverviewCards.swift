@@ -102,40 +102,33 @@ private struct OverviewCard: View {
                 
                 Text(title)
                     .font(.system(size: 11, weight: .semibold, design: .rounded))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.theme.secondaryText)
                     .lineLimit(1)
             }
             
             VStack(alignment: .leading, spacing: 2) {
                 Text(valueText)
                     .font(.system(size: 20, weight: .bold, design: .rounded))
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(Color.theme.primaryText)
                     .minimumScaleFactor(0.7)
                     .lineLimit(1)
                 
                 Text(subtitle)
                     .font(.system(size: 11, weight: .medium))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.theme.secondaryText)
                     .lineLimit(1)
             }
         }
         .padding(14)
         .background {
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(.ultraThinMaterial)
+                .fill(Color.theme.cardBackground)
                 .overlay(
                     RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .stroke(
-                            LinearGradient(
-                                colors: [.white.opacity(0.4), .white.opacity(0.1)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            ),
-                            lineWidth: 1
-                        )
+                        .stroke(Color.theme.border, lineWidth: 1)
                 )
         }
-        .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 4)
+        .shadow(color: Color.theme.shadow, radius: 8, x: 0, y: 4)
         .scaleEffect(animateScale ? 1 : 0.95)
         .onAppear {
             withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {

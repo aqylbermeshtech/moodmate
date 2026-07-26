@@ -32,4 +32,17 @@ extension Color {
             opacity: Double(a) / 255
         )
     }
+    
+    /// Creates a dynamic color from a hex string that adjusts contrast automatically in Dark Mode.
+    static func adaptiveMoodColor(hex: String, darkOpacityMultiplier: Double = 0.85) -> Color {
+        let baseColor = Color(hex: hex)
+        return Color(UIColor { trait in
+            if trait.userInterfaceStyle == .dark {
+                return UIColor(baseColor).withAlphaComponent(darkOpacityMultiplier)
+            } else {
+                return UIColor(baseColor)
+            }
+        })
+    }
 }
+
