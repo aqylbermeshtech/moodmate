@@ -13,9 +13,7 @@ struct DiscoverCard: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Gradient visual with quote overlay
             ZStack(alignment: .bottomLeading) {
-                // Gradient background
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .fill(
                         LinearGradient(
@@ -28,8 +26,6 @@ struct DiscoverCard: View {
                         )
                     )
                     .frame(height: post.heightClass.heightValue)
-                
-                // Organic overlay shapes for premium effect
                 GeometryReader { geo in
                     Circle()
                         .fill(Color.white.opacity(0.1))
@@ -38,10 +34,7 @@ struct DiscoverCard: View {
                         .offset(x: geo.size.width * 0.2, y: -geo.size.height * 0.1)
                 }
                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                
-                // Quote text
                 VStack(alignment: .leading, spacing: 6) {
-                    // Mood badge
                     HStack(spacing: 4) {
                         Text(post.moodEmoji)
                             .font(.system(size: 10))
@@ -61,15 +54,11 @@ struct DiscoverCard: View {
                 }
                 .padding(12)
             }
-            
-            // Bottom info
             VStack(alignment: .leading, spacing: 6) {
                 HStack(spacing: 6) {
-                    // Mini avatar
                     ZStack {
                         Circle()
                             .fill(Color(hex: post.avatarColorHex))
-                        
                         Text(getInitials(post.userName))
                             .font(.system(size: 8, weight: .bold, design: .rounded))
                             .foregroundStyle(.white)

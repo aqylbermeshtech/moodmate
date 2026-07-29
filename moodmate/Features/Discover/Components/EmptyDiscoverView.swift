@@ -14,7 +14,6 @@ struct EmptyDiscoverView: View {
     
     var body: some View {
         VStack(spacing: 20) {
-            // Illustration using SF Symbol composition
             ZStack {
                 Circle()
                     .fill(Color.teal.opacity(0.06))

@@ -14,12 +14,10 @@ struct DiscoverView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                // Background gradient matching HomeView palette
                 Color.theme.backgroundGradient
                     .ignoresSafeArea()
                 
                 VStack(spacing: 0) {
-                    // Header & Search Bar
                     VStack(spacing: 12) {
                         HStack {
                             Text("Discover")

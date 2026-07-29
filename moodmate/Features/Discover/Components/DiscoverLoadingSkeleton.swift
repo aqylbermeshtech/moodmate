@@ -47,11 +47,8 @@ extension View {
 struct DiscoverLoadingSkeleton: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
-            // Search bar skeleton
             skeletonPill(height: 44)
                 .padding(.horizontal, 20)
-            
-            // Trending moods skeleton
             VStack(alignment: .leading, spacing: 10) {
                 skeletonPill(width: 120, height: 14)
                     .padding(.horizontal, 20)
@@ -65,8 +62,7 @@ struct DiscoverLoadingSkeleton: View {
                     .padding(.horizontal, 20)
                 }
             }
-            
-            // Categories skeleton
+
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
                     ForEach(0..<6, id: \.self) { _ in
@@ -78,8 +74,6 @@ struct DiscoverLoadingSkeleton: View {
                 }
                 .padding(.horizontal, 20)
             }
-            
-            // Masonry grid skeleton
             HStack(alignment: .top, spacing: 12) {
                 VStack(spacing: 12) {
                     skeletonRect(height: 220, cornerRadius: 16)

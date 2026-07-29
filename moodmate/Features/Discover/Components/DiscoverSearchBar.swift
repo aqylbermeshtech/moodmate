@@ -19,7 +19,6 @@ struct DiscoverSearchBar: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // Search field row
             HStack(spacing: 10) {
                 HStack(spacing: 10) {
                     Image(systemName: "magnifyingglass")
@@ -78,8 +77,7 @@ struct DiscoverSearchBar: View {
                     }
                 }
             }
-            
-            // Recent searches dropdown
+
             if isSearchActive && searchText.isEmpty && !recentSearches.isEmpty {
                 VStack(alignment: .leading, spacing: 0) {
                     HStack {

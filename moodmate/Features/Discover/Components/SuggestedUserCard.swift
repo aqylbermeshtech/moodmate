@@ -13,7 +13,6 @@ struct SuggestedUserCard: View {
     
     var body: some View {
         VStack(spacing: 12) {
-            // Avatar
             ZStack(alignment: .bottomTrailing) {
                 ZStack {
                     Circle()

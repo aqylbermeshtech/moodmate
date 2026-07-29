@@ -53,10 +53,8 @@ final class DiscoverService {
         }
         
         if let category {
-            // Simulate category filtering by using caption keywords
             let keyword = category.name.lowercased()
             filtered = filtered.filter { $0.caption.lowercased().contains(keyword) || $0.quoteText.lowercased().contains(keyword) }
-            // If no exact match, return a shuffled subset
             if filtered.isEmpty {
                 filtered = allPosts.shuffled().prefix(30).map { $0 }
             }
