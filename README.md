@@ -1,4 +1,4 @@
-# MoodMate 
+# MoodMate | Not completed
 
 MoodMate is a social networking iOS application that encourages users to capture and share their daily emotions through photography. Every day, users select their current mood, upload a photo that represents how they feel, and connect with others through authentic daily moments.
 
