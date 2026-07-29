@@ -38,7 +38,7 @@ struct GreetingHeader: View {
                         endPoint: .bottomTrailing
                     )
                     
-                    Text(getInitials())
+                    Text(getInitials(viewModel.currentUserDisplayName, fallback: "U"))
                         .font(.system(size: 16, weight: .bold, design: .rounded))
                         .foregroundStyle(.white)
                 }
@@ -54,16 +54,6 @@ struct GreetingHeader: View {
         }
     }
     
-    private func getInitials() -> String {
-        let name = viewModel.currentUserDisplayName
-        let parts = name.split(separator: " ")
-        if parts.count >= 2, let first = parts[0].first, let second = parts[1].first {
-            return "\(first)\(second)".uppercased()
-        } else if let first = name.first {
-            return String(first).uppercased()
-        }
-        return "U"
-    }
 }
 
 // Reusable scale effect button style for premium tactile feedback

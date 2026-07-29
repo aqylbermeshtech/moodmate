@@ -76,15 +76,6 @@ struct FriendAvatar: View {
         .buttonStyle(ScaleButtonStyle())
     }
     
-    private func getInitials(_ name: String) -> String {
-        let parts = name.split(separator: " ")
-        if parts.count >= 2, let first = parts[0].first, let second = parts[1].first {
-            return "\(first)\(second)".uppercased()
-        } else if let first = name.first {
-            return String(first).uppercased()
-        }
-        return "?"
-    }
 }
 
 #Preview {
