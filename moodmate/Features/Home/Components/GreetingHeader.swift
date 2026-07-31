@@ -18,7 +18,7 @@ struct GreetingHeader: View {
                     .font(.system(size: 16, weight: .regular))
                     .foregroundStyle(Color.theme.secondaryText)
                 
-                Text("\(viewModel.currentUserDisplayName) 👋")
+                Text("\(viewModel.currentUserDisplayName)")
                     .font(.system(size: 28, weight: .bold, design: .rounded))
                     .foregroundStyle(Color.theme.primaryText)
                 

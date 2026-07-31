@@ -262,7 +262,8 @@ struct EditProfileView: View {
                         text: $editViewModel.displayName,
                         icon: "person"
                     )
-                    .onChange(of: editViewModel.displayName) { _ in
+                    // FIX 6a: Updated to 2-argument onChange (required in Xcode 16 / Swift 5.9+)
+                    .onChange(of: editViewModel.displayName) { _, _ in
                         editViewModel.validateDisplayName()
                     }
                     
@@ -288,7 +289,8 @@ struct EditProfileView: View {
                     )
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled(true)
-                    .onChange(of: editViewModel.username) { _ in
+                    // FIX 6b: Updated to 2-argument onChange
+                    .onChange(of: editViewModel.username) { _, _ in
                         editViewModel.validateUsername()
                     }
                     
@@ -326,7 +328,8 @@ struct EditProfileView: View {
                         )
                         .font(.system(size: 15))
                         .foregroundStyle(Color.theme.primaryText)
-                        .onChange(of: editViewModel.bio) { _ in
+                        // FIX 6c: Updated to 2-argument onChange
+                        .onChange(of: editViewModel.bio) { _, _ in
                             editViewModel.validateBio()
                         }
                     
@@ -488,7 +491,8 @@ struct PhotosPickerWrapper: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-            .onChange(of: selectedItem) { newItem in
+            // FIX 7: Updated to 2-argument onChange
+            .onChange(of: selectedItem) { _, newItem in
                 guard let newItem else { return }
                 Task {
                     if let data = try? await newItem.loadTransferable(type: Data.self),

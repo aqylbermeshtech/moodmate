@@ -12,6 +12,8 @@ protocol ProfileServiceProtocol: AnyObject {
     var profileUpdatesPublisher: AnyPublisher<UserProfile, Never> { get }
     
     func getProfile(forId id: String?) -> UserProfile?
+    // FIX 3: Added missing `getPosts(forId:)` that ProfileViewModel calls through this protocol
+    func getPosts(forId id: String?) -> [ProfilePost]
     func getCurrentUserId() -> String
     func fetchProfile(forId id: String?) async throws -> UserProfile?
     func refreshProfile(forId id: String?) async throws -> UserProfile?

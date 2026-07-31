@@ -223,6 +223,11 @@ final class ProfileService: ProfileServiceProtocol {
         let currentId = user.uid
         migrateMockProfileToAuthenticatedUser(currentId: currentId)
         
+        // If a locally-persisted profile already exists, use it as-is.
+        // Only bootstrap displayName/username from Firebase Auth on first creation —
+        // never overwrite saved edits with stale Firebase Auth data.
+        let isNewProfile = profiles[currentId] == nil
+        
         var profile = profiles[currentId] ?? UserProfile(
             id: currentId,
             displayName: user.displayName ?? "John Doe",
@@ -241,12 +246,16 @@ final class ProfileService: ProfileServiceProtocol {
             moodHistory: []
         )
         
-        if let displayName = user.displayName, !displayName.isEmpty {
-            profile.displayName = displayName
-        } else if let email = user.email {
-            let prefix = email.components(separatedBy: "@").first ?? "john"
-            profile.displayName = prefix.capitalized
-            profile.username = prefix.lowercased()
+        // Only apply Firebase Auth name/username when bootstrapping a brand-new profile.
+        // For existing profiles, the user's saved edits take priority.
+        if isNewProfile {
+            if let displayName = user.displayName, !displayName.isEmpty {
+                profile.displayName = displayName
+            } else if let email = user.email {
+                let prefix = email.components(separatedBy: "@").first ?? "john"
+                profile.displayName = prefix.capitalized
+                profile.username = prefix.lowercased()
+            }
         }
         
         if profile.achievements.isEmpty {

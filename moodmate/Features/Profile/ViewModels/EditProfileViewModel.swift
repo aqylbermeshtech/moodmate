@@ -117,6 +117,8 @@ final class EditProfileViewModel: ObservableObject {
     
     // MARK: - Validation
     
+    // Mutating validation: writes error messages to @Published vars.
+    // Call this only from user-triggered actions (onChange, save), never during view rendering.
     @discardableResult
     func validateProfile() -> Bool {
         let isNameValid = validateDisplayName()
@@ -124,6 +126,22 @@ final class EditProfileViewModel: ObservableObject {
         let isBioValid = validateBio()
         
         return isNameValid && isUserValid && isBioValid
+    }
+    
+    // Pure read-only check used by `isFormValid` so SwiftUI can safely call it during rendering
+    // without mutating any @Published properties (which would cause the
+    // "Publishing changes from within view updates" runtime warning/glitch).
+    private var isDisplayNameValid: Bool {
+        let trimmed = displayName.trimmingCharacters(in: .whitespacesAndNewlines)
+        return !trimmed.isEmpty && trimmed.count <= maxDisplayNameLength
+    }
+    
+    private var isUsernameValid: Bool {
+        profileService.validateUsername(username: username, currentUserId: userId).isValid
+    }
+    
+    private var isBioValid: Bool {
+        bio.count <= maxBioLength
     }
     
     func resetSuccessState() {
@@ -167,8 +185,9 @@ final class EditProfileViewModel: ObservableObject {
         maxBioLength - bio.count
     }
     
+    // Pure computed property — safe to call from view body/toolbar without side effects.
     var isFormValid: Bool {
-        validateProfile()
+        isDisplayNameValid && isUsernameValid && isBioValid
     }
     
     // MARK: - Save Profile

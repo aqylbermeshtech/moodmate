@@ -31,7 +31,8 @@ struct PostTextEditor: View {
                     .foregroundStyle(Color.theme.primaryText)
                     .scrollContentBackground(.hidden)
                     .frame(minHeight: 120, maxHeight: 220)
-                    .onChange(of: text) { newValue in
+                    // FIX 4: Updated to 2-argument onChange (required in Xcode 16 / Swift 5.9+)
+                    .onChange(of: text) { _, newValue in
                         if newValue.count > maxLength {
                             text = String(newValue.prefix(maxLength))
                         }

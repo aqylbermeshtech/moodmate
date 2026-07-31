@@ -52,7 +52,8 @@ struct HomeView: View {
             Color.theme.backgroundGradient
                 .ignoresSafeArea()
         }
-        .safeAreaBar(edge: .bottom) {
+        // FIX 1: Replaced non-existent `.safeAreaBar` with SwiftUI's built-in `.safeAreaInset`
+        .safeAreaInset(edge: .bottom) {
             BottomNavigationBar(selectedTab: $selectedTab) {
                 viewModel.showCreatePostSheet = true
             }
@@ -94,7 +95,7 @@ struct HomeView: View {
 
         }
         .scrollIndicators(.hidden)
-        .scrollEdgeEffectStyle(.soft, for: .bottom)
+        // FIX 2: Removed `.scrollEdgeEffectStyle` — it requires iOS 26+ and is unavailable on earlier targets
     }
     
     // MARK: - Friends Section
