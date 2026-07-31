@@ -56,14 +56,12 @@ struct DiscoverCard: View {
             }
             VStack(alignment: .leading, spacing: 6) {
                 HStack(spacing: 6) {
-                    ZStack {
-                        Circle()
-                            .fill(Color(hex: post.avatarColorHex))
-                        Text(getInitials(post.userName))
-                            .font(.system(size: 8, weight: .bold, design: .rounded))
-                            .foregroundStyle(.white)
-                    }
-                    .frame(width: 20, height: 20)
+                    AvatarView(
+                        name: post.userName,
+                        colorHex: post.avatarColorHex,
+                        size: 20,
+                        showBorder: false
+                    )
                     
                     Text(post.userName)
                         .font(.system(size: 11, weight: .semibold, design: .rounded))

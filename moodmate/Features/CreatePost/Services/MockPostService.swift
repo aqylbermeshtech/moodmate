@@ -1,0 +1,180 @@
+//
+//  MockPostService.swift
+//  moodmate
+//
+//  Created by Antigravity on 31.07.2026.
+//
+
+import Foundation
+import Combine
+
+final class MockPostService: PostServiceProtocol {
+    static let shared = MockPostService()
+    
+    @Published private var posts: [PostModel] = []
+    
+    var postsPublisher: AnyPublisher<[PostModel], Never> {
+        $posts.eraseToAnyPublisher()
+    }
+    
+    private var cancellables = Set<AnyCancellable>()
+    
+    init() {
+        seedInitialPosts()
+        observeProfileUpdates()
+    }
+    
+    private func observeProfileUpdates() {
+        ProfileService.shared.profileUpdatesPublisher
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] updatedProfile in
+                guard let self = self else { return }
+                for i in 0..<self.posts.count {
+                    if self.posts[i].author.id == updatedProfile.id {
+                        var updatedAuthor = self.posts[i].author
+                        updatedAuthor.name = updatedProfile.displayName
+                        updatedAuthor.username = updatedProfile.username
+                        updatedAuthor.avatarColorHex = updatedProfile.avatarColorHex
+                        updatedAuthor.avatarImageData = updatedProfile.avatarImageData
+                        self.posts[i].author = updatedAuthor
+                    }
+                }
+            }
+            .store(in: &cancellables)
+    }
+    
+    func fetchPosts() async throws -> [PostModel] {
+        // Simulate minor network delay
+        try await Task.sleep(nanoseconds: 150_000_000)
+        return posts
+    }
+    
+    func createPost(_ post: PostModel) async throws -> PostModel {
+        // Simulate network latency for publishing
+        try await Task.sleep(nanoseconds: 400_000_000)
+        posts.insert(post, at: 0)
+        return post
+    }
+    
+    func deletePost(id: String) async throws {
+        try await Task.sleep(nanoseconds: 100_000_000)
+        posts.removeAll { $0.id == id }
+    }
+    
+    func toggleLike(postId: String) async throws {
+        if let index = posts.firstIndex(where: { $0.id == postId }) {
+            posts[index].isLiked.toggle()
+            if posts[index].isLiked {
+                posts[index].likesCount += 1
+            } else {
+                posts[index].likesCount -= 1
+            }
+        }
+    }
+    
+    func toggleBookmark(postId: String) async throws {
+        if let index = posts.firstIndex(where: { $0.id == postId }) {
+            posts[index].isBookmarked.toggle()
+        }
+    }
+    
+    private func seedInitialPosts() {
+        posts = [
+            PostModel(
+                id: "p1",
+                author: MoodUser(id: "2", name: "Emma", username: "emma_zen", avatarImageName: nil, avatarColorHex: "4DABF7", currentMoodEmoji: "😌", currentMoodText: "Calm", currentMoodColorHex: "4A5568"),
+                mood: "Calm",
+                moodEmoji: "😌",
+                moodColorHex: "4A5568",
+                text: "Taking a conscious pause today. A reminder that it is okay to just be, rather than always do. 🌱✨",
+                images: [],
+                visibility: .publicVisibility,
+                createdAt: Date().addingTimeInterval(-7200),
+                likesCount: 24,
+                commentsCount: 3,
+                bookmarksCount: 5,
+                isLiked: false,
+                isBookmarked: false,
+                quoteText: "Breathe in experience, breathe out poetry.",
+                gradientStartHex: "38B2AC",
+                gradientEndHex: "805AD5"
+            ),
+            PostModel(
+                id: "p2",
+                author: MoodUser(id: "3", name: "Daniel", username: "daniel_sleeps", avatarImageName: nil, avatarColorHex: "BE4BDF", currentMoodEmoji: "😴", currentMoodText: "Sleepy", currentMoodColorHex: "667EEA"),
+                mood: "Sleepy",
+                moodEmoji: "😴",
+                moodColorHex: "667EEA",
+                text: "Listening to my body and getting to sleep early tonight. Recharge session starts now. 💤😴 #nightroutine #rest",
+                images: [],
+                visibility: .publicVisibility,
+                createdAt: Date().addingTimeInterval(-10800),
+                likesCount: 15,
+                commentsCount: 1,
+                bookmarksCount: 2,
+                isLiked: true,
+                isBookmarked: false,
+                quoteText: "Rest is a fine medicine.",
+                gradientStartHex: "1A365D",
+                gradientEndHex: "667EEA"
+            ),
+            PostModel(
+                id: "p3",
+                author: MoodUser(id: "1", name: "Alex", username: "alex_active", avatarImageName: nil, avatarColorHex: "FF6B6B", currentMoodEmoji: "😊", currentMoodText: "Happy", currentMoodColorHex: "38B2AC"),
+                mood: "Happy",
+                moodEmoji: "😊",
+                moodColorHex: "38B2AC",
+                text: "Morning run cleared my head. Endorphins are flowing! Highly recommend starting your day active! 🏃‍♂️☀️ #fitness #mindset",
+                images: [],
+                visibility: .publicVisibility,
+                createdAt: Date().addingTimeInterval(-18000),
+                likesCount: 42,
+                commentsCount: 8,
+                bookmarksCount: 12,
+                isLiked: false,
+                isBookmarked: true,
+                quoteText: "Motion creates emotion.",
+                gradientStartHex: "ED64A6",
+                gradientEndHex: "ECC94B"
+            ),
+            PostModel(
+                id: "p4",
+                author: MoodUser(id: "4", name: "Chloe", username: "chloe_shine", avatarImageName: nil, avatarColorHex: "FAB005", currentMoodEmoji: "🤩", currentMoodText: "Excited", currentMoodColorHex: "ED64A6"),
+                mood: "Excited",
+                moodEmoji: "🤩",
+                moodColorHex: "ED64A6",
+                text: "We launched our beta today! Feeling incredibly excited and grateful for the team's effort! 🚀🎉🙌 #launchday",
+                images: [],
+                visibility: .publicVisibility,
+                createdAt: Date().addingTimeInterval(-21600),
+                likesCount: 56,
+                commentsCount: 12,
+                bookmarksCount: 4,
+                isLiked: false,
+                isBookmarked: false,
+                quoteText: "Celebrate the tiny wins.",
+                gradientStartHex: "ED64A6",
+                gradientEndHex: "FEFCBF"
+            ),
+            PostModel(
+                id: "p5",
+                author: MoodUser(id: "5", name: "Marcus", username: "marcus_mind", avatarImageName: nil, avatarColorHex: "12B886", currentMoodEmoji: "🧠", currentMoodText: "Mindful", currentMoodColorHex: "805AD5"),
+                mood: "Mindful",
+                moodEmoji: "🧠",
+                moodColorHex: "805AD5",
+                text: "Enjoyed a quiet matcha latte. Mindful sipping: focusing on the warmth, the taste, and the silence. 🍵🧘‍♂️",
+                images: [],
+                visibility: .publicVisibility,
+                createdAt: Date().addingTimeInterval(-28800),
+                likesCount: 31,
+                commentsCount: 4,
+                bookmarksCount: 3,
+                isLiked: false,
+                isBookmarked: false,
+                quoteText: "Be here now.",
+                gradientStartHex: "12B886",
+                gradientEndHex: "38B2AC"
+            )
+        ]
+    }
+}

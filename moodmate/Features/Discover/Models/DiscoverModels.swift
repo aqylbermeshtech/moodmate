@@ -71,14 +71,39 @@ struct DiscoverCategory: Identifiable, Equatable, Codable {
 // MARK: - Suggested User
 struct SuggestedUser: Identifiable, Equatable, Codable {
     let id: String
-    let displayName: String
-    let username: String
-    let avatarColorHex: String
-    let bio: String
-    let moodEmoji: String?
-    let moodText: String?
-    let moodColorHex: String?
+    var displayName: String
+    var username: String
+    var avatarColorHex: String
+    var avatarImageData: Data?
+    var bio: String
+    var moodEmoji: String?
+    var moodText: String?
+    var moodColorHex: String?
     var isFollowing: Bool
+    
+    init(
+        id: String,
+        displayName: String,
+        username: String,
+        avatarColorHex: String = "38B2AC",
+        avatarImageData: Data? = nil,
+        bio: String = "",
+        moodEmoji: String? = nil,
+        moodText: String? = nil,
+        moodColorHex: String? = nil,
+        isFollowing: Bool = false
+    ) {
+        self.id = id
+        self.displayName = displayName
+        self.username = username
+        self.avatarColorHex = avatarColorHex
+        self.avatarImageData = avatarImageData
+        self.bio = bio
+        self.moodEmoji = moodEmoji
+        self.moodText = moodText
+        self.moodColorHex = moodColorHex
+        self.isFollowing = isFollowing
+    }
 }
 
 // MARK: - Search Result
@@ -97,6 +122,7 @@ struct SearchResult: Identifiable, Equatable {
     var userName: String?
     var username: String?
     var avatarColorHex: String?
+    var avatarImageData: Data?
     var userMoodEmoji: String?
     var userBio: String?
     

@@ -25,13 +25,15 @@ struct HomeView: View {
                 .allowsHitTesting(selectedTab == .discover)
                 .zIndex(selectedTab == .discover ? 1 : 0)
             
-            TabPlaceholderView(title: "Log a Moment", systemImage: "plus.circle") {}
-                .opacity(selectedTab == .add ? 1 : 0)
-                .allowsHitTesting(selectedTab == .add)
-                .zIndex(selectedTab == .add ? 1 : 0)
+            TabPlaceholderView(title: "Log a Moment", systemImage: "plus.circle") {
+                viewModel.showCreatePostSheet = true
+            }
+            .opacity(selectedTab == .add ? 1 : 0)
+            .allowsHitTesting(selectedTab == .add)
+            .zIndex(selectedTab == .add ? 1 : 0)
             
             InsightsView(onAddPostTap: {
-                viewModel.showMoodPickerSheet = true
+                viewModel.showCreatePostSheet = true
             })
             .opacity(selectedTab == .insights ? 1 : 0)
             .allowsHitTesting(selectedTab == .insights)
@@ -52,7 +54,7 @@ struct HomeView: View {
         }
         .safeAreaBar(edge: .bottom) {
             BottomNavigationBar(selectedTab: $selectedTab) {
-                viewModel.showMoodPickerSheet = true
+                viewModel.showCreatePostSheet = true
             }
             .padding(.bottom, 8)
         }
@@ -60,6 +62,11 @@ struct HomeView: View {
             MoodPickerSheet(viewModel: viewModel)
                 .presentationDetents([.height(380)])
                 .presentationDragIndicator(.hidden)
+        }
+        .fullScreenCover(isPresented: $viewModel.showCreatePostSheet) {
+            CreatePostView { newPost in
+                viewModel.addNewlyCreatedPost(newPost)
+            }
         }
     }
     
@@ -137,7 +144,7 @@ struct HomeView: View {
                                 emoji: "💬",
                                 text: "Commented on @\(post.user.username)'s post",
                                 colorHex: "38B2AC"
-                            )
+                                )
                         }
                     )
                 }

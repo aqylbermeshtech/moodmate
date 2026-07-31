@@ -99,37 +99,15 @@ struct FollowListView: View {
     // MARK: - User Row View
     private func userRow(user: UserProfile) -> some View {
         HStack(spacing: 12) {
-            // Gradient Avatar
-            ZStack(alignment: .bottomTrailing) {
-                ZStack {
-                    Circle()
-                        .fill(
-                            LinearGradient(
-                                colors: [Color(hex: user.avatarColorHex).opacity(0.85), Color(hex: user.avatarColorHex)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                    
-                    Text(getInitials(user.displayName))
-                        .font(.system(size: 14, weight: .bold, design: .rounded))
-                        .foregroundStyle(.white)
-                }
-                .frame(width: 44, height: 44)
-                
-                // Mini mood emoji badge overlay
-                if let emoji = user.currentMoodEmoji {
-                    ZStack {
-                        Circle()
-                            .fill(Color.theme.surface)
-                            .frame(width: 18, height: 18)
-                        Text(emoji)
-                            .font(.system(size: 11))
-                    }
-                    .offset(x: 2, y: 2)
-                    .shadow(color: Color.theme.shadow, radius: 2)
-                }
-            }
+            // Avatar
+            AvatarView(
+                imageData: user.avatarImageData,
+                name: user.displayName,
+                colorHex: user.avatarColorHex,
+                size: 44,
+                showBorder: true,
+                moodEmoji: user.currentMoodEmoji
+            )
             
             VStack(alignment: .leading, spacing: 2) {
                 Text(user.displayName)

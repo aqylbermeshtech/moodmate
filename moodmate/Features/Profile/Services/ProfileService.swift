@@ -5,18 +5,35 @@
 //  Created by Nurtore on 23.07.2026.
 //
 
-import Foundation
+import UIKit
 import FirebaseAuth
+import Combine
 
-final class ProfileService {
+final class ProfileService: ProfileServiceProtocol {
     static let shared = ProfileService()
     
     private var profiles: [String: UserProfile] = [:]
     private var posts: [String: [ProfilePost]] = [:]
     
+    private let profileSubject = PassthroughSubject<UserProfile, Never>()
+    var profileUpdatesPublisher: AnyPublisher<UserProfile, Never> {
+        profileSubject.eraseToAnyPublisher()
+    }
+    
+    private let storageKey = "moodmate_user_profiles_v2.json"
+    private let fileManager = FileManager.default
+    
+    private var storageFileURL: URL {
+        let paths = fileManager.urls(for: .documentDirectory, in: .userDomainMask)
+        return paths[0].appendingPathComponent(storageKey)
+    }
+    
     private init() {
         setupMockData()
+        loadPersistedProfiles()
     }
+    
+    // MARK: - Synchronous Fetching
     
     func getProfile(forId id: String?) -> UserProfile? {
         let actualId = id ?? getCurrentUserId()
@@ -28,21 +45,130 @@ final class ProfileService {
         return posts[actualId] ?? []
     }
     
+    // MARK: - Async Methods
+    
+    func fetchProfile(forId id: String?) async throws -> UserProfile? {
+        // Simulate subtle network latency
+        try await Task.sleep(nanoseconds: 100_000_000)
+        let actualId = id ?? getCurrentUserId()
+        return profiles[actualId]
+    }
+    
+    func refreshProfile(forId id: String?) async throws -> UserProfile? {
+        try await Task.sleep(nanoseconds: 50_000_000)
+        loadPersistedProfiles()
+        let actualId = id ?? getCurrentUserId()
+        return profiles[actualId]
+    }
+    
     func updateProfile(
         id: String,
         displayName: String,
         username: String,
         bio: String,
-        avatarColorHex: String
-    ) -> UserProfile? {
-        guard var profile = profiles[id] else { return nil }
+        location: String? = nil,
+        birthday: Date? = nil,
+        privacySetting: PrivacySetting = .publicVisibility,
+        avatarColorHex: String,
+        avatarImageData: Data? = nil,
+        clearAvatar: Bool = false
+    ) async throws -> UserProfile {
+        // Simulate network processing latency
+        try await Task.sleep(nanoseconds: 200_000_000)
+        
+        let actualId = id.isEmpty ? getCurrentUserId() : id
+        guard var profile = profiles[actualId] else {
+            throw NSError(domain: "ProfileService", code: 404, userInfo: [NSLocalizedDescriptionKey: "User profile not found."])
+        }
+        
         profile.displayName = displayName
-        profile.username = username
+        profile.username = username.lowercased()
         profile.bio = bio
+        profile.location = location
+        profile.birthday = birthday
+        profile.privacySetting = privacySetting
         profile.avatarColorHex = avatarColorHex
-        profiles[id] = profile
+        
+        if clearAvatar {
+            profile.avatarImageData = nil
+            profile.avatarImageName = nil
+            try? await ProfileImageService.shared.deleteAvatar(userId: actualId)
+        } else if let newAvatarData = avatarImageData {
+            let compressedData = try await ProfileImageService.shared.saveAvatar(data: newAvatarData, userId: actualId)
+            profile.avatarImageData = compressedData
+        }
+        
+        profiles[actualId] = profile
+        persistProfiles()
+        
+        // Notify subscribers across the entire application
+        profileSubject.send(profile)
+        
         return profile
     }
+    
+    func uploadAvatar(image: UIImage, userId: String) async throws -> Data {
+        guard let data = image.jpegData(compressionQuality: 0.8) else {
+            throw ProfileImageError.compressionFailed
+        }
+        let savedData = try await ProfileImageService.shared.saveAvatar(data: data, userId: userId)
+        
+        if var profile = profiles[userId] {
+            profile.avatarImageData = savedData
+            profiles[userId] = profile
+            persistProfiles()
+            profileSubject.send(profile)
+        }
+        
+        return savedData
+    }
+    
+    func deleteAvatar(userId: String) async throws {
+        try await ProfileImageService.shared.deleteAvatar(userId: userId)
+        if var profile = profiles[userId] {
+            profile.avatarImageData = nil
+            profile.avatarImageName = nil
+            profiles[userId] = profile
+            persistProfiles()
+            profileSubject.send(profile)
+        }
+    }
+    
+    func validateUsername(username: String, currentUserId: String) -> (isValid: Bool, error: String?) {
+        let cleaned = username
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased()
+        
+        if cleaned.isEmpty {
+            return (false, "Username cannot be empty.")
+        }
+        
+        if cleaned.count < 3 {
+            return (false, "Username must be at least 3 characters.")
+        }
+        
+        if cleaned.count > 30 {
+            return (false, "Username cannot exceed 30 characters.")
+        }
+        
+        let validCharacters = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "_"))
+        if cleaned.unicodeScalars.contains(where: { !validCharacters.contains($0) }) {
+            return (false, "Only letters, numbers, and underscores are allowed.")
+        }
+        
+        // Check uniqueness against existing profiles
+        let isTaken = profiles.values.contains { profile in
+            profile.id != currentUserId && profile.username.lowercased() == cleaned
+        }
+        
+        if isTaken {
+            return (false, "Username is already taken.")
+        }
+        
+        return (true, nil)
+    }
+    
+    // MARK: - Follow Logic
     
     func toggleFollow(targetId: String) -> UserProfile? {
         guard var targetProfile = profiles[targetId] else { return nil }
@@ -61,12 +187,16 @@ final class ProfileService {
         
         profiles[targetId] = targetProfile
         profiles[currentId] = currentProfile
+        persistProfiles()
+        
+        profileSubject.send(targetProfile)
+        profileSubject.send(currentProfile)
+        
         return targetProfile
     }
     
     func getFollowers(forId id: String?) -> [UserProfile] {
         let actualId = id ?? getCurrentUserId()
-        // Return a mock list of followers based on other profiles
         return profiles.values
             .filter { $0.id != actualId }
             .shuffled()
@@ -76,7 +206,6 @@ final class ProfileService {
     
     func getFollowing(forId id: String?) -> [UserProfile] {
         let actualId = id ?? getCurrentUserId()
-        // If it's the current user, return users we follow (whose isFollowing is true or random subset)
         if actualId == getCurrentUserId() {
             return profiles.values.filter { $0.id != actualId && $0.isFollowing }
         } else {
@@ -87,6 +216,8 @@ final class ProfileService {
                 .map { $0 }
         }
     }
+    
+    // MARK: - Firebase Syncing
     
     func syncWithFirebaseUser(user: User) {
         let currentId = user.uid
@@ -118,7 +249,6 @@ final class ProfileService {
             profile.username = prefix.lowercased()
         }
         
-        // Re-generate achievements & history if they are empty
         if profile.achievements.isEmpty {
             profile.achievements = defaultAchievements()
         }
@@ -127,10 +257,36 @@ final class ProfileService {
         }
         
         profiles[currentId] = profile
-        
-        // Setup initial posts if empty
         if posts[currentId] == nil {
             posts[currentId] = defaultUserPosts()
+        }
+        
+        persistProfiles()
+        profileSubject.send(profile)
+    }
+    
+    // MARK: - Persistence Helpers
+    
+    private func persistProfiles() {
+        do {
+            let encoder = JSONEncoder()
+            encoder.outputFormatting = .prettyPrinted
+            let data = try encoder.encode(profiles)
+            try data.write(to: storageFileURL, options: .atomic)
+        } catch {
+            print("ProfileService: Failed to persist profiles - \(error)")
+        }
+    }
+    
+    private func loadPersistedProfiles() {
+        guard fileManager.fileExists(atPath: storageFileURL.path),
+              let data = try? Data(contentsOf: storageFileURL),
+              let decoded = try? JSONDecoder().decode([String: UserProfile].self, from: data) else {
+            return
+        }
+        
+        for (id, profile) in decoded {
+            profiles[id] = profile
         }
     }
     
@@ -138,7 +294,7 @@ final class ProfileService {
     
     private static let mockUserId = "current_user_mock"
     
-    private func getCurrentUserId() -> String {
+    func getCurrentUserId() -> String {
         return Auth.auth().currentUser?.uid ?? Self.mockUserId
     }
     
@@ -161,13 +317,15 @@ final class ProfileService {
     private func setupMockData() {
         let currentId = getCurrentUserId()
         
-        // 1. Current User
         var currentUserProfile = UserProfile(
             id: currentId,
             displayName: "John",
             username: "johndoe",
-            avatarColorHex: "38B2AC", // Teal
+            avatarColorHex: "38B2AC",
             bio: "Mindfulness traveler. Tracking my moods and finding inner peace. 🌱🧘‍♂️",
+            location: "San Francisco, CA",
+            birthday: nil,
+            privacySetting: .publicVisibility,
             currentMoodEmoji: "😊",
             currentMoodText: "Happy",
             currentMoodColorHex: "38B2AC",
@@ -193,14 +351,14 @@ final class ProfileService {
         profiles[currentId] = currentUserProfile
         posts[currentId] = defaultUserPosts()
         
-        // 2. Friends Profiles (corresponds to HomeViewModel users)
-        // Alex
         profiles["1"] = UserProfile(
             id: "1",
             displayName: "Alex",
             username: "alex_active",
             avatarColorHex: "FF6B6B",
             bio: "Endorphin addict. Morning run enthusiast. Motion creates emotion! 🏃‍♂️☀️",
+            location: "Seattle, WA",
+            privacySetting: .publicVisibility,
             currentMoodEmoji: "😊",
             currentMoodText: "Happy",
             currentMoodColorHex: "38B2AC",
@@ -215,40 +373,15 @@ final class ProfileService {
             ],
             moodHistory: defaultMoodHistory(shiftDays: 1, colorHex: "38B2AC", emoji: "😊", text: "Happy")
         )
-        posts["1"] = [
-            ProfilePost(
-                id: "p3",
-                quoteText: "Motion creates emotion.",
-                caption: "Morning run cleared my head. Endorphins are flowing! Highly recommend starting your day active! 🏃‍♂️☀️",
-                postGradientStartHex: "ED64A6",
-                postGradientEndHex: "ECC94B",
-                likesCount: 42,
-                commentsCount: 8,
-                isLiked: false,
-                isBookmarked: true,
-                createdAt: Date().addingTimeInterval(-18000)
-            ),
-            ProfilePost(
-                id: "p7",
-                quoteText: "Joy is what happens when we allow ourselves to recognize how good things are.",
-                caption: "Epic sunset view from the peak. Captured the perfect warm pink hues. 🌄🏔️",
-                postGradientStartHex: "F56565",
-                postGradientEndHex: "ED64A6",
-                likesCount: 65,
-                commentsCount: 11,
-                isLiked: true,
-                isBookmarked: true,
-                createdAt: Date().addingTimeInterval(-86400)
-            )
-        ]
         
-        // Emma
         profiles["2"] = UserProfile(
             id: "2",
             displayName: "Emma",
             username: "emma_zen",
             avatarColorHex: "4DABF7",
             bio: "Breathe in experience, breathe out poetry. Yoga teacher & mindfulness explorer. 🌱✨",
+            location: "Portland, OR",
+            privacySetting: .publicVisibility,
             currentMoodEmoji: "😌",
             currentMoodText: "Calm",
             currentMoodColorHex: "4A5568",
@@ -256,47 +389,22 @@ final class ProfileService {
             postsCount: 2,
             followersCount: 512,
             followingCount: 342,
-            isFollowing: true, // Followed by current user initially
+            isFollowing: true,
             achievements: [
                 Achievement(title: "Zen Master", description: "Completed 20 mindfulness check-ins", icon: "leaf.fill", unlockedAt: Date().addingTimeInterval(-86400 * 20)),
                 Achievement(title: "Early Bird", description: "Logged mood before 7:00 AM", icon: "sun.max.fill", unlockedAt: Date().addingTimeInterval(-86400 * 3))
             ],
             moodHistory: defaultMoodHistory(shiftDays: 0, colorHex: "4A5568", emoji: "😌", text: "Calm")
         )
-        posts["2"] = [
-            ProfilePost(
-                id: "p1",
-                quoteText: "Breathe in experience, breathe out poetry.",
-                caption: "Taking a conscious pause today. A reminder that it is okay to just be, rather than always do. 🌱✨",
-                postGradientStartHex: "38B2AC",
-                postGradientEndHex: "805AD5",
-                likesCount: 24,
-                commentsCount: 3,
-                isLiked: false,
-                isBookmarked: false,
-                createdAt: Date().addingTimeInterval(-7200)
-            ),
-            ProfilePost(
-                id: "p6",
-                quoteText: "Peace is not the absence of trouble, but the presence of grace.",
-                caption: "Grateful for a quiet Sunday evening. Reflected on what brought joy this week. What are you grateful for? ❤️",
-                postGradientStartHex: "805AD5",
-                postGradientEndHex: "B7791F",
-                likesCount: 48,
-                commentsCount: 9,
-                isLiked: false,
-                isBookmarked: false,
-                createdAt: Date().addingTimeInterval(-86400)
-            )
-        ]
         
-        // Daniel
         profiles["3"] = UserProfile(
             id: "3",
             displayName: "Daniel",
             username: "daniel_sleeps",
             avatarColorHex: "BE4BDF",
             bio: "Quiet seeker. Rain lover. Early to sleep, early to rise. 😴💤",
+            location: "Vancouver, BC",
+            privacySetting: .friendsOnly,
             currentMoodEmoji: "😴",
             currentMoodText: "Sleepy",
             currentMoodColorHex: "667EEA",
@@ -310,40 +418,15 @@ final class ProfileService {
             ],
             moodHistory: defaultMoodHistory(shiftDays: 2, colorHex: "667EEA", emoji: "😴", text: "Sleepy")
         )
-        posts["3"] = [
-            ProfilePost(
-                id: "p2",
-                quoteText: "Rest is a fine medicine.",
-                caption: "Listening to my body and getting to sleep early tonight. Recharge session starts now. 💤😴",
-                postGradientStartHex: "1A365D",
-                postGradientEndHex: "667EEA",
-                likesCount: 15,
-                commentsCount: 1,
-                isLiked: true,
-                isBookmarked: false,
-                createdAt: Date().addingTimeInterval(-10800)
-            ),
-            ProfilePost(
-                id: "p9",
-                quoteText: "Sleep is the best meditation.",
-                caption: "Rain tapping on the window pane. Safe to say I'm sleeping in late tomorrow. Rainy night relaxation. 🌧️🕯️",
-                postGradientStartHex: "000000",
-                postGradientEndHex: "2D3748",
-                likesCount: 29,
-                commentsCount: 5,
-                isLiked: false,
-                isBookmarked: false,
-                createdAt: Date().addingTimeInterval(-86400 * 2)
-            )
-        ]
         
-        // Chloe
         profiles["4"] = UserProfile(
             id: "4",
             displayName: "Chloe",
             username: "chloe_shine",
             avatarColorHex: "FAB005",
             bio: "Product Designer, tech builder. Celebrating tiny wins every single day! 🚀🎉",
+            location: "Austin, TX",
+            privacySetting: .publicVisibility,
             currentMoodEmoji: "🤩",
             currentMoodText: "Excited",
             currentMoodColorHex: "ED64A6",
@@ -351,47 +434,22 @@ final class ProfileService {
             postsCount: 2,
             followersCount: 843,
             followingCount: 610,
-            isFollowing: true, // Followed by current user initially
+            isFollowing: true,
             achievements: [
                 Achievement(title: "Productivity Prodigy", description: "Checked in on 30 active days", icon: "sparkles", unlockedAt: Date().addingTimeInterval(-86400 * 15)),
                 Achievement(title: "Super Star", description: "Gathered 500 followers", icon: "star.fill", unlockedAt: Date().addingTimeInterval(-86400 * 2))
             ],
             moodHistory: defaultMoodHistory(shiftDays: 0, colorHex: "ED64A6", emoji: "🤩", text: "Excited")
         )
-        posts["4"] = [
-            ProfilePost(
-                id: "p4",
-                quoteText: "Celebrate the tiny wins.",
-                caption: "We launched our beta today! Feeling incredibly excited and grateful for the team's effort! 🚀🎉🙌",
-                postGradientStartHex: "ED64A6",
-                postGradientEndHex: "FEFCBF",
-                likesCount: 56,
-                commentsCount: 12,
-                isLiked: false,
-                isBookmarked: false,
-                createdAt: Date().addingTimeInterval(-21600)
-            ),
-            ProfilePost(
-                id: "p10",
-                quoteText: "Energy is contagious.",
-                caption: "Spent the weekend catching up with old high school friends! My battery is 100% full. 😄💃✨",
-                postGradientStartHex: "F6AD55",
-                postGradientEndHex: "D69E2E",
-                likesCount: 51,
-                commentsCount: 7,
-                isLiked: false,
-                isBookmarked: false,
-                createdAt: Date().addingTimeInterval(-86400 * 3)
-            )
-        ]
         
-        // Marcus
         profiles["5"] = UserProfile(
             id: "5",
             displayName: "Marcus",
             username: "marcus_mind",
             avatarColorHex: "12B886",
             bio: "Sipping matcha, practicing presence. Be here now. 🧘‍♂️🍵",
+            location: "Kyoto, Japan",
+            privacySetting: .publicVisibility,
             currentMoodEmoji: "🧠",
             currentMoodText: "Mindful",
             currentMoodColorHex: "805AD5",
@@ -399,41 +457,14 @@ final class ProfileService {
             postsCount: 2,
             followersCount: 156,
             followingCount: 112,
-            isFollowing: true, // Followed by current user initially
+            isFollowing: true,
             achievements: [
                 Achievement(title: "Tea Master", description: "Logged 10 mindful check-ins", icon: "cup.and.saucer.fill", unlockedAt: Date().addingTimeInterval(-86400 * 12)),
                 Achievement(title: "Constant Mind", description: "Logged mood 15 days in a row", icon: "brain.head.profile", unlockedAt: Date().addingTimeInterval(-86400 * 15))
             ],
             moodHistory: defaultMoodHistory(shiftDays: 0, colorHex: "805AD5", emoji: "🧠", text: "Mindful")
         )
-        posts["5"] = [
-            ProfilePost(
-                id: "p5",
-                quoteText: "Be here now.",
-                caption: "Enjoyed a quiet matcha latte. Mindful sipping: focusing on the warmth, the taste, and the silence. 🍵🧘‍♂️",
-                postGradientStartHex: "12B886",
-                postGradientEndHex: "38B2AC",
-                likesCount: 31,
-                commentsCount: 4,
-                isLiked: false,
-                isBookmarked: false,
-                createdAt: Date().addingTimeInterval(-28800)
-            ),
-            ProfilePost(
-                id: "p8",
-                quoteText: "Quiet the mind and the soul will speak.",
-                caption: "Ten minutes of focused breathing before checking emails. It completely shifts my response patterns. Try it!",
-                postGradientStartHex: "4A5568",
-                postGradientEndHex: "718096",
-                likesCount: 19,
-                commentsCount: 2,
-                isLiked: false,
-                isBookmarked: false,
-                createdAt: Date().addingTimeInterval(-86400 * 2)
-            )
-        ]
         
-        // Setup current user's default followings (sync count with Emma, Chloe, Marcus)
         let followingCount = profiles.values.filter { $0.id != currentId && $0.isFollowing }.count
         profiles[currentId]?.followingCount = followingCount
     }
@@ -455,7 +486,6 @@ final class ProfileService {
         var entries: [MoodHistoryEntry] = []
         let calendars = Calendar.current
         
-        // Emojis mapping for realistic calendar variety
         let mockOptions = [
             (emoji: "😊", text: "Happy", colorHex: "38B2AC"),
             (emoji: "😌", text: "Calm", colorHex: "4A5568"),
@@ -470,7 +500,6 @@ final class ProfileService {
             let optionIndex = (i + shiftDays) % mockOptions.count
             let option = mockOptions[optionIndex]
             
-            // For today (i == 0), match the input parameters
             if i == 0 {
                 entries.append(MoodHistoryEntry(
                     id: UUID().uuidString,

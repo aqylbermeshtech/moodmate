@@ -12,6 +12,7 @@ import Combine
 @MainActor
 final class ProfileViewModel: ObservableObject {
     let userId: String? // nil means current authenticated user
+    private let profileService: ProfileServiceProtocol
     
     @Published var profile: UserProfile?
     @Published var posts: [ProfilePost] = []
@@ -24,8 +25,9 @@ final class ProfileViewModel: ObservableObject {
     
     private var cancellables = Set<AnyCancellable>()
     
-    init(userId: String? = nil) {
+    init(userId: String? = nil, profileService: ProfileServiceProtocol = ProfileService.shared) {
         self.userId = userId
+        self.profileService = profileService
         
         if userId == nil {
             AppSessionManager.shared.$currentUser
@@ -43,11 +45,25 @@ final class ProfileViewModel: ObservableObject {
                 }
                 .store(in: &cancellables)
         }
+        
+        // Listen to real-time profile updates across the app
+        profileService.profileUpdatesPublisher
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] updatedProfile in
+                guard let self = self else { return }
+                let currentTargetId = self.userId ?? self.getCurrentUserId()
+                if updatedProfile.id == currentTargetId {
+                    withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                        self.profile = updatedProfile
+                    }
+                }
+            }
+            .store(in: &cancellables)
     }
     
     var isOwnProfile: Bool {
         guard let profileId = profile?.id else { return false }
-        return profileId == authenticatedUserId
+        return profileId == getCurrentUserId()
     }
     
     var isWaitingForAuthentication: Bool {
@@ -55,35 +71,43 @@ final class ProfileViewModel: ObservableObject {
     }
     
     func getCurrentUserId() -> String {
-        authenticatedUserId ?? "current_user_mock"
+        authenticatedUserId ?? profileService.getCurrentUserId()
     }
     
     func loadProfile() {
+        Task { await loadProfileAsync() }
+    }
+    
+    func refreshProfile() async {
+        await loadProfileAsync()
+    }
+    
+    private func loadProfileAsync() async {
         isLoading = true
         
-        if userId == nil {
-            guard let authenticatedUserId,
-                  let firebaseUser = Auth.auth().currentUser else {
-                // Auth session is still restoring; keep showing the loading state.
-                return
-            }
-            
-            ProfileService.shared.syncWithFirebaseUser(user: firebaseUser)
-            loadProfileData(for: authenticatedUserId)
-            return
+        let targetId = userId ?? getCurrentUserId()
+        if let currentFirebaseUser = Auth.auth().currentUser, userId == nil {
+            ProfileService.shared.syncWithFirebaseUser(user: currentFirebaseUser)
         }
         
-        loadProfileData(for: userId!)
+        await loadProfileData(for: targetId)
     }
     
     private var authenticatedUserId: String? {
         Auth.auth().currentUser?.uid
     }
     
-    private func loadProfileData(for profileId: String) {
-        self.profile = ProfileService.shared.getProfile(forId: profileId)
-        self.posts = ProfileService.shared.getPosts(forId: profileId)
+    private func loadProfileData(for profileId: String) async {
+        self.profile = profileService.getProfile(forId: profileId)
+        self.posts = profileService.getPosts(forId: profileId)
+        self.followers = profileService.getFollowers(forId: profileId)
+        self.following = profileService.getFollowing(forId: profileId)
         self.hasMorePosts = true
+        
+        if let freshProfile = try? await profileService.fetchProfile(forId: profileId) {
+            self.profile = freshProfile
+        }
+        
         self.isLoading = false
     }
     
@@ -98,17 +122,53 @@ final class ProfileViewModel: ObservableObject {
         }
     }
     
-    func editProfile(displayName: String, username: String, bio: String, avatarColorHex: String) {
+    func updateProfile(
+        displayName: String,
+        username: String,
+        bio: String,
+        location: String? = nil,
+        birthday: Date? = nil,
+        privacySetting: PrivacySetting = .publicVisibility,
+        avatarColorHex: String,
+        avatarImageData: Data? = nil,
+        clearAvatar: Bool = false
+    ) async throws -> UserProfile {
         let actualUserId = userId ?? getCurrentUserId()
+        let updated = try await profileService.updateProfile(
+            id: actualUserId,
+            displayName: displayName,
+            username: username,
+            bio: bio,
+            location: location,
+            birthday: birthday,
+            privacySetting: privacySetting,
+            avatarColorHex: avatarColorHex,
+            avatarImageData: avatarImageData,
+            clearAvatar: clearAvatar
+        )
         withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-            if let updated = ProfileService.shared.updateProfile(
-                id: actualUserId,
-                displayName: displayName,
-                username: username,
-                bio: bio,
-                avatarColorHex: avatarColorHex
-            ) {
-                self.profile = updated
+            self.profile = updated
+        }
+        return updated
+    }
+    
+    func uploadAvatar(_ image: UIImage) async throws -> Data {
+        let actualUserId = userId ?? getCurrentUserId()
+        let data = try await profileService.uploadAvatar(image: image, userId: actualUserId)
+        if let currentProfile = profileService.getProfile(forId: actualUserId) {
+            withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                self.profile = currentProfile
+            }
+        }
+        return data
+    }
+    
+    func deleteAvatar() async throws {
+        let actualUserId = userId ?? getCurrentUserId()
+        try await profileService.deleteAvatar(userId: actualUserId)
+        if let currentProfile = profileService.getProfile(forId: actualUserId) {
+            withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                self.profile = currentProfile
             }
         }
     }

@@ -122,54 +122,45 @@ struct ProfileView: View {
     // MARK: - 1. Profile Header View
     private func profileHeaderView(profile: UserProfile) -> some View {
         VStack(spacing: 16) {
-            // Profile image with initials + current mood badge
-            ZStack(alignment: .bottomTrailing) {
-                // Main initials bubble
-                ZStack {
-                    Circle()
-                        .fill(
-                            LinearGradient(
-                                colors: [Color(hex: profile.avatarColorHex).opacity(0.85), Color(hex: profile.avatarColorHex)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                    
-                    Text(getInitials(profile.displayName))
-                        .font(.system(size: 36, weight: .bold, design: .rounded))
-                        .foregroundStyle(.white)
-                }
-                .frame(width: 96, height: 96)
-                .shadow(color: Color(hex: profile.avatarColorHex).opacity(0.25), radius: 10, x: 0, y: 6)
-                .overlay(
-                    Circle()
-                        .stroke(Color.theme.border, lineWidth: 3)
-                )
-                
-                // Mood Emoji badge overlay
-                if let moodEmoji = profile.currentMoodEmoji {
-                    ZStack {
-                        Circle()
-                            .fill(Color.theme.surface)
-                            .frame(width: 32, height: 32)
-                            .shadow(color: Color.theme.shadow, radius: 4, x: 0, y: 2)
-                        
-                        Text(moodEmoji)
-                            .font(.system(size: 18))
-                    }
-                    .transition(.scale)
-                }
-            }
+            // Profile image with avatar data / initials + current mood badge
+            AvatarView(
+                imageData: profile.avatarImageData,
+                name: profile.displayName,
+                colorHex: profile.avatarColorHex,
+                size: 96,
+                showBorder: true,
+                moodEmoji: profile.currentMoodEmoji
+            )
             
-            // Name, Username & bio
-            VStack(spacing: 4) {
+            // Name, Username & bio & location
+            VStack(spacing: 6) {
                 Text(profile.displayName)
                     .font(.system(size: 24, weight: .bold, design: .rounded))
                     .foregroundStyle(Color.theme.primaryText)
                 
-                Text("@\(profile.username)")
-                    .font(.system(size: 14))
-                    .foregroundStyle(Color.theme.secondaryText)
+                HStack(spacing: 6) {
+                    Text("@\(profile.username)")
+                        .font(.system(size: 14))
+                        .foregroundStyle(Color.theme.secondaryText)
+                    
+                    if profile.privacySetting != .publicVisibility {
+                        Image(systemName: profile.privacySetting.iconName)
+                            .font(.system(size: 11))
+                            .foregroundStyle(Color.theme.secondaryText)
+                    }
+                }
+                
+                if let location = profile.location, !location.isEmpty {
+                    HStack(spacing: 4) {
+                        Image(systemName: "mappin.and.ellipse")
+                            .font(.system(size: 11))
+                            .foregroundStyle(.teal)
+                        Text(location)
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundStyle(Color.theme.secondaryText)
+                    }
+                    .padding(.top, 2)
+                }
                 
                 if !profile.bio.isEmpty {
                     Text(profile.bio)

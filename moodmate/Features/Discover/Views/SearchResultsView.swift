@@ -100,14 +100,13 @@ private struct SearchResultRow: View {
         HStack(spacing: 12) {
             switch result.type {
             case .user:
-                ZStack {
-                    Circle()
-                        .fill(Color(hex: result.avatarColorHex ?? "38B2AC"))
-                    Text(getInitials(result.userName ?? ""))
-                        .font(.system(size: 14, weight: .bold, design: .rounded))
-                        .foregroundStyle(.white)
-                }
-                .frame(width: 44, height: 44)
+                AvatarView(
+                    imageData: result.avatarImageData,
+                    name: result.userName ?? "",
+                    colorHex: result.avatarColorHex ?? "38B2AC",
+                    size: 44,
+                    showBorder: true
+                )
                 
                 VStack(alignment: .leading, spacing: 2) {
                     HStack(spacing: 4) {

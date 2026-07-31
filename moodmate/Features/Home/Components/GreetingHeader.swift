@@ -29,25 +29,15 @@ struct GreetingHeader: View {
             
             Spacer()
             
-            // Profile initials avatar button
+            // Profile avatar button
             Button(action: onProfileTap) {
-                ZStack {
-                    LinearGradient(
-                        colors: [Color.teal.opacity(0.8), Color.purple.opacity(0.8)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                    
-                    Text(getInitials(viewModel.currentUserDisplayName, fallback: "U"))
-                        .font(.system(size: 16, weight: .bold, design: .rounded))
-                        .foregroundStyle(.white)
-                }
-                .frame(width: 50, height: 50)
-                .clipShape(Circle())
-                .shadow(color: Color.theme.shadow, radius: 8, x: 0, y: 4)
-                .overlay(
-                    Circle()
-                        .stroke(Color.theme.border, lineWidth: 2)
+                let currentProfile = ProfileService.shared.getProfile(forId: nil)
+                AvatarView(
+                    imageData: currentProfile?.avatarImageData,
+                    name: viewModel.currentUserDisplayName,
+                    colorHex: currentProfile?.avatarColorHex ?? "38B2AC",
+                    size: 50,
+                    showBorder: true
                 )
             }
             .buttonStyle(ScaleButtonStyle())

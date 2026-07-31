@@ -29,33 +29,14 @@ struct SuggestedUserCard: View {
                         )
                         .frame(width: 62, height: 62)
                     
-                    ZStack {
-                        Circle()
-                            .fill(
-                                LinearGradient(
-                                    colors: [Color(hex: user.avatarColorHex).opacity(0.85), Color(hex: user.avatarColorHex)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                        
-                        Text(getInitials(user.displayName))
-                            .font(.system(size: 18, weight: .bold, design: .rounded))
-                            .foregroundStyle(.white)
-                    }
-                    .frame(width: 52, height: 52)
-                }
-                
-                if let emoji = user.moodEmoji {
-                    ZStack {
-                        Circle()
-                            .fill(Color.theme.surface)
-                            .frame(width: 22, height: 22)
-                            .shadow(color: Color.theme.shadow, radius: 3, x: 0, y: 1.5)
-                        
-                        Text(emoji)
-                            .font(.system(size: 12))
-                    }
+                    AvatarView(
+                        imageData: user.avatarImageData,
+                        name: user.displayName,
+                        colorHex: user.avatarColorHex,
+                        size: 52,
+                        showBorder: false,
+                        moodEmoji: user.moodEmoji
+                    )
                 }
             }
             

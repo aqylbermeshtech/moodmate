@@ -15,7 +15,7 @@ struct FriendAvatar: View {
         Button(action: onTap) {
             VStack(spacing: 8) {
                 ZStack(alignment: .bottomTrailing) {
-                    // Profile Circle
+                    // Profile Circle with AvatarView
                     ZStack {
                         // Outer ring gradient representing mood vitality
                         Circle()
@@ -32,36 +32,14 @@ struct FriendAvatar: View {
                             )
                             .frame(width: 68, height: 68)
                         
-                        // Inner initials circle
-                        ZStack {
-                            Circle()
-                                .fill(
-                                    LinearGradient(
-                                        colors: [Color(hex: user.avatarColorHex).opacity(0.85), Color(hex: user.avatarColorHex)],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    )
-                                )
-                            
-                            Text(getInitials(user.name))
-                                .font(.system(size: 18, weight: .bold, design: .rounded))
-                                .foregroundStyle(.white)
-                        }
-                        .frame(width: 58, height: 58)
-                    }
-                    
-                    // Mood Emoji Badge overlay
-                    if let emoji = user.currentMoodEmoji {
-                        ZStack {
-                            Circle()
-                                .fill(Color.theme.surface)
-                                .frame(width: 24, height: 24)
-                                .shadow(color: Color.theme.shadow, radius: 3, x: 0, y: 1.5)
-                            
-                            Text(emoji)
-                                .font(.system(size: 14))
-                        }
-                        .transition(.scale)
+                        AvatarView(
+                            imageData: user.avatarImageData,
+                            name: user.name,
+                            colorHex: user.avatarColorHex,
+                            size: 58,
+                            showBorder: false,
+                            moodEmoji: user.currentMoodEmoji
+                        )
                     }
                 }
                 
