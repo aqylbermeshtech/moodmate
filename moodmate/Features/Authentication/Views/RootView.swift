@@ -13,7 +13,11 @@ struct RootView: View {
     
     var body: some View {
         Group {
-            if sessionManager.isAuthenticated {
+            if sessionManager.isResolvingSession {
+                // Firebase hasn't fired its first auth callback yet.
+                // Show a neutral splash so neither screen flashes prematurely.
+                splashView
+            } else if sessionManager.isAuthenticated {
                 HomeView()
                     .transition(.opacity.combined(with: .move(edge: .bottom)))
             } else {
@@ -22,7 +26,24 @@ struct RootView: View {
             }
         }
         .animation(.spring(response: 0.45, dampingFraction: 0.8), value: sessionManager.isAuthenticated)
+        .animation(.easeOut(duration: 0.25), value: sessionManager.isResolvingSession)
         .preferredColorScheme(themeManager.selectedAppearance.colorScheme)
+    }
+    
+    // Minimal branded splash shown only during the brief Firebase session check.
+    private var splashView: some View {
+        ZStack {
+            Color.theme.backgroundGradient
+                .ignoresSafeArea()
+            VStack(spacing: 14) {
+                Image(systemName: "leaf.circle.fill")
+                    .font(.system(size: 56))
+                    .foregroundStyle(Color.theme.accent)
+                Text("MoodMate")
+                    .font(.system(size: 32, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color.theme.primaryText)
+            }
+        }
     }
 }
 
