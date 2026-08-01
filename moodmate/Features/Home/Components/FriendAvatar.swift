@@ -59,12 +59,12 @@ struct FriendAvatar: View {
 #Preview {
     HStack(spacing: 16) {
         FriendAvatar(user: MoodUser(
-            id: "1", name: "Alex", username: "alex", avatarImageName: nil,
+            id: "1", name: "Pepper", username: "pepperoni", avatarImageName: nil,
             avatarColorHex: "FF6B6B", currentMoodEmoji: "😊", currentMoodText: "Happy", currentMoodColorHex: "38B2AC"
         ), onTap: {})
         
         FriendAvatar(user: MoodUser(
-            id: "2", name: "Emma", username: "emma", avatarImageName: nil,
+            id: "2", name: "Michele", username: "mj", avatarImageName: nil,
             avatarColorHex: "4DABF7", currentMoodEmoji: "😌", currentMoodText: "Calm", currentMoodColorHex: "4A5568"
         ), onTap: {})
     }

@@ -82,7 +82,7 @@ final class MockPostService: PostServiceProtocol {
         posts = [
             PostModel(
                 id: "p1",
-                author: MoodUser(id: "2", name: "Emma", username: "emma_zen", avatarImageName: nil, avatarColorHex: "4DABF7", currentMoodEmoji: "😌", currentMoodText: "Calm", currentMoodColorHex: "4A5568"),
+                author: MoodUser(id: "2", name: "Michele", username: "mj", avatarImageName: nil, avatarColorHex: "4DABF7", currentMoodEmoji: "😌", currentMoodText: "Calm", currentMoodColorHex: "4A5568"),
                 mood: "Calm",
                 moodEmoji: "😌",
                 moodColorHex: "4A5568",
@@ -101,7 +101,7 @@ final class MockPostService: PostServiceProtocol {
             ),
             PostModel(
                 id: "p2",
-                author: MoodUser(id: "3", name: "Daniel", username: "daniel_sleeps", avatarImageName: nil, avatarColorHex: "BE4BDF", currentMoodEmoji: "😴", currentMoodText: "Sleepy", currentMoodColorHex: "667EEA"),
+                author: MoodUser(id: "3", name: "Ned", username: "ceo", avatarImageName: nil, avatarColorHex: "BE4BDF", currentMoodEmoji: "😴", currentMoodText: "Sleepy", currentMoodColorHex: "667EEA"),
                 mood: "Sleepy",
                 moodEmoji: "😴",
                 moodColorHex: "667EEA",
@@ -120,7 +120,7 @@ final class MockPostService: PostServiceProtocol {
             ),
             PostModel(
                 id: "p3",
-                author: MoodUser(id: "1", name: "Alex", username: "alex_active", avatarImageName: nil, avatarColorHex: "FF6B6B", currentMoodEmoji: "😊", currentMoodText: "Happy", currentMoodColorHex: "38B2AC"),
+                author: MoodUser(id: "1", name: "Pepper", username: "pepperoni", avatarImageName: nil, avatarColorHex: "FF6B6B", currentMoodEmoji: "😊", currentMoodText: "Happy", currentMoodColorHex: "38B2AC"),
                 mood: "Happy",
                 moodEmoji: "😊",
                 moodColorHex: "38B2AC",
@@ -139,7 +139,7 @@ final class MockPostService: PostServiceProtocol {
             ),
             PostModel(
                 id: "p4",
-                author: MoodUser(id: "4", name: "Chloe", username: "chloe_shine", avatarImageName: nil, avatarColorHex: "FAB005", currentMoodEmoji: "🤩", currentMoodText: "Excited", currentMoodColorHex: "ED64A6"),
+                author: MoodUser(id: "4", name: "Happy", username: "happyaunt", avatarImageName: nil, avatarColorHex: "FAB005", currentMoodEmoji: "🤩", currentMoodText: "Excited", currentMoodColorHex: "ED64A6"),
                 mood: "Excited",
                 moodEmoji: "🤩",
                 moodColorHex: "ED64A6",
@@ -158,7 +158,7 @@ final class MockPostService: PostServiceProtocol {
             ),
             PostModel(
                 id: "p5",
-                author: MoodUser(id: "5", name: "Marcus", username: "marcus_mind", avatarImageName: nil, avatarColorHex: "12B886", currentMoodEmoji: "🧠", currentMoodText: "Mindful", currentMoodColorHex: "805AD5"),
+                author: MoodUser(id: "5", name: "Alex", username: "alexwang", avatarImageName: nil, avatarColorHex: "12B886", currentMoodEmoji: "🧠", currentMoodText: "Mindful", currentMoodColorHex: "805AD5"),
                 mood: "Mindful",
                 moodEmoji: "🧠",
                 moodColorHex: "805AD5",

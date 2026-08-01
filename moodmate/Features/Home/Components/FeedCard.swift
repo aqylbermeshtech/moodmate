@@ -289,7 +289,7 @@ struct FeedCard: View {
             FeedCard(
                 post: FeedPost(
                     id: "p1",
-                    user: MoodUser(id: "2", name: "Emma", username: "emma_zen", avatarImageName: nil, avatarColorHex: "4DABF7", currentMoodEmoji: "😌", currentMoodText: "Calm", currentMoodColorHex: "4A5568"),
+                    user: MoodUser(id: "2", name: "Michele", username: "mj", avatarImageName: nil, avatarColorHex: "4DABF7", currentMoodEmoji: "😌", currentMoodText: "Calm", currentMoodColorHex: "4A5568"),
                     timeAgo: "2h ago",
                     quoteText: "Breathe in experience, breathe out poetry.",
                     caption: "Taking a conscious pause today. 🌱"

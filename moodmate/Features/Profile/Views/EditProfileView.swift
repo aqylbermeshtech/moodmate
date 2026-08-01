@@ -258,7 +258,7 @@ struct EditProfileView: View {
                     .padding(.horizontal, 4)
                     
                     CustomTextField(
-                        placeholder: "E.g. Emma Zen",
+                        placeholder: "E.g. Michele",
                         text: $editViewModel.displayName,
                         icon: "person"
                     )
@@ -283,7 +283,7 @@ struct EditProfileView: View {
                         .padding(.horizontal, 4)
                     
                     CustomTextField(
-                        placeholder: "E.g. emma_zen",
+                        placeholder: "E.g. mj",
                         text: $editViewModel.username,
                         icon: "at"
                     )

@@ -362,8 +362,8 @@ final class ProfileService: ProfileServiceProtocol {
         
         profiles["1"] = UserProfile(
             id: "1",
-            displayName: "Alex",
-            username: "alex_active",
+            displayName: "Pepper",
+            username: "pepperoni",
             avatarColorHex: "FF6B6B",
             bio: "Endorphin addict. Morning run enthusiast. Motion creates emotion! 🏃‍♂️☀️",
             location: "Seattle, WA",
@@ -385,8 +385,8 @@ final class ProfileService: ProfileServiceProtocol {
         
         profiles["2"] = UserProfile(
             id: "2",
-            displayName: "Emma",
-            username: "emma_zen",
+            displayName: "Michele",
+            username: "mj",
             avatarColorHex: "4DABF7",
             bio: "Breathe in experience, breathe out poetry. Yoga teacher & mindfulness explorer. 🌱✨",
             location: "Portland, OR",
@@ -408,8 +408,8 @@ final class ProfileService: ProfileServiceProtocol {
         
         profiles["3"] = UserProfile(
             id: "3",
-            displayName: "Daniel",
-            username: "daniel_sleeps",
+            displayName: "Ned",
+            username: "ceo",
             avatarColorHex: "BE4BDF",
             bio: "Quiet seeker. Rain lover. Early to sleep, early to rise. 😴💤",
             location: "Vancouver, BC",
@@ -430,8 +430,8 @@ final class ProfileService: ProfileServiceProtocol {
         
         profiles["4"] = UserProfile(
             id: "4",
-            displayName: "Chloe",
-            username: "chloe_shine",
+            displayName: "Happy",
+            username: "happyaunt",
             avatarColorHex: "FAB005",
             bio: "Product Designer, tech builder. Celebrating tiny wins every single day! 🚀🎉",
             location: "Austin, TX",
@@ -453,8 +453,8 @@ final class ProfileService: ProfileServiceProtocol {
         
         profiles["5"] = UserProfile(
             id: "5",
-            displayName: "Marcus",
-            username: "marcus_mind",
+            displayName: "Alex",
+            username: "alexwang",
             avatarColorHex: "12B886",
             bio: "Sipping matcha, practicing presence. Be here now. 🧘‍♂️🍵",
             location: "Kyoto, Japan",
