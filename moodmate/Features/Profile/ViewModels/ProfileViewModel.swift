@@ -98,14 +98,20 @@ final class ProfileViewModel: ObservableObject {
     }
     
     private func loadProfileData(for profileId: String) async {
-        self.profile = profileService.getProfile(forId: profileId)
+        // Load all synchronous data first but keep isLoading = true so the view
+        // stays on the spinner — this prevents the stale cached name from flashing
+        // on screen before the fresh fetch overwrites it.
         self.posts = profileService.getPosts(forId: profileId)
         self.followers = profileService.getFollowers(forId: profileId)
         self.following = profileService.getFollowing(forId: profileId)
         self.hasMorePosts = true
         
+        // Await the fresh profile before revealing the UI.
+        // Fall back to the cached version only if the fetch fails.
         if let freshProfile = try? await profileService.fetchProfile(forId: profileId) {
             self.profile = freshProfile
+        } else {
+            self.profile = profileService.getProfile(forId: profileId)
         }
         
         self.isLoading = false
