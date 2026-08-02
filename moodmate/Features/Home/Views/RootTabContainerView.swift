@@ -40,14 +40,14 @@ struct RootTabContainerView: View {
             }
             .padding(.bottom, 8)
         }
-        // System tab bar is hidden; we drive everything from BottomNavigationBar.
-        .toolbar(.hidden, for: .tabBar)
         // Create-post sheet is owned here so any tab can trigger it.
         .fullScreenCover(isPresented: $showCreatePostSheet) {
             CreatePostView { newPost in
                 homeViewModel.addNewlyCreatedPost(newPost)
             }
         }
+        // Note: .toolbar(.hidden, for: .tabBar) is applied per-tab inside
+        // tabContent, which is the correct level for TabView to respect it.
         .ignoresSafeArea(.keyboard)
     }
 
@@ -66,36 +66,40 @@ struct RootTabContainerView: View {
                     onCreatePost: { showCreatePostSheet = true },
                     onNavigateToProfile: { selectedTab = .profile }
                 )
+                // Hide the system tab bar from inside each NavigationStack
+                // so it is suppressed at the correct level of the view tree.
+                .toolbar(.hidden, for: .tabBar)
             }
             .tag(HomeTab.home)
 
             // ── Discover ──────────────────────────────────────────────────────
             NavigationStack {
                 DiscoverView()
+                    .toolbar(.hidden, for: .tabBar)
             }
             .tag(HomeTab.discover)
 
-            // ── Add (centre button — TabView entry is never actually selected) ─
+            // ── Add (centre button — TabView entry is never actually selected) –
             // The real action is handled by BottomNavigationBar's onAddTap.
-            // This empty tab exists only to satisfy TabView's tag expectations.
             Color.clear
+                .toolbar(.hidden, for: .tabBar)
                 .tag(HomeTab.add)
 
             // ── Insights ──────────────────────────────────────────────────────
             NavigationStack {
                 InsightsView(onAddPostTap: { showCreatePostSheet = true })
+                    .toolbar(.hidden, for: .tabBar)
             }
             .tag(HomeTab.insights)
 
             // ── Profile ───────────────────────────────────────────────────────
             NavigationStack {
                 ProfileView(userId: nil)
+                    .toolbar(.hidden, for: .tabBar)
             }
             .tag(HomeTab.profile)
         }
-        // Disable TabView's built-in swipe-to-switch so only the custom
-        // nav bar controls tab selection.
-        .tabViewStyle(.page(indexDisplayMode: .never))
+        .tabViewStyle(.automatic)
     }
 }
 
