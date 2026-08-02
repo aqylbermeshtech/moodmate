@@ -2,115 +2,77 @@
 //  HomeView.swift
 //  moodmate
 //
-//  Created by Nurtore on 22.07.2026.
+//  Single responsibility: renders the home feed.
+//  Tab navigation, the bottom nav bar, and the create-post sheet
+//  are all owned by RootTabContainerView — not here.
 //
 
 import SwiftUI
 
 struct HomeView: View {
-    @StateObject private var viewModel = HomeViewModel()
-    @State private var selectedTab: HomeTab = .home
-    
+
+    // MARK: - Dependencies
+
+    /// Injected by RootTabContainerView so both share the same instance.
+    @ObservedObject var viewModel: HomeViewModel
+
+    /// Called when the user taps the mood card's "Log a Moment" action or
+    /// any other in-feed trigger that should open the create-post sheet.
+    var onCreatePost: () -> Void
+
+    /// Called when the user taps their avatar in the greeting header.
+    /// The container will switch the tab selection to .profile.
+    var onNavigateToProfile: () -> Void
+
+    // MARK: - Body
+
     var body: some View {
-        ZStack {
-            NavigationStack {
-                homeFeedView
+        ScrollView {
+            LazyVStack(spacing: 24) {
+                GreetingHeader(viewModel: viewModel, onProfileTap: onNavigateToProfile)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 16)
+
+                MoodCard(viewModel: viewModel)
+                    .padding(.horizontal, 20)
+
+                friendsStoriesSection
+
+                feedSection
             }
-            .opacity(selectedTab == .home ? 1 : 0)
-            .allowsHitTesting(selectedTab == .home)
-            .zIndex(selectedTab == .home ? 1 : 0)
-            
-            DiscoverView()
-                .opacity(selectedTab == .discover ? 1 : 0)
-                .allowsHitTesting(selectedTab == .discover)
-                .zIndex(selectedTab == .discover ? 1 : 0)
-            
-            TabPlaceholderView(title: "Log a Moment", systemImage: "plus.circle") {
-                viewModel.showCreatePostSheet = true
-            }
-            .opacity(selectedTab == .add ? 1 : 0)
-            .allowsHitTesting(selectedTab == .add)
-            .zIndex(selectedTab == .add ? 1 : 0)
-            
-            InsightsView(onAddPostTap: {
-                viewModel.showCreatePostSheet = true
-            })
-            .opacity(selectedTab == .insights ? 1 : 0)
-            .allowsHitTesting(selectedTab == .insights)
-            .zIndex(selectedTab == .insights ? 1 : 0)
-            
-            NavigationStack {
-                ProfileView(userId: nil)
-            }
-            .opacity(selectedTab == .profile ? 1 : 0)
-            .allowsHitTesting(selectedTab == .profile)
-            .zIndex(selectedTab == .profile ? 1 : 0)
+            // Extra bottom padding so the last card clears the floating nav bar.
+            .padding(.bottom, 32)
         }
-        .animation(nil, value: selectedTab)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .scrollIndicators(.hidden)
         .background {
             Color.theme.backgroundGradient
                 .ignoresSafeArea()
         }
-        // FIX 1: Replaced non-existent `.safeAreaBar` with SwiftUI's built-in `.safeAreaInset`
-        .safeAreaInset(edge: .bottom) {
-            BottomNavigationBar(selectedTab: $selectedTab) {
-                viewModel.showCreatePostSheet = true
-            }
-            .padding(.bottom, 8)
-        }
+        .navigationTitle("")
+        .navigationBarHidden(true)
+        // Mood picker sheet is local to the home feed — it doesn't concern other tabs.
         .sheet(isPresented: $viewModel.showMoodPickerSheet) {
             MoodPickerSheet(viewModel: viewModel)
                 .presentationDetents([.height(380)])
                 .presentationDragIndicator(.hidden)
         }
-        .fullScreenCover(isPresented: $viewModel.showCreatePostSheet) {
-            CreatePostView { newPost in
-                viewModel.addNewlyCreatedPost(newPost)
-            }
-        }
     }
-    
-    // MARK: - Home Feed Layout
-    private var homeFeedView: some View {
-        ScrollView {
-            LazyVStack(spacing: 24) {
-                // Header (Greeting, Date, Avatar)
-                GreetingHeader(viewModel: viewModel) {
-                    selectedTab = .profile
-                }
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
-                
-                // Primary Action: Daily check-in card
-                MoodCard(viewModel: viewModel)
-                    .padding(.horizontal, 20)
-                
-                // Horizontal Stories: Friends Today
-                friendsStoriesSection
-                
-                // Vertical Feed: Today's Feed
-                feedSection
-            }
 
-        }
-        .scrollIndicators(.hidden)
-        // FIX 2: Removed `.scrollEdgeEffectStyle` — it requires iOS 26+ and is unavailable on earlier targets
-    }
-    
-    // MARK: - Friends Section
+    // MARK: - Friends Stories Section
+
     private var friendsStoriesSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Friends Today")
                 .font(.system(size: 16, weight: .bold, design: .rounded))
                 .foregroundStyle(Color.theme.primaryText)
                 .padding(.horizontal, 20)
-            
+
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 16) {
                     ForEach(viewModel.friends) { friend in
                         FriendAvatar(user: friend) {
-                            if let emoji = friend.currentMoodEmoji, let text = friend.currentMoodText {
+                            if let emoji = friend.currentMoodEmoji,
+                               let text  = friend.currentMoodText {
                                 viewModel.selectMood(
                                     emoji: emoji,
                                     text: "\(friend.name) is \(text)",
@@ -125,27 +87,28 @@ struct HomeView: View {
             }
         }
     }
-    
-    // MARK: - Today's Feed
+
+    // MARK: - Feed Section
+
     private var feedSection: some View {
         VStack(alignment: .leading, spacing: 14) {
             Text("Today's Feed")
                 .font(.system(size: 16, weight: .bold, design: .rounded))
                 .foregroundStyle(Color.theme.primaryText)
                 .padding(.horizontal, 20)
-            
+
             LazyVStack(spacing: 24) {
                 ForEach(viewModel.feedPosts) { post in
                     FeedCard(
                         post: post,
-                        onLike: { viewModel.toggleLike(for: post) },
+                        onLike:     { viewModel.toggleLike(for: post) },
                         onBookmark: { viewModel.toggleBookmark(for: post) },
                         onComment: {
                             viewModel.selectMood(
                                 emoji: "💬",
                                 text: "Commented on @\(post.user.username)'s post",
                                 colorHex: "38B2AC"
-                                )
+                            )
                         }
                     )
                 }
@@ -154,6 +117,14 @@ struct HomeView: View {
     }
 }
 
+// MARK: - Preview
+
 #Preview {
-    HomeView()
+    NavigationStack {
+        HomeView(
+            viewModel: HomeViewModel(),
+            onCreatePost: {},
+            onNavigateToProfile: {}
+        )
+    }
 }

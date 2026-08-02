@@ -19,8 +19,10 @@ final class HomeViewModel: ObservableObject {
     @Published var friends: [MoodUser] = []
     @Published var feedPosts: [FeedPost] = []
     
+    // Mood picker sheet is presented by HomeView directly (home-feed concern).
     @Published var showMoodPickerSheet = false
-    @Published var showCreatePostSheet = false
+    // showCreatePostSheet has moved up to RootTabContainerView.
+    // HomeView receives an onCreatePost() callback instead.
     
     private let postService: PostServiceProtocol
     private var cancellables = Set<AnyCancellable>()

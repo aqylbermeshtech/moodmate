@@ -18,7 +18,7 @@ struct RootView: View {
                 // Show a neutral splash so neither screen flashes prematurely.
                 splashView
             } else if sessionManager.isAuthenticated {
-                HomeView()
+                RootTabContainerView()
                     .transition(.opacity.combined(with: .move(edge: .bottom)))
             } else {
                 MoodMateAuthView()
