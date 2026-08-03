@@ -2,210 +2,196 @@
 //  HomeViewModel.swift
 //  moodmate
 //
-//  Created by Nurtore on 22.07.2026.
+//  Focused responsibilities:
+//    • current-user display name and avatar
+//    • greeting / date presentation strings
+//    • selected mood (single SelectedMood value, not three flat properties)
+//    • mood-picker presentation flag
+//    • friends list
+//    • composes FeedViewModel for all feed interactions
+//
+//  Does NOT:
+//    • reference any singleton service directly
+//    • start subscriptions in init
+//    • contain withAnimation calls
+//    • define domain models (see MoodModels.swift, HomeModels.swift)
 //
 
-import SwiftUI
-import FirebaseAuth
 import Combine
+import Foundation
 
 @MainActor
 final class HomeViewModel: ObservableObject {
-    @Published var currentUserDisplayName: String = "John"
-    @Published var selectedMoodEmoji: String? = nil
-    @Published var selectedMoodText: String? = nil
-    @Published var selectedMoodColorHex: String? = nil
-    
-    @Published var friends: [MoodUser] = []
-    @Published var feedPosts: [FeedPost] = []
-    
-    // Mood picker sheet is presented by HomeView directly (home-feed concern).
+
+    // MARK: - Published State
+
+    @Published private(set) var currentUserDisplayName: String = ""
+    @Published private(set) var currentUserAvatarData: Data?
+    @Published private(set) var currentUserAvatarColorHex: String = "38B2AC"
+
+    @Published private(set) var friends: [MoodUser] = []
+
+    @Published var selectedMood: SelectedMood?
     @Published var showMoodPickerSheet = false
-    // showCreatePostSheet has moved up to RootTabContainerView.
-    // HomeView receives an onCreatePost() callback instead.
-    
-    private let postService: PostServiceProtocol
+
+    // Surface FeedViewModel errors up to the view layer.
+    @Published private(set) var errorMessage: String?
+
+    // MARK: - Composed child ViewModel
+
+    /// Owns all feed-list state. Exposed so HomeView can pass it
+    /// to FeedCard subviews without HomeViewModel acting as a relay.
+    let feed: FeedViewModel
+
+    // MARK: - Convenience accessors (backwards-compat for MoodCard / MoodPickerSheet)
+
+    /// The mood options shown in the picker grid. Source of truth is MoodOption.catalog.
+    let moodOptions: [MoodOption] = MoodOption.catalog
+
+    // MARK: - Dependencies (all injected — no singletons)
+
+    private let profileRepository: ProfileRepositoryProtocol
+    private let friendsRepository: FriendsRepositoryProtocol
+    private let authService: AuthServiceProtocol
+
     private var cancellables = Set<AnyCancellable>()
-    
-    // Hardcoded mood options for Today's Mood Card picker
-    struct MoodOption: Identifiable {
-        let id = UUID()
-        let emoji: String
-        let text: String
-        let colorHex: String
+
+    // MARK: - Init
+
+    init(
+        postService: PostServiceProtocol = MockPostService.shared,
+        profileRepository: ProfileRepositoryProtocol = ProfileRepository(),
+        friendsRepository: FriendsRepositoryProtocol = FriendsRepository(),
+        authService: AuthServiceProtocol = FirebaseAuthService.shared
+    ) {
+        self.profileRepository = profileRepository
+        self.friendsRepository = friendsRepository
+        self.authService       = authService
+        self.feed = FeedViewModel(
+            postService: postService,
+            profileRepository: profileRepository
+        )
+        // No data loading or subscriptions here — see onAppear() / startObserving().
     }
-    
-    let moodOptions = [
-        MoodOption(emoji: "😊", text: "Happy", colorHex: "38B2AC"), // Teal
-        MoodOption(emoji: "😌", text: "Calm", colorHex: "4A5568"),  // Charcoal
-        MoodOption(emoji: "😴", text: "Sleepy", colorHex: "667EEA"), // Indigo
-        MoodOption(emoji: "🤩", text: "Excited", colorHex: "ED64A6"), // Pink
-        MoodOption(emoji: "😔", text: "Sad", colorHex: "A0AEC0"),     // Slate
-        MoodOption(emoji: "🧠", text: "Mindful", colorHex: "805AD5")  // Purple
-    ]
-    
-    init(postService: PostServiceProtocol = MockPostService.shared) {
-        self.postService = postService
+
+    // MARK: - Lifecycle
+
+    /// Called from the view's `.task` modifier.
+    /// Loads initial data and starts all Combine subscriptions.
+    func onAppear() {
         loadCurrentUser()
         loadFriends()
-        observePosts()
+        startObserving()
+    }
+
+    /// Subscribes to profile updates. Idempotent — calling twice is safe
+    /// because cancellables is cleared in stopObserving first.
+    func startObserving() {
+        feed.startObserving()
         observeProfileUpdates()
     }
-    
-    func loadCurrentUser() {
-        let currentUserId = ProfileService.shared.getCurrentUserId()
-        if let profile = ProfileService.shared.getProfile(forId: currentUserId) {
-            self.currentUserDisplayName = profile.displayName
-        } else if let firebaseUser = FirebaseAuthService.shared.currentUser {
-            if let displayName = firebaseUser.displayName, !displayName.isEmpty {
-                self.currentUserDisplayName = displayName
-            } else if let email = firebaseUser.email, !email.isEmpty {
-                let prefix = email.components(separatedBy: "@").first ?? "John"
-                self.currentUserDisplayName = prefix.capitalized
-            }
-        }
+
+    /// Tears down all subscriptions. Call from onDisappear if needed.
+    func stopObserving() {
+        feed.stopObserving()
+        cancellables.removeAll()
     }
-    
-    private func observeProfileUpdates() {
-        ProfileService.shared.profileUpdatesPublisher
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] updatedProfile in
-                guard let self = self else { return }
-                let currentUserId = ProfileService.shared.getCurrentUserId()
-                if updatedProfile.id == currentUserId {
-                    self.currentUserDisplayName = updatedProfile.displayName
-                }
-                
-                // Update friends list if matching
-                if let index = self.friends.firstIndex(where: { $0.id == updatedProfile.id }) {
-                    self.friends[index].name = updatedProfile.displayName
-                    self.friends[index].username = updatedProfile.username
-                    self.friends[index].avatarColorHex = updatedProfile.avatarColorHex
-                    self.friends[index].avatarImageData = updatedProfile.avatarImageData
-                }
-                
-                // Update feed posts matching author
-                for i in 0..<self.feedPosts.count {
-                    if self.feedPosts[i].user.id == updatedProfile.id {
-                        var updatedUser = self.feedPosts[i].user
-                        updatedUser.name = updatedProfile.displayName
-                        updatedUser.username = updatedProfile.username
-                        updatedUser.avatarColorHex = updatedProfile.avatarColorHex
-                        updatedUser.avatarImageData = updatedProfile.avatarImageData
-                        
-                        let oldPost = self.feedPosts[i]
-                        self.feedPosts[i] = FeedPost(
-                            id: oldPost.id,
-                            user: updatedUser,
-                            timeAgo: oldPost.timeAgo,
-                            postGradientStartHex: oldPost.postGradientStartHex,
-                            postGradientEndHex: oldPost.postGradientEndHex,
-                            quoteText: oldPost.quoteText,
-                            caption: oldPost.caption,
-                            images: oldPost.images,
-                            moodEmoji: oldPost.moodEmoji,
-                            moodText: oldPost.moodText,
-                            moodColorHex: oldPost.moodColorHex,
-                            visibility: oldPost.visibility,
-                            likesCount: oldPost.likesCount,
-                            commentsCount: oldPost.commentsCount,
-                            isLiked: oldPost.isLiked,
-                            isBookmarked: oldPost.isBookmarked
-                        )
-                    }
-                }
-            }
-            .store(in: &cancellables)
-    }
-    
-    private func observePosts() {
-        postService.postsPublisher
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] posts in
-                guard let self = self else { return }
-                withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                    self.feedPosts = posts.map { FeedPost(from: $0) }
-                }
-            }
-            .store(in: &cancellables)
-    }
-    
-    func addNewlyCreatedPost(_ postModel: PostModel) {
-        withAnimation(.spring(response: 0.4, dampingFraction: 0.75)) {
-            let feedPost = FeedPost(from: postModel)
-            if !feedPosts.contains(where: { $0.id == feedPost.id }) {
-                feedPosts.insert(feedPost, at: 0)
-            }
-        }
-    }
-    
+
+    // MARK: - Mood
+
     func selectMood(emoji: String, text: String, colorHex: String) {
-        withAnimation(.spring(response: 0.45, dampingFraction: 0.8)) {
-            self.selectedMoodEmoji = emoji
-            self.selectedMoodText = text
-            self.selectedMoodColorHex = colorHex
-        }
+        selectedMood = SelectedMood(emoji: emoji, text: text, colorHex: colorHex)
     }
-    
-    func toggleLike(for post: FeedPost) {
-        if let index = feedPosts.firstIndex(where: { $0.id == post.id }) {
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-                feedPosts[index].isLiked.toggle()
-                if feedPosts[index].isLiked {
-                    feedPosts[index].likesCount += 1
-                } else {
-                    feedPosts[index].likesCount -= 1
-                }
-            }
-            Task {
-                try? await postService.toggleLike(postId: post.id)
-            }
-        }
+
+    func clearMood() {
+        selectedMood = nil
     }
-    
-    func toggleBookmark(for post: FeedPost) {
-        if let index = feedPosts.firstIndex(where: { $0.id == post.id }) {
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-                feedPosts[index].isBookmarked.toggle()
-            }
-            Task {
-                try? await postService.toggleBookmark(postId: post.id)
-            }
-        }
+
+    // MARK: - Feed delegation (keeps call sites in HomeView clean)
+
+    func addNewlyCreatedPost(_ postModel: PostModel) {
+        feed.addNewlyCreatedPost(postModel)
     }
-    
+
+    // MARK: - Authentication
+
     func signOut() {
         do {
-            try FirebaseAuthService.shared.signOut()
+            try authService.signOut()
         } catch {
-            print("Failed to sign out: \(error.localizedDescription)")
+            errorMessage = "Sign out failed: \(error.localizedDescription)"
         }
     }
-    
+
+    // MARK: - Presentation strings
+
     var greetingText: String {
         let hour = Calendar.current.component(.hour, from: Date())
-        if hour < 12 {
-            return "Good Morning,"
-        } else if hour < 17 {
-            return "Good Afternoon,"
-        } else {
-            return "Good Evening,"
+        switch hour {
+        case 0..<12: return "Good Morning,"
+        case 12..<17: return "Good Afternoon,"
+        default:      return "Good Evening,"
         }
     }
-    
+
     var formattedDate: String {
         let formatter = DateFormatter()
         formatter.dateFormat = "EEEE, MMMM d"
         return formatter.string(from: Date())
     }
-    
-    private func loadFriends() {
-        friends = [
-            MoodUser(id: "1", name: "Pepper", username: "pepperoni", avatarImageName: nil, avatarColorHex: "FF6B6B", currentMoodEmoji: "😊", currentMoodText: "Happy", currentMoodColorHex: "38B2AC"),
-            MoodUser(id: "2", name: "Michele", username: "mj", avatarImageName: nil, avatarColorHex: "4DABF7", currentMoodEmoji: "😌", currentMoodText: "Calm", currentMoodColorHex: "4A5568"),
-            MoodUser(id: "3", name: "Ned", username: "ceo", avatarImageName: nil, avatarColorHex: "BE4BDF", currentMoodEmoji: "😴", currentMoodText: "Sleepy", currentMoodColorHex: "667EEA"),
-            MoodUser(id: "4", name: "Happy", username: "happyaunt", avatarImageName: nil, avatarColorHex: "FAB005", currentMoodEmoji: "🤩", currentMoodText: "Excited", currentMoodColorHex: "ED64A6"),
-            MoodUser(id: "5", name: "Alex", username: "alexwang", avatarImageName: nil, avatarColorHex: "12B886", currentMoodEmoji: "🧠", currentMoodText: "Mindful", currentMoodColorHex: "805AD5")
-        ]
+}
+
+// MARK: - Private helpers
+
+private extension HomeViewModel {
+
+    func loadCurrentUser() {
+        let userId = profileRepository.getCurrentUserId()
+        if let profile = profileRepository.getProfile(forId: userId) {
+            applyCurrentUser(profile)
+        } else if let name = authService.currentUserDisplayName {
+            currentUserDisplayName = name
+        }
     }
+
+    func loadFriends() {
+        friends = friendsRepository.loadFriends()
+    }
+
+    func observeProfileUpdates() {
+        profileRepository.profileUpdatesPublisher
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] profile in
+                guard let self else { return }
+                let currentId = profileRepository.getCurrentUserId()
+
+                if profile.id == currentId {
+                    updateCurrentUser(profile)
+                }
+                updateFriend(profile)
+            }
+            .store(in: &cancellables)
+    }
+
+    // MARK: Profile update helpers
+
+    func updateCurrentUser(_ profile: UserProfile) {
+        applyCurrentUser(profile)
+    }
+
+    func applyCurrentUser(_ profile: UserProfile) {
+        currentUserDisplayName    = profile.displayName
+        currentUserAvatarData     = profile.avatarImageData
+        currentUserAvatarColorHex = profile.avatarColorHex
+    }
+
+    func updateFriend(_ profile: UserProfile) {
+        guard let index = friends.firstIndex(where: { $0.id == profile.id }) else { return }
+        friends[index].name            = profile.displayName
+        friends[index].username        = profile.username
+        friends[index].avatarColorHex  = profile.avatarColorHex
+        friends[index].avatarImageData = profile.avatarImageData
+    }
+
+
 }

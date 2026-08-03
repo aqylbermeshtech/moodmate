@@ -95,6 +95,35 @@ struct FeedPost: Identifiable, Equatable {
         self.isBookmarked = isBookmarked
     }
     
+    /// Returns a copy of this post with the author's display fields updated
+    /// from a fresh UserProfile. Used by FeedViewModel to propagate profile
+    /// edits without reconstructing the entire FeedPost inline.
+    func updatingAuthor(from profile: UserProfile) -> FeedPost {
+        var updatedUser = self.user
+        updatedUser.name           = profile.displayName
+        updatedUser.username       = profile.username
+        updatedUser.avatarColorHex = profile.avatarColorHex
+        updatedUser.avatarImageData = profile.avatarImageData
+        return FeedPost(
+            id:                    id,
+            user:                  updatedUser,
+            timeAgo:               timeAgo,
+            postGradientStartHex:  postGradientStartHex,
+            postGradientEndHex:    postGradientEndHex,
+            quoteText:             quoteText,
+            caption:               caption,
+            images:                images,
+            moodEmoji:             moodEmoji,
+            moodText:              moodText,
+            moodColorHex:          moodColorHex,
+            visibility:            visibility,
+            likesCount:            likesCount,
+            commentsCount:         commentsCount,
+            isLiked:               isLiked,
+            isBookmarked:          isBookmarked
+        )
+    }
+
     // Convert from PostModel
     init(from postModel: PostModel) {
         self.id = postModel.id

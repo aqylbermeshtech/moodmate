@@ -2,14 +2,15 @@
 //  MoodCard.swift
 //  moodmate
 //
-//  Created by Nurtore on 22.07.2026.
-//
 
 import SwiftUI
 
 struct MoodCard: View {
     @ObservedObject var viewModel: HomeViewModel
-    
+
+    // Convenience local alias so the body stays readable.
+    private var mood: SelectedMood? { viewModel.selectedMood }
+
     var body: some View {
         Button(action: {
             viewModel.showMoodPickerSheet = true
@@ -19,34 +20,33 @@ struct MoodCard: View {
                     VStack(alignment: .leading, spacing: 6) {
                         Text("DAILY CHECK-IN")
                             .font(.system(size: 11, weight: .bold))
-                            .foregroundStyle(viewModel.selectedMoodEmoji != nil ? .white.opacity(0.8) : .teal)
+                            .foregroundStyle(mood != nil ? .white.opacity(0.8) : .teal)
                             .tracking(1.5)
-                        
+
                         Text("How are you feeling today?")
                             .font(.system(size: 20, weight: .bold, design: .rounded))
-                            .foregroundStyle(viewModel.selectedMoodEmoji != nil ? .white : Color.theme.primaryText)
+                            .foregroundStyle(mood != nil ? .white : Color.theme.primaryText)
                     }
                     Spacer()
                 }
-                
+
                 HStack(spacing: 20) {
-                    // Large Mood Emoji with subtle animation
                     ZStack {
                         Circle()
-                            .fill(viewModel.selectedMoodEmoji != nil ? .white.opacity(0.2) : Color.theme.accent.opacity(0.08))
+                            .fill(mood != nil ? .white.opacity(0.2) : Color.theme.accent.opacity(0.08))
                             .frame(width: 80, height: 80)
-                        
-                        Text(viewModel.selectedMoodEmoji ?? "💭")
+
+                        Text(mood?.emoji ?? "💭")
                             .font(.system(size: 46))
-                            .scaleEffect(viewModel.selectedMoodEmoji != nil ? 1.05 : 1.0)
+                            .scaleEffect(mood != nil ? 1.05 : 1.0)
                     }
-                    
+
                     VStack(alignment: .leading, spacing: 4) {
-                        if let moodText = viewModel.selectedMoodText {
-                            Text(moodText)
+                        if let mood {
+                            Text(mood.text)
                                 .font(.system(size: 22, weight: .bold, design: .rounded))
                                 .foregroundStyle(.white)
-                            
+
                             Text("Mood registered")
                                 .font(.system(size: 13, weight: .medium))
                                 .foregroundStyle(.white.opacity(0.8))
@@ -54,44 +54,44 @@ struct MoodCard: View {
                             Text("No mood selected")
                                 .font(.system(size: 18, weight: .semibold, design: .rounded))
                                 .foregroundStyle(Color.theme.secondaryText)
-                            
+
                             Text("Tap to check in")
                                 .font(.system(size: 13))
                                 .foregroundStyle(Color.theme.tertiaryText)
                         }
                     }
-                    
+
                     Spacer()
                 }
-                
-                // CTA Action button inside the card
+
                 HStack {
                     Spacer()
                     HStack(spacing: 6) {
-                        Text(viewModel.selectedMoodEmoji != nil ? "Update Mood" : "Choose Today's Mood")
+                        Text(mood != nil ? "Update Mood" : "Choose Today's Mood")
                             .font(.system(size: 14, weight: .bold))
                         Image(systemName: "chevron.right")
                             .font(.system(size: 10, weight: .bold))
                     }
                     .padding(.horizontal, 16)
                     .padding(.vertical, 10)
-                    .background(viewModel.selectedMoodEmoji != nil ? .white : Color.teal)
-                    .foregroundStyle(viewModel.selectedMoodEmoji != nil ? Color(hex: viewModel.selectedMoodColorHex ?? "38B2AC") : .white)
+                    .background(mood != nil ? .white : Color.teal)
+                    .foregroundStyle(mood != nil ? Color(hex: mood?.colorHex ?? "38B2AC") : .white)
                     .clipShape(Capsule())
                     .shadow(color: Color.theme.shadow, radius: 4, x: 0, y: 2)
                 }
             }
             .padding(20)
             .background {
-                if let hex = viewModel.selectedMoodColorHex {
-                    // Vibrant gradient based on selected mood
+                if let hex = mood?.colorHex {
                     LinearGradient(
-                        colors: [Color.adaptiveMoodColor(hex: hex), Color.adaptiveMoodColor(hex: hex, darkOpacityMultiplier: 0.75)],
+                        colors: [
+                            Color.adaptiveMoodColor(hex: hex),
+                            Color.adaptiveMoodColor(hex: hex, darkOpacityMultiplier: 0.75)
+                        ],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
                 } else {
-                    // Standard background matching theme cards
                     Color.theme.cardBackground
                 }
             }
@@ -99,19 +99,13 @@ struct MoodCard: View {
             .overlay(
                 RoundedRectangle(cornerRadius: 22, style: .continuous)
                     .stroke(
-                        viewModel.selectedMoodEmoji != nil 
-                            ? Color.white.opacity(0.2) 
-                            : Color.theme.border,
+                        mood != nil ? Color.white.opacity(0.2) : Color.theme.border,
                         lineWidth: 1
                     )
             )
             .shadow(
-                color: viewModel.selectedMoodEmoji != nil 
-                    ? Color(hex: viewModel.selectedMoodColorHex!).opacity(0.3) 
-                    : Color.theme.shadow,
-                radius: 12,
-                x: 0,
-                y: 8
+                color: mood.map { Color(hex: $0.colorHex).opacity(0.3) } ?? Color.theme.shadow,
+                radius: 12, x: 0, y: 8
             )
         }
         .buttonStyle(ScaleButtonStyle())
@@ -119,12 +113,9 @@ struct MoodCard: View {
 }
 
 #Preview {
-    VStack(spacing: 20) {
-        MoodCard(viewModel: HomeViewModel())
-        
-        let selectedVm = HomeViewModel()
-        let _ = selectedVm.selectMood(emoji: "😊", text: "Happy Today", colorHex: "38B2AC")
-        MoodCard(viewModel: selectedVm)
+    let vm = HomeViewModel()
+    return VStack(spacing: 20) {
+        MoodCard(viewModel: vm)
     }
     .padding()
     .background(Color.teal.opacity(0.1))

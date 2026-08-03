@@ -2,22 +2,19 @@
 //  MoodPickerSheet.swift
 //  moodmate
 //
-//  Created by Nurtore on 22.07.2026.
-//
 
 import SwiftUI
 
 struct MoodPickerSheet: View {
     @ObservedObject var viewModel: HomeViewModel
-    
+
     var body: some View {
         VStack(spacing: 24) {
-            // Drag indicator
             RoundedRectangle(cornerRadius: 3)
                 .fill(Color.secondary.opacity(0.3))
                 .frame(width: 36, height: 5)
                 .padding(.top, 12)
-            
+
             VStack(spacing: 6) {
                 Text("How are you feeling today?")
                     .font(.system(size: 22, weight: .bold, design: .rounded))
@@ -27,18 +24,24 @@ struct MoodPickerSheet: View {
                     .foregroundStyle(Color.theme.secondaryText)
             }
             .padding(.top, 6)
-            
-            // Grid of Moods
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 100, maximum: 120), spacing: 16)], spacing: 20) {
+
+            LazyVGrid(
+                columns: [GridItem(.adaptive(minimum: 100, maximum: 120), spacing: 16)],
+                spacing: 20
+            ) {
                 ForEach(viewModel.moodOptions) { option in
-                    Button(action: {
-                        viewModel.selectMood(emoji: option.emoji, text: option.text, colorHex: option.colorHex)
+                    let isSelected = viewModel.selectedMood?.emoji == option.emoji
+
+                    Button {
+                        viewModel.selectMood(
+                            emoji: option.emoji,
+                            text: option.text,
+                            colorHex: option.colorHex
+                        )
                         viewModel.showMoodPickerSheet = false
-                    }) {
+                    } label: {
                         VStack(spacing: 12) {
-                            Text(option.emoji)
-                                .font(.system(size: 40))
-                            
+                            Text(option.emoji).font(.system(size: 40))
                             Text(option.text)
                                 .font(.system(size: 14, weight: .semibold, design: .rounded))
                                 .foregroundStyle(Color.theme.primaryText)
@@ -46,12 +49,16 @@ struct MoodPickerSheet: View {
                         .frame(width: 100, height: 100)
                         .background(
                             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                .fill(viewModel.selectedMoodEmoji == option.emoji ? Color.adaptiveMoodColor(hex: option.colorHex).opacity(0.2) : Color.theme.surface)
+                                .fill(
+                                    isSelected
+                                        ? Color.adaptiveMoodColor(hex: option.colorHex).opacity(0.2)
+                                        : Color.theme.surface
+                                )
                         )
                         .overlay(
                             RoundedRectangle(cornerRadius: 16, style: .continuous)
                                 .stroke(
-                                    viewModel.selectedMoodEmoji == option.emoji ? Color(hex: option.colorHex) : Color.theme.border,
+                                    isSelected ? Color(hex: option.colorHex) : Color.theme.border,
                                     lineWidth: 2
                                 )
                         )
@@ -60,7 +67,7 @@ struct MoodPickerSheet: View {
                 }
             }
             .padding(.horizontal, 24)
-            
+
             Spacer()
         }
     }

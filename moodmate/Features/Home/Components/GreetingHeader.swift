@@ -2,40 +2,38 @@
 //  GreetingHeader.swift
 //  moodmate
 //
-//  Created by Nurtore on 22.07.2026.
-//
 
 import SwiftUI
 
 struct GreetingHeader: View {
     @ObservedObject var viewModel: HomeViewModel
     var onProfileTap: () -> Void
-    
+
     var body: some View {
         HStack(alignment: .center) {
             VStack(alignment: .leading, spacing: 4) {
                 Text(viewModel.greetingText)
                     .font(.system(size: 16, weight: .regular))
                     .foregroundStyle(Color.theme.secondaryText)
-                
-                Text("\(viewModel.currentUserDisplayName)")
+
+                Text(viewModel.currentUserDisplayName)
                     .font(.system(size: 28, weight: .bold, design: .rounded))
                     .foregroundStyle(Color.theme.primaryText)
-                
+
                 Text(viewModel.formattedDate)
                     .font(.system(size: 13, weight: .medium))
                     .foregroundStyle(Color.theme.tertiaryText)
             }
-            
+
             Spacer()
-            
-            // Profile avatar button
+
             Button(action: onProfileTap) {
-                let currentProfile = ProfileService.shared.getProfile(forId: nil)
+                // Avatar data is now sourced from the ViewModel, which observes
+                // ProfileRepository — no singleton call inside the view.
                 AvatarView(
-                    imageData: currentProfile?.avatarImageData,
+                    imageData: viewModel.currentUserAvatarData,
                     name: viewModel.currentUserDisplayName,
-                    colorHex: currentProfile?.avatarColorHex ?? "38B2AC",
+                    colorHex: viewModel.currentUserAvatarColorHex,
                     size: 50,
                     showBorder: true
                 )
@@ -43,10 +41,11 @@ struct GreetingHeader: View {
             .buttonStyle(ScaleButtonStyle())
         }
     }
-    
 }
 
-// Reusable scale effect button style for premium tactile feedback
+// MARK: - Scale Button Style
+// Defined here as it is used across many Home-feature components.
+
 struct ScaleButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label

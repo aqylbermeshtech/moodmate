@@ -13,6 +13,21 @@ protocol AuthServiceProtocol {
     func signUp(email: String, password: String) async throws -> User
     func signOut() throws
     var currentUser: User? { get }
+    /// The best available display name for the signed-in user,
+    /// derived from Firebase Auth displayName or email prefix.
+    var currentUserDisplayName: String? { get }
+}
+
+extension AuthServiceProtocol {
+    var currentUserDisplayName: String? {
+        guard let user = currentUser else { return nil }
+        if let name = user.displayName, !name.isEmpty { return name }
+        if let email = user.email,
+           let prefix = email.split(separator: "@").first {
+            return String(prefix).capitalized
+        }
+        return nil
+    }
 }
 
 final class FirebaseAuthService: AuthServiceProtocol {

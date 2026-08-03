@@ -16,12 +16,7 @@ struct HomeView: View {
     /// Injected by RootTabContainerView so both share the same instance.
     @ObservedObject var viewModel: HomeViewModel
 
-    /// Called when the user taps the mood card's "Log a Moment" action or
-    /// any other in-feed trigger that should open the create-post sheet.
     var onCreatePost: () -> Void
-
-    /// Called when the user taps their avatar in the greeting header.
-    /// The container will switch the tab selection to .profile.
     var onNavigateToProfile: () -> Void
 
     // MARK: - Body
@@ -40,17 +35,30 @@ struct HomeView: View {
 
                 feedSection
             }
-            // Extra bottom padding so the last card clears the floating nav bar.
             .padding(.bottom, 32)
         }
         .scrollIndicators(.hidden)
         .background {
-            Color.theme.backgroundGradient
-                .ignoresSafeArea()
+            Color.theme.backgroundGradient.ignoresSafeArea()
         }
-        .navigationTitle("")
         .navigationBarHidden(true)
-        // Mood picker sheet is local to the home feed — it doesn't concern other tabs.
+        // Start data loading and subscriptions when the view first appears.
+        // Using .task so the work is tied to the view's lifetime.
+        .task {
+            viewModel.onAppear()
+        }
+        // Surface any transient errors from FeedViewModel.
+        .alert(
+            "Something went wrong",
+            isPresented: Binding(
+                get: { viewModel.feed.errorMessage != nil },
+                set: { if !$0 { viewModel.feed.clearError() } }
+            )
+        ) {
+            Button("OK") { viewModel.feed.clearError() }
+        } message: {
+            Text(viewModel.feed.errorMessage ?? "")
+        }
         .sheet(isPresented: $viewModel.showMoodPickerSheet) {
             MoodPickerSheet(viewModel: viewModel)
                 .presentationDetents([.height(380)])
@@ -98,11 +106,12 @@ struct HomeView: View {
                 .padding(.horizontal, 20)
 
             LazyVStack(spacing: 24) {
-                ForEach(viewModel.feedPosts) { post in
+                // Reads directly from the composed FeedViewModel.
+                ForEach(viewModel.feed.posts) { post in
                     FeedCard(
                         post: post,
-                        onLike:     { viewModel.toggleLike(for: post) },
-                        onBookmark: { viewModel.toggleBookmark(for: post) },
+                        onLike:     { viewModel.feed.toggleLike(for: post) },
+                        onBookmark: { viewModel.feed.toggleBookmark(for: post) },
                         onComment: {
                             viewModel.selectMood(
                                 emoji: "💬",
