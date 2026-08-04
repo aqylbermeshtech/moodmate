@@ -141,7 +141,7 @@ struct CreatePostView: View {
             }
             // Photos Picker
             .photosPicker(isPresented: $viewModel.showImagePicker, selection: $selectedPhotoItem, matching: .images)
-            // FIX 5: Updated to 2-argument onChange (required in Xcode 16 / Swift 5.9+)
+            // Load selected photo from system Photos picker asynchronously
             .onChange(of: selectedPhotoItem) { _, newItem in
                 Task {
                     if let data = try? await newItem?.loadTransferable(type: Data.self),

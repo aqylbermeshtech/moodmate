@@ -262,7 +262,6 @@ struct EditProfileView: View {
                         text: $editViewModel.displayName,
                         icon: "person"
                     )
-                    // FIX 6a: Updated to 2-argument onChange (required in Xcode 16 / Swift 5.9+)
                     .onChange(of: editViewModel.displayName) { _, _ in
                         editViewModel.validateDisplayName()
                     }
@@ -289,7 +288,6 @@ struct EditProfileView: View {
                     )
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled(true)
-                    // FIX 6b: Updated to 2-argument onChange
                     .onChange(of: editViewModel.username) { _, _ in
                         editViewModel.validateUsername()
                     }
@@ -328,7 +326,6 @@ struct EditProfileView: View {
                         )
                         .font(.system(size: 15))
                         .foregroundStyle(Color.theme.primaryText)
-                        // FIX 6c: Updated to 2-argument onChange
                         .onChange(of: editViewModel.bio) { _, _ in
                             editViewModel.validateBio()
                         }
@@ -491,7 +488,6 @@ struct PhotosPickerWrapper: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-            // FIX 7: Updated to 2-argument onChange
             .onChange(of: selectedItem) { _, newItem in
                 guard let newItem else { return }
                 Task {
