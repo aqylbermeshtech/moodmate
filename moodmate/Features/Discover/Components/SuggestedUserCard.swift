@@ -39,8 +39,6 @@ struct SuggestedUserCard: View {
                     )
                 }
             }
-            
-            // User info
             VStack(spacing: 2) {
                 Text(user.displayName)
                     .font(.system(size: 13, weight: .bold, design: .rounded))
@@ -67,8 +65,7 @@ struct SuggestedUserCard: View {
                     .padding(.top, 2)
                 }
             }
-            
-            // Follow button
+
             Button(action: onFollow) {
                 Text(user.isFollowing ? "Following" : "Follow")
                     .font(.system(size: 12, weight: .bold, design: .rounded))

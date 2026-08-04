@@ -14,8 +14,7 @@ extension Color {
 
 struct ThemeColors {
     // MARK: - Backgrounds
-    
-    /// Main view background color. Soft warm light grey in light mode, deep dark navy-gray in dark mode.
+
     var primaryBackground: Color {
         Color(UIColor { trait in
             trait.userInterfaceStyle == .dark
@@ -23,8 +22,7 @@ struct ThemeColors {
                 : UIColor(red: 0.97, green: 0.98, blue: 0.99, alpha: 1.0)
         })
     }
-    
-    /// Secondary background color for grouped content, headers, or subtle sectioning.
+
     var secondaryBackground: Color {
         Color(UIColor { trait in
             trait.userInterfaceStyle == .dark
@@ -32,8 +30,7 @@ struct ThemeColors {
                 : UIColor(red: 0.94, green: 0.95, blue: 0.97, alpha: 1.0)
         })
     }
-    
-    /// Solid surface color for cards, modals, sheets, and popups.
+
     var surface: Color {
         Color(UIColor { trait in
             trait.userInterfaceStyle == .dark
@@ -41,8 +38,7 @@ struct ThemeColors {
                 : UIColor.white
         })
     }
-    
-    /// Adaptive semi-translucent card background for glassmorphic and frosted card containers.
+
     var cardBackground: Color {
         Color(UIColor { trait in
             trait.userInterfaceStyle == .dark
@@ -50,8 +46,7 @@ struct ThemeColors {
                 : UIColor.white.withAlphaComponent(0.85)
         })
     }
-    
-    /// Elevated grouped background for lists, forms, and secondary cards.
+ 
     var groupedBackground: Color {
         Color(UIColor { trait in
             trait.userInterfaceStyle == .dark
@@ -62,7 +57,6 @@ struct ThemeColors {
     
     // MARK: - Typography
     
-    /// High-contrast primary label text.
     var primaryText: Color {
         Color(UIColor { trait in
             trait.userInterfaceStyle == .dark
@@ -70,8 +64,7 @@ struct ThemeColors {
                 : UIColor(red: 0.10, green: 0.12, blue: 0.18, alpha: 1.0)
         })
     }
-    
-    /// Medium-contrast secondary label text.
+
     var secondaryText: Color {
         Color(UIColor { trait in
             trait.userInterfaceStyle == .dark
@@ -79,8 +72,7 @@ struct ThemeColors {
                 : UIColor(red: 0.42, green: 0.45, blue: 0.52, alpha: 1.0)
         })
     }
-    
-    /// Low-contrast tertiary label text or placeholder text.
+  
     var tertiaryText: Color {
         Color(UIColor { trait in
             trait.userInterfaceStyle == .dark
@@ -90,8 +82,7 @@ struct ThemeColors {
     }
     
     // MARK: - Accents & States
-    
-    /// Primary accent color (Teal / Cyan).
+
     var accent: Color {
         Color(UIColor { trait in
             trait.userInterfaceStyle == .dark
@@ -99,8 +90,7 @@ struct ThemeColors {
                 : UIColor(red: 0.22, green: 0.69, blue: 0.67, alpha: 1.0)
         })
     }
-    
-    /// Success indicator color (Emerald green).
+
     var success: Color {
         Color(UIColor { trait in
             trait.userInterfaceStyle == .dark
@@ -108,8 +98,7 @@ struct ThemeColors {
                 : UIColor(red: 0.06, green: 0.73, blue: 0.50, alpha: 1.0)
         })
     }
-    
-    /// Warning indicator color (Amber yellow).
+
     var warning: Color {
         Color(UIColor { trait in
             trait.userInterfaceStyle == .dark
@@ -118,7 +107,6 @@ struct ThemeColors {
         })
     }
     
-    /// Error indicator color (Coral red).
     var error: Color {
         Color(UIColor { trait in
             trait.userInterfaceStyle == .dark
@@ -128,8 +116,7 @@ struct ThemeColors {
     }
     
     // MARK: - Structure, Shadows & Overlays
-    
-    /// Thin border divider line color.
+
     var divider: Color {
         Color(UIColor { trait in
             trait.userInterfaceStyle == .dark
@@ -137,8 +124,7 @@ struct ThemeColors {
                 : UIColor(white: 0.0, alpha: 0.08)
         })
     }
-    
-    /// Stroke and card border highlight color.
+
     var border: Color {
         Color(UIColor { trait in
             trait.userInterfaceStyle == .dark
@@ -147,7 +133,6 @@ struct ThemeColors {
         })
     }
     
-    /// Adaptive card drop shadow color. Soft blue-gray tint in light mode, dark ambient glow in dark mode.
     var shadow: Color {
         Color(UIColor { trait in
             trait.userInterfaceStyle == .dark
@@ -155,8 +140,7 @@ struct ThemeColors {
                 : UIColor(red: 0.10, green: 0.15, blue: 0.25, alpha: 0.08)
         })
     }
-    
-    /// Modal overlay background mask.
+
     var overlay: Color {
         Color(UIColor { trait in
             trait.userInterfaceStyle == .dark
@@ -166,8 +150,7 @@ struct ThemeColors {
     }
     
     // MARK: - Background Gradients
-    
-    /// Dynamic mesh gradient for main screens.
+
     var backgroundGradient: LinearGradient {
         LinearGradient(
             colors: [

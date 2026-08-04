@@ -12,33 +12,26 @@ struct PostTextEditor: View {
     let placeholder: String
     let maxLength: Int
     var onEmojiSelected: (String) -> Void
-    
     @FocusState private var isEditorFocused: Bool
-    
-    // Quick emoji bar options
+
     private let quickEmojis = ["✨", "🌱", "☕️", "🏃‍♂️", "🎧", "☀️", "🌙", "🌊", "🙏", "💖"]
-    
-    // Quick hashtag options
+
     private let quickHashtags = ["#mood", "#mindfulness", "#daily", "#gratitude", "#vibes"]
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             ZStack(alignment: .topLeading) {
-                // Text editor
                 TextEditor(text: $text)
                     .focused($isEditorFocused)
                     .font(.system(size: 17, weight: .regular))
                     .foregroundStyle(Color.theme.primaryText)
                     .scrollContentBackground(.hidden)
                     .frame(minHeight: 120, maxHeight: 220)
-                    // Truncate text if it exceeds the maximum allowed character limit
                     .onChange(of: text) { _, newValue in
                         if newValue.count > maxLength {
                             text = String(newValue.prefix(maxLength))
                         }
                     }
-                
-                // Placeholder overlay
                 if text.isEmpty {
                     Text(placeholder)
                         .font(.system(size: 17, weight: .regular))
@@ -48,10 +41,7 @@ struct PostTextEditor: View {
                         .allowsHitTesting(false)
                 }
             }
-            
-            // Bottom Bar inside editor (Character counter + Quick actions)
             HStack {
-                // Quick hashtag chips
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 6) {
                         ForEach(quickHashtags, id: \.self) { tag in
@@ -75,11 +65,9 @@ struct PostTextEditor: View {
                 
                 CharacterCounter(currentLength: text.count, maxLength: maxLength)
             }
-            
             Divider()
                 .background(Color.theme.divider)
-            
-            // Quick Emoji Input Row
+
             HStack(spacing: 8) {
                 Text("Quick add:")
                     .font(.system(size: 12, weight: .medium))

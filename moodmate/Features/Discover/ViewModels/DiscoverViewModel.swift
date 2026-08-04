@@ -12,27 +12,23 @@ import Combine
 final class DiscoverViewModel: ObservableObject {
     
     // MARK: - Published State
-    
-    // Content
+
     @Published var discoverPosts: [DiscoverPost] = []
     @Published var trendingMoods: [TrendingMood] = []
     @Published var suggestedUsers: [SuggestedUser] = []
     @Published var trendingHashtags: [DiscoverHashtag] = []
     @Published var categories: [DiscoverCategory] = []
     
-    // Filters
     @Published var selectedMood: TrendingMood? = nil
     @Published var selectedCategory: DiscoverCategory? = nil
     @Published var selectedHashtag: DiscoverHashtag? = nil
     
-    // Search
     @Published var searchText: String = ""
     @Published var searchResults: [SearchResult] = []
     @Published var recentSearches: [String] = []
     @Published var searchScope: SearchScope = .all
     @Published var isSearchActive: Bool = false
     
-    // Loading states
     @Published var isLoading: Bool = true
     @Published var isLoadingMore: Bool = false
     @Published var hasMorePages: Bool = true
@@ -83,8 +79,7 @@ final class DiscoverViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] updatedProfile in
                 guard let self = self else { return }
-                
-                // Update suggested users
+
                 if let index = self.suggestedUsers.firstIndex(where: { $0.id == updatedProfile.id }) {
                     self.suggestedUsers[index] = SuggestedUser(
                         id: updatedProfile.id,
@@ -99,8 +94,7 @@ final class DiscoverViewModel: ObservableObject {
                         isFollowing: self.suggestedUsers[index].isFollowing
                     )
                 }
-                
-                // Update discover posts by user
+
                 for i in 0..<self.discoverPosts.count {
                     if self.discoverPosts[i].userId == updatedProfile.id {
                         let oldPost = self.discoverPosts[i]

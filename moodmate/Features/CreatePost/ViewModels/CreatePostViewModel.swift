@@ -34,8 +34,7 @@ final class CreatePostViewModel: ObservableObject {
     // MARK: - Dependencies
     private let postService: PostServiceProtocol
     private let draftManager: DraftManager
-    
-    // Current user context
+
     @Published var currentUser: MoodUser
     
     init(
@@ -44,8 +43,7 @@ final class CreatePostViewModel: ObservableObject {
     ) {
         self.postService = postService
         self.draftManager = draftManager
-        
-        // Initialize current user
+
         var userName = "John"
         var userHandle = "john_doe"
         if let firebaseUser = FirebaseAuthService.shared.currentUser {
@@ -68,8 +66,7 @@ final class CreatePostViewModel: ObservableObject {
             currentMoodText: nil,
             currentMoodColorHex: nil
         )
-        
-        // Check if saved draft exists
+
         loadDraftIfAvailable()
     }
     
@@ -92,8 +89,7 @@ final class CreatePostViewModel: ObservableObject {
         }
         return Color.theme.accent
     }
-    
-    // Available moods for picker
+ 
     struct MoodOption: Identifiable {
         let id = UUID()
         let emoji: String
@@ -118,8 +114,7 @@ final class CreatePostViewModel: ObservableObject {
             self.selectedMoodEmoji = emoji
             self.selectedMoodText = text
             self.selectedMoodColorHex = colorHex
-            
-            // Update current user mood status
+ 
             self.currentUser.currentMoodEmoji = emoji
             self.currentUser.currentMoodText = text
             self.currentUser.currentMoodColorHex = colorHex
@@ -156,14 +151,12 @@ final class CreatePostViewModel: ObservableObject {
         guard index >= 0 && index < selectedImages.count else { return }
         selectedImages[index] = newImage
     }
-    
-    // Helper to generate custom/sample photo for demo in Simulator
+
     func addSamplePhoto() {
         let renderer = UIGraphicsImageRenderer(size: CGSize(width: 800, height: 600))
         let sampleImage = renderer.image { ctx in
             let bounds = CGRect(x: 0, y: 0, width: 800, height: 600)
-            
-            // Gradient background
+
             let color1 = UIColor(Color.adaptiveMoodColor(hex: selectedMoodColorHex ?? "38B2AC")).cgColor
             let color2 = UIColor(Color.purple).cgColor
             let colors = [color1, color2] as CFArray
@@ -171,8 +164,6 @@ final class CreatePostViewModel: ObservableObject {
             if let gradient = CGGradient(colorsSpace: space, colors: colors, locations: [0.0, 1.0]) {
                 ctx.cgContext.drawLinearGradient(gradient, start: CGPoint.zero, end: CGPoint(x: 800, y: 600), options: [])
             }
-            
-            // Text branding
             let text = "MoodMate Moment 🌿"
             let attrs: [NSAttributedString.Key: Any] = [
                 .font: UIFont.systemFont(ofSize: 42, weight: .bold),
@@ -245,8 +236,7 @@ final class CreatePostViewModel: ObservableObject {
         
         isPublishing = true
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-        
-        // Prepare base64 images
+
         var imageStrings: [String] = []
         for img in selectedImages {
             if let data = img.jpegData(compressionQuality: 0.7) {
@@ -277,18 +267,15 @@ final class CreatePostViewModel: ObservableObject {
         Task {
             do {
                 let created = try await postService.createPost(newPost)
-                
-                // Clear saved draft upon successful publish
+
                 clearDraft()
-                
-                // Success animations & haptics
+
                 await MainActor.run {
                     self.isPublishing = false
                     self.showSuccessAnimation = true
                     UINotificationFeedbackGenerator().notificationOccurred(.success)
                 }
-                
-                // Brief pause for success state display before popping view
+
                 try await Task.sleep(nanoseconds: 600_000_000)
                 
                 await MainActor.run {

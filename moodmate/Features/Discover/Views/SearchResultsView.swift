@@ -17,7 +17,6 @@ struct SearchResultsView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // Scope Picker
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
                     ForEach(SearchScope.allCases, id: \.self) { item in

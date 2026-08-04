@@ -14,7 +14,6 @@ struct DiscoverErrorView: View {
     
     var body: some View {
         if isPartialContent {
-            // Non-intrusive banner for partial content
             HStack(spacing: 10) {
                 Image(systemName: "exclamationmark.triangle.fill")
                     .font(.system(size: 14))
@@ -44,7 +43,6 @@ struct DiscoverErrorView: View {
             )
             .padding(.horizontal, 20)
         } else {
-            // Full-screen error state
             VStack(spacing: 20) {
                 ZStack {
                     Circle()

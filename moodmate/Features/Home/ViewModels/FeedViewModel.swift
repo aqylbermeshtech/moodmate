@@ -36,8 +36,6 @@ final class FeedViewModel: ObservableObject {
 
     // MARK: - Lifecycle
 
-    /// Start listening to the post service stream and profile update events.
-    /// Called by HomeViewModel.startObserving() — never from init.
     func startObserving() {
         observePosts()
         observeProfileUpdates()
@@ -58,11 +56,9 @@ final class FeedViewModel: ObservableObject {
     func toggleLike(for post: FeedPost) {
         guard let index = posts.firstIndex(where: { $0.id == post.id }) else { return }
 
-        // Snapshot before mutation for rollback.
         let previousLiked = posts[index].isLiked
         let previousCount = posts[index].likesCount
 
-        // Optimistic update — the view reflects this immediately.
         posts[index].isLiked    = !previousLiked
         posts[index].likesCount = previousLiked ? previousCount - 1 : previousCount + 1
 
@@ -70,7 +66,6 @@ final class FeedViewModel: ObservableObject {
             do {
                 try await postService.toggleLike(postId: post.id)
             } catch {
-                // Roll back if the service call fails.
                 if let rollbackIndex = posts.firstIndex(where: { $0.id == post.id }) {
                     posts[rollbackIndex].isLiked    = previousLiked
                     posts[rollbackIndex].likesCount = previousCount
@@ -119,7 +114,6 @@ final class FeedViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] updatedProfile in
                 guard let self else { return }
-                // Use the FeedPost.updatingAuthor helper — no inline reconstruction.
                 posts = posts.map { post in
                     post.user.id == updatedProfile.id
                         ? post.updatingAuthor(from: updatedProfile)

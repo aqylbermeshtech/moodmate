@@ -92,7 +92,6 @@ struct DiscoverLoadingSkeleton: View {
     }
     
     // MARK: - Skeleton Shapes
-    
     private func skeletonPill(width: CGFloat? = nil, height: CGFloat = 16) -> some View {
         RoundedRectangle(cornerRadius: height / 2, style: .continuous)
             .fill(Color.theme.secondaryBackground)

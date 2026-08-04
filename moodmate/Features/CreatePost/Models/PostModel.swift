@@ -37,11 +37,11 @@ enum PostVisibility: String, Codable, CaseIterable, Identifiable {
 struct PostModel: Identifiable, Codable, Equatable {
     let id: String
     var author: MoodUser
-    var mood: String?           // e.g. "Happy"
-    var moodEmoji: String?      // e.g. "😊"
-    var moodColorHex: String?   // e.g. "38B2AC"
-    var text: String?           // Post caption or body
-    var images: [String]        // Base64 string or system/asset image names
+    var mood: String?
+    var moodEmoji: String?
+    var moodColorHex: String?
+    var text: String?
+    var images: [String]
     var visibility: PostVisibility
     let createdAt: Date
     var likesCount: Int
@@ -49,8 +49,7 @@ struct PostModel: Identifiable, Codable, Equatable {
     var bookmarksCount: Int
     var isLiked: Bool
     var isBookmarked: Bool
-    
-    // Auxiliary fields for rich styling (quote style backwards compatibility)
+
     var quoteText: String?
     var gradientStartHex: String?
     var gradientEndHex: String?

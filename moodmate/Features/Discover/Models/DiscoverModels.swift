@@ -117,30 +117,26 @@ enum SearchResultType: String, CaseIterable, Codable {
 struct SearchResult: Identifiable, Equatable {
     let id: String
     let type: SearchResultType
-    
-    // User fields
+
     var userName: String?
     var username: String?
     var avatarColorHex: String?
     var avatarImageData: Data?
     var userMoodEmoji: String?
     var userBio: String?
-    
-    // Post fields
+
     var postQuote: String?
     var postCaption: String?
     var postGradientStartHex: String?
     var postGradientEndHex: String?
     var postLikesCount: Int?
     var postUserId: String?
-    
-    // Mood fields
+
     var moodEmoji: String?
     var moodName: String?
     var moodColorHex: String?
     var moodPostCount: Int?
-    
-    // Hashtag fields
+
     var hashtagName: String?
     var hashtagPostCount: Int?
 }

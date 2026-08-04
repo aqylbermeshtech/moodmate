@@ -43,8 +43,6 @@ struct EmptyDiscoverView: View {
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 32)
             }
-            
-            // Action buttons
             VStack(spacing: 10) {
                 if hasActiveFilter {
                     Button(action: onClearFilters) {

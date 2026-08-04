@@ -18,8 +18,7 @@ final class FriendsRepository: FriendsRepositoryProtocol {
     }
 
     func loadFriends() -> [MoodUser] {
-        // The mock friend IDs are defined in ProfileService.setupMockData.
-        // In a real app this would be a network call returning the followed-users list.
+
         let friendIds = ["1", "2", "3", "4", "5"]
         return friendIds.compactMap { id in
             guard let profile = service.getProfile(forId: id) else { return nil }

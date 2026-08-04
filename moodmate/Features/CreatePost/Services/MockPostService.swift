@@ -44,13 +44,11 @@ final class MockPostService: PostServiceProtocol {
     }
     
     func fetchPosts() async throws -> [PostModel] {
-        // Simulate minor network delay
         try await Task.sleep(nanoseconds: 150_000_000)
         return posts
     }
     
     func createPost(_ post: PostModel) async throws -> PostModel {
-        // Simulate network latency for publishing
         try await Task.sleep(nanoseconds: 400_000_000)
         posts.insert(post, at: 0)
         return post

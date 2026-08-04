@@ -19,11 +19,8 @@ struct CreatePostView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                // Dynamic Mood-Tinted Ambient Background
                 Color.theme.primaryBackground
                     .ignoresSafeArea()
-                
-                // Subtle dynamic mood glow overlay
                 RadialGradient(
                     colors: [
                         viewModel.accentColor.opacity(0.18),
@@ -35,14 +32,10 @@ struct CreatePostView: View {
                 )
                 .ignoresSafeArea()
                 .animation(.spring(response: 0.5, dampingFraction: 0.8), value: viewModel.selectedMoodColorHex)
-                
-                // Main Content Form
+
                 ScrollView {
                     VStack(spacing: 20) {
-                        // User Profile Header Info
                         userHeaderView
-                        
-                        // Mood Selector (Hero Card)
                         MoodPickerCard(
                             selectedMoodEmoji: viewModel.selectedMoodEmoji,
                             selectedMoodText: viewModel.selectedMoodText,
@@ -51,8 +44,6 @@ struct CreatePostView: View {
                                 viewModel.showMoodPickerSheet = true
                             }
                         )
-                        
-                        // Text Composer with Character Counter and Emoji Bar
                         PostTextEditor(
                             text: $viewModel.text,
                             placeholder: placeholderText,
@@ -62,7 +53,6 @@ struct CreatePostView: View {
                             }
                         )
                         
-                        // Photo Attachment Section
                         PhotoAttachmentView(
                             images: $viewModel.selectedImages,
                             onAddPhotoTap: {
@@ -75,8 +65,6 @@ struct CreatePostView: View {
                                 viewModel.showPhotoOptionsActionSheet = true
                             }
                         )
-                        
-                        // Visibility Selector (Public, Friends, Private)
                         VisibilitySelector(selectedVisibility: $viewModel.visibility)
                             .padding(.top, 4)
                         
@@ -86,8 +74,7 @@ struct CreatePostView: View {
                     .padding(.top, 16)
                 }
                 .scrollIndicators(.hidden)
-                
-                // Success overlay toast animation
+
                 if viewModel.showSuccessAnimation {
                     successOverlay
                 }
@@ -121,13 +108,11 @@ struct CreatePostView: View {
                     )
                 }
             }
-            // Mood Picker Bottom Sheet
             .sheet(isPresented: $viewModel.showMoodPickerSheet) {
                 moodPickerSheet
                     .presentationDetents([.height(400)])
                     .presentationDragIndicator(.visible)
             }
-            // Photo Selection Action Sheet
             .confirmationDialog("Add Photo", isPresented: $viewModel.showPhotoOptionsActionSheet, titleVisibility: .visible) {
                 Button("Photo Preset / Sample Photo") {
                     viewModel.addSamplePhoto()
@@ -139,9 +124,7 @@ struct CreatePostView: View {
                 
                 Button("Cancel", role: .cancel) {}
             }
-            // Photos Picker
             .photosPicker(isPresented: $viewModel.showImagePicker, selection: $selectedPhotoItem, matching: .images)
-            // Load selected photo from system Photos picker asynchronously
             .onChange(of: selectedPhotoItem) { _, newItem in
                 Task {
                     if let data = try? await newItem?.loadTransferable(type: Data.self),
@@ -153,7 +136,6 @@ struct CreatePostView: View {
                     }
                 }
             }
-            // Confirmation alert for unsaved draft
             .confirmationDialog("Unsaved Post", isPresented: $viewModel.showDiscardDraftAlert, titleVisibility: .visible) {
                 Button("Save Draft") {
                     viewModel.saveDraft()
@@ -173,7 +155,6 @@ struct CreatePostView: View {
     // MARK: - User Header View
     private var userHeaderView: some View {
         HStack(spacing: 12) {
-            // User Avatar
             AvatarView(
                 imageData: viewModel.currentUser.avatarImageData,
                 name: viewModel.currentUser.name,
@@ -205,8 +186,7 @@ struct CreatePostView: View {
             Spacer()
         }
     }
-    
-    // Dynamic placeholder options based on selected mood
+
     private var placeholderText: String {
         if let text = viewModel.selectedMoodText {
             return "Describe why you're feeling \(text.lowercased()) today..."

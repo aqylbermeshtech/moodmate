@@ -10,6 +10,5 @@
 import Foundation
 
 protocol FriendsRepositoryProtocol: AnyObject {
-    /// Returns the list of friends to display in the "Friends Today" section.
     func loadFriends() -> [MoodUser]
 }

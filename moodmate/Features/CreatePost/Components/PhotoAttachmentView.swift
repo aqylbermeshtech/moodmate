@@ -19,7 +19,6 @@ struct PhotoAttachmentView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             if images.isEmpty {
-                // Empty photo card button
                 Button(action: onAddPhotoTap) {
                     HStack(spacing: 12) {
                         ZStack {
@@ -60,7 +59,6 @@ struct PhotoAttachmentView: View {
                 }
                 .buttonStyle(ScaleButtonStyle())
             } else {
-                // Display attached photo(s)
                 VStack(spacing: 12) {
                     ForEach(Array(images.enumerated()), id: \.offset) { index, image in
                         ImagePreviewCard(
@@ -75,8 +73,6 @@ struct PhotoAttachmentView: View {
                             }
                         )
                     }
-                    
-                    // Add more photos button if architecture permits multi-photos
                     if images.count < 4 {
                         Button(action: onAddPhotoTap) {
                             HStack(spacing: 8) {

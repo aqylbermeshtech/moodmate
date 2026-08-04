@@ -22,11 +22,9 @@ struct FeedCard: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            // Header
             HStack(spacing: 10) {
                 NavigationLink(destination: ProfileView(userId: post.user.id)) {
                     HStack(spacing: 10) {
-                        // Mini user avatar
                         AvatarView(
                             imageData: post.user.avatarImageData,
                             name: post.user.name,
@@ -47,7 +45,6 @@ struct FeedCard: View {
                             }
                             
                             HStack(spacing: 6) {
-                                // Mood Badge
                                 if let mood = post.moodEmoji ?? post.user.currentMoodEmoji,
                                    let text = post.moodText ?? post.user.currentMoodText {
                                     HStack(spacing: 4) {
@@ -92,20 +89,14 @@ struct FeedCard: View {
                 .buttonStyle(PlainButtonStyle())
             }
             .padding(.horizontal, 16)
-            
-            // Post Visual / Content Area
             if !post.images.isEmpty {
-                // Photo Attachment Post Format
                 photoContentSection
             } else if !post.quoteText.isEmpty {
-                // Quote Card Format
                 quoteContentSection
             } else if post.caption.isEmpty, let moodEmoji = post.moodEmoji, let moodText = post.moodText {
-                // Mood-Only Hero Banner Format
                 moodOnlyContentSection(moodEmoji: moodEmoji, moodText: moodText)
             }
-            
-            // Caption text (if present)
+
             if !post.caption.isEmpty {
                 VStack(alignment: .leading, spacing: 4) {
                     Group {
@@ -120,10 +111,8 @@ struct FeedCard: View {
                 }
                 .padding(.horizontal, 16)
             }
-            
-            // Actions Bar (Like, Comment, Bookmark)
+
             HStack(spacing: 20) {
-                // Like Button
                 Button(action: onLike) {
                     HStack(spacing: 6) {
                         Image(systemName: post.isLiked ? "heart.fill" : "heart")
@@ -136,8 +125,7 @@ struct FeedCard: View {
                     }
                 }
                 .buttonStyle(ScaleButtonStyle())
-                
-                // Comment Button
+
                 Button(action: onComment) {
                     HStack(spacing: 6) {
                         Image(systemName: "bubble.right")
@@ -152,8 +140,7 @@ struct FeedCard: View {
                 .buttonStyle(PlainButtonStyle())
                 
                 Spacer()
-                
-                // Bookmark Button
+
                 Button(action: onBookmark) {
                     Image(systemName: post.isBookmarked ? "bookmark.fill" : "bookmark")
                         .font(.system(size: 18, weight: .medium))
@@ -183,7 +170,6 @@ struct FeedCard: View {
                         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                         .shadow(color: Color.theme.shadow, radius: 8, x: 0, y: 4)
                 } else {
-                    // Fallback visual container if string is non-base64
                     ZStack {
                         RoundedRectangle(cornerRadius: 16, style: .continuous)
                             .fill(postAccentColor.opacity(0.2))
@@ -268,8 +254,7 @@ struct FeedCard: View {
         )
         .padding(.horizontal, 16)
     }
-    
-    // Helper to decode Base64 image strings
+
     private func imageFromBase64(_ string: String) -> UIImage? {
         var base64 = string
         if string.contains(",") {

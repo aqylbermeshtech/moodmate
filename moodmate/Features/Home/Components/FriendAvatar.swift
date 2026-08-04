@@ -15,9 +15,7 @@ struct FriendAvatar: View {
         Button(action: onTap) {
             VStack(spacing: 8) {
                 ZStack(alignment: .bottomTrailing) {
-                    // Profile Circle with AvatarView
                     ZStack {
-                        // Outer ring gradient representing mood vitality
                         Circle()
                             .stroke(
                                 LinearGradient(
@@ -42,8 +40,6 @@ struct FriendAvatar: View {
                         )
                     }
                 }
-                
-                // User Name label
                 Text(user.name)
                     .font(.system(size: 12, weight: .semibold, design: .rounded))
                     .foregroundStyle(Color.theme.primaryText.opacity(0.85))

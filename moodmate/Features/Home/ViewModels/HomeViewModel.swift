@@ -34,18 +34,14 @@ final class HomeViewModel: ObservableObject {
     @Published var selectedMood: SelectedMood?
     @Published var showMoodPickerSheet = false
 
-    // Surface FeedViewModel errors up to the view layer.
     @Published private(set) var errorMessage: String?
 
     // MARK: - Composed child ViewModel
 
-    /// Owns all feed-list state. Exposed so HomeView can pass it
-    /// to FeedCard subviews without HomeViewModel acting as a relay.
     let feed: FeedViewModel
 
     // MARK: - Convenience accessors (backwards-compat for MoodCard / MoodPickerSheet)
 
-    /// The mood options shown in the picker grid. Source of truth is MoodOption.catalog.
     let moodOptions: [MoodOption] = MoodOption.catalog
 
     // MARK: - Dependencies (all injected — no singletons)
@@ -71,27 +67,21 @@ final class HomeViewModel: ObservableObject {
             postService: postService,
             profileRepository: profileRepository
         )
-        // No data loading or subscriptions here — see onAppear() / startObserving().
     }
 
     // MARK: - Lifecycle
 
-    /// Called from the view's `.task` modifier.
-    /// Loads initial data and starts all Combine subscriptions.
     func onAppear() {
         loadCurrentUser()
         loadFriends()
         startObserving()
     }
 
-    /// Subscribes to profile updates. Idempotent — calling twice is safe
-    /// because cancellables is cleared in stopObserving first.
     func startObserving() {
         feed.startObserving()
         observeProfileUpdates()
     }
 
-    /// Tears down all subscriptions. Call from onDisappear if needed.
     func stopObserving() {
         feed.stopObserving()
         cancellables.removeAll()

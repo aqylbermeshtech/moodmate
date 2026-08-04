@@ -28,8 +28,6 @@ struct GreetingHeader: View {
             Spacer()
 
             Button(action: onProfileTap) {
-                // Avatar data is now sourced from the ViewModel, which observes
-                // ProfileRepository — no singleton call inside the view.
                 AvatarView(
                     imageData: viewModel.currentUserAvatarData,
                     name: viewModel.currentUserDisplayName,
@@ -44,7 +42,6 @@ struct GreetingHeader: View {
 }
 
 // MARK: - Scale Button Style
-// Defined here as it is used across many Home-feature components.
 
 struct ScaleButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {

@@ -10,9 +10,6 @@ import Foundation
 
 // MARK: - Selected Mood
 
-/// A single value type representing the user's currently chosen mood.
-/// Replaces the previous three parallel published properties
-/// (selectedMoodEmoji / selectedMoodText / selectedMoodColorHex).
 struct SelectedMood: Equatable {
     let emoji: String
     let text: String
@@ -21,8 +18,6 @@ struct SelectedMood: Equatable {
 
 // MARK: - Mood Option
 
-/// One entry in the mood-picker grid.
-/// Previously defined as a nested type inside HomeViewModel.
 struct MoodOption: Identifiable, Equatable {
     let id = UUID()
     let emoji: String
@@ -33,9 +28,7 @@ struct MoodOption: Identifiable, Equatable {
 // MARK: - Catalog
 
 extension MoodOption {
-    /// The full set of moods available in the picker.
-    /// Centralised here so both HomeViewModel and CreatePostViewModel
-    /// can share the same source of truth.
+
     static let catalog: [MoodOption] = [
         MoodOption(emoji: "😊", text: "Happy",     colorHex: "38B2AC"),
         MoodOption(emoji: "😌", text: "Calm",      colorHex: "4A5568"),

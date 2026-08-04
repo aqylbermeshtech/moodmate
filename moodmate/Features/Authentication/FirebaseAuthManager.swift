@@ -13,8 +13,6 @@ protocol AuthServiceProtocol {
     func signUp(email: String, password: String) async throws -> User
     func signOut() throws
     var currentUser: User? { get }
-    /// The best available display name for the signed-in user,
-    /// derived from Firebase Auth displayName or email prefix.
     var currentUserDisplayName: String? { get }
 }
 

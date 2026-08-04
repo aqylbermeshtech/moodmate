@@ -11,9 +11,9 @@ struct MoodUser: Identifiable, Codable, Equatable {
     let id: String
     var name: String
     var username: String
-    var avatarImageName: String? // Optional custom image/system name
-    var avatarImageData: Data?   // Binary JPEG avatar data
-    var avatarColorHex: String   // Hex color for generating initials background
+    var avatarImageName: String?
+    var avatarImageData: Data?
+    var avatarColorHex: String
     var currentMoodEmoji: String?
     var currentMoodText: String?
     var currentMoodColorHex: String?
@@ -47,13 +47,13 @@ struct FeedPost: Identifiable, Equatable {
     let timeAgo: String
     let postGradientStartHex: String
     let postGradientEndHex: String
-    let quoteText: String       // Optional quote title
-    let caption: String         // Body text
-    var images: [String]        // Attached image base64 strings or URLs
-    var moodEmoji: String?      // Mood emoji associated with post
-    var moodText: String?       // Mood description
-    var moodColorHex: String?   // Mood accent color
-    var visibility: PostVisibility // Public, Friends, Private
+    let quoteText: String
+    let caption: String
+    var images: [String]
+    var moodEmoji: String?
+    var moodText: String?
+    var moodColorHex: String?
+    var visibility: PostVisibility
     var likesCount: Int
     var commentsCount: Int
     var isLiked: Bool
@@ -94,10 +94,7 @@ struct FeedPost: Identifiable, Equatable {
         self.isLiked = isLiked
         self.isBookmarked = isBookmarked
     }
-    
-    /// Returns a copy of this post with the author's display fields updated
-    /// from a fresh UserProfile. Used by FeedViewModel to propagate profile
-    /// edits without reconstructing the entire FeedPost inline.
+ 
     func updatingAuthor(from profile: UserProfile) -> FeedPost {
         var updatedUser = self.user
         updatedUser.name           = profile.displayName

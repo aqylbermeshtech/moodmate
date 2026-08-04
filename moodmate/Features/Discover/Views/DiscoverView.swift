@@ -51,8 +51,7 @@ struct DiscoverView: View {
                             }
                         )
                         .padding(.horizontal, 20)
-                        
-                        // Active Filter Bar
+
                         if viewModel.hasActiveFilter {
                             HStack {
                                 HStack(spacing: 6) {
@@ -86,10 +85,8 @@ struct DiscoverView: View {
                     .padding(.bottom, 10)
                     .background(.ultraThinMaterial)
                     
-                    // Main Content / Search Results Overlay
                     ZStack {
                         if viewModel.isSearchActive && !viewModel.searchText.isEmpty {
-                            // Search Results Mode
                             SearchResultsView(
                                 results: viewModel.filteredSearchResults,
                                 scope: $viewModel.searchScope,
@@ -112,13 +109,11 @@ struct DiscoverView: View {
                             )
                             .transition(.opacity)
                         } else if viewModel.isLoading {
-                            // Loading Skeleton Mode
                             ScrollView {
                                 DiscoverLoadingSkeleton()
                                     .padding(.top, 16)
                             }
                         } else if let error = viewModel.errorMessage, viewModel.discoverPosts.isEmpty {
-                            // Error Mode (Full Screen)
                             DiscoverErrorView(
                                 message: error,
                                 isPartialContent: false,
@@ -127,10 +122,8 @@ struct DiscoverView: View {
                                 }
                             )
                         } else {
-                            // Main Discover ScrollView
                             ScrollView {
                                 LazyVStack(spacing: 24) {
-                                    // Error Banner (Partial Content)
                                     if let error = viewModel.errorMessage {
                                         DiscoverErrorView(
                                             message: error,
@@ -140,8 +133,6 @@ struct DiscoverView: View {
                                             }
                                         )
                                     }
-                                    
-                                    // 1. Trending Moods
                                     if !viewModel.trendingMoods.isEmpty {
                                         VStack(alignment: .leading, spacing: 10) {
                                             SectionHeader(title: "Trending Moods", subtitle: "What the world is feeling")
@@ -162,8 +153,7 @@ struct DiscoverView: View {
                                             }
                                         }
                                     }
-                                    
-                                    // 2. Categories
+
                                     if !viewModel.categories.isEmpty {
                                         VStack(alignment: .leading, spacing: 10) {
                                             SectionHeader(title: "Categories", subtitle: "Explore by topic")
@@ -184,8 +174,6 @@ struct DiscoverView: View {
                                             }
                                         }
                                     }
-                                    
-                                    // 3. Suggested Users
                                     if !viewModel.suggestedUsers.isEmpty {
                                         VStack(alignment: .leading, spacing: 10) {
                                             SectionHeader(title: "People to Follow", subtitle: "Connect with like minds")
@@ -205,8 +193,6 @@ struct DiscoverView: View {
                                             }
                                         }
                                     }
-                                    
-                                    // 4. Trending Hashtags
                                     if !viewModel.trendingHashtags.isEmpty {
                                         VStack(alignment: .leading, spacing: 10) {
                                             SectionHeader(title: "Popular Hashtags", subtitle: "Trending topics")
@@ -227,8 +213,7 @@ struct DiscoverView: View {
                                             }
                                         }
                                     }
-                                    
-                                    // 5. Posts Feed Section Header
+
                                     VStack(alignment: .leading, spacing: 4) {
                                         HStack {
                                             Text(viewModel.hasActiveFilter ? "Filtered Feed" : "Community Discover Feed")
@@ -247,8 +232,6 @@ struct DiscoverView: View {
                                         }
                                         .padding(.horizontal, 20)
                                     }
-                                    
-                                    // 6. Masonry Grid or Empty State
                                     if viewModel.discoverPosts.isEmpty {
                                         EmptyDiscoverView(
                                             hasActiveFilter: viewModel.hasActiveFilter,
@@ -266,8 +249,7 @@ struct DiscoverView: View {
                                             }
                                         )
                                         .padding(.horizontal, 20)
-                                        
-                                        // Pagination Spinner
+
                                         if viewModel.hasMorePages {
                                             ProgressView()
                                                 .padding(.vertical, 20)
@@ -280,7 +262,7 @@ struct DiscoverView: View {
                                     }
                                 }
                                 .padding(.top, 12)
-                                .padding(.bottom, 100) // Bottom tab bar spacing
+                                .padding(.bottom, 100)
                             }
                             .refreshable {
                                 await viewModel.refresh()
@@ -322,8 +304,7 @@ private struct MasonryGrid: View {
     let posts: [DiscoverPost]
     var onLike: (DiscoverPost) -> Void
     var onSelectPost: (DiscoverPost) -> Void
-    
-    // Split posts into left and right columns balancing total visual height
+
     private var leftColumnPosts: [DiscoverPost] {
         var left: [DiscoverPost] = []
         var right: [DiscoverPost] = []

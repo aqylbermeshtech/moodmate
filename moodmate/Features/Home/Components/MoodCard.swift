@@ -7,8 +7,6 @@ import SwiftUI
 
 struct MoodCard: View {
     @ObservedObject var viewModel: HomeViewModel
-
-    // Convenience local alias so the body stays readable.
     private var mood: SelectedMood? { viewModel.selectedMood }
 
     var body: some View {

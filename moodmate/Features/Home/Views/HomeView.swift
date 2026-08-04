@@ -13,7 +13,6 @@ struct HomeView: View {
 
     // MARK: - Dependencies
 
-    /// Injected by RootTabContainerView so both share the same instance.
     @ObservedObject var viewModel: HomeViewModel
 
     var onCreatePost: () -> Void
@@ -42,12 +41,9 @@ struct HomeView: View {
             Color.theme.backgroundGradient.ignoresSafeArea()
         }
         .navigationBarHidden(true)
-        // Start data loading and subscriptions when the view first appears.
-        // Using .task so the work is tied to the view's lifetime.
         .task {
             viewModel.onAppear()
         }
-        // Surface any transient errors from FeedViewModel.
         .alert(
             "Something went wrong",
             isPresented: Binding(
@@ -106,7 +102,6 @@ struct HomeView: View {
                 .padding(.horizontal, 20)
 
             LazyVStack(spacing: 24) {
-                // Reads directly from the composed FeedViewModel.
                 ForEach(viewModel.feed.posts) { post in
                     FeedCard(
                         post: post,

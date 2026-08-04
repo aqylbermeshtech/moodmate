@@ -14,8 +14,6 @@ struct RootView: View {
     var body: some View {
         Group {
             if sessionManager.isResolvingSession {
-                // Firebase hasn't fired its first auth callback yet.
-                // Show a neutral splash so neither screen flashes prematurely.
                 splashView
             } else if sessionManager.isAuthenticated {
                 RootTabContainerView()
@@ -30,7 +28,6 @@ struct RootView: View {
         .preferredColorScheme(themeManager.selectedAppearance.colorScheme)
     }
     
-    // Minimal branded splash shown only during the brief Firebase session check.
     private var splashView: some View {
         ZStack {
             Color.theme.backgroundGradient

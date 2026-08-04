@@ -48,7 +48,6 @@ struct BottomNavigationBar: View {
         HStack(spacing: 0) {
             ForEach(HomeTab.allCases) { tab in
                 if tab == .add {
-                    // Elevated Center Action Button
                     Button(action: onAddTap) {
                         ZStack {
                             Circle()
@@ -79,8 +78,7 @@ struct BottomNavigationBar: View {
                         VStack(spacing: 4) {
                             Image(systemName: tab.iconName)
                                 .font(.system(size: 18, weight: selectedTab == tab ? .bold : .medium))
-                            
-                            // 1. Restored the dynamic Text transition
+
                             if selectedTab == tab {
                                 Text(tab.label)
                                     .font(.system(size: 10, weight: .bold))
@@ -105,7 +103,6 @@ struct BottomNavigationBar: View {
         .padding(.horizontal, 8)
         .padding(.vertical, 6)
         .background {
-            // Liquid Glass Capsule Container
             Capsule()
                 .fill(Color.theme.cardBackground)
                 .overlay(
@@ -122,7 +119,6 @@ struct BottomNavigationBar: View {
 // MARK: - Preview
 #Preview {
     ZStack {
-        // Gradient background to test the Glass effect
         LinearGradient(
             colors: [.purple.opacity(0.3), .blue.opacity(0.2)],
             startPoint: .top,
