@@ -34,40 +34,83 @@ final class CreatePostViewModel: ObservableObject {
     // MARK: - Dependencies
     private let postService: PostServiceProtocol
     private let draftManager: DraftManager
+    private let profileRepository: ProfileRepositoryProtocol
+    private var cancellables = Set<AnyCancellable>()
 
     @Published var currentUser: MoodUser
     
     init(
         postService: PostServiceProtocol = MockPostService.shared,
-        draftManager: DraftManager = DraftManager.shared
+        draftManager: DraftManager = DraftManager.shared,
+        profileRepository: ProfileRepositoryProtocol = ProfileRepository()
     ) {
         self.postService = postService
         self.draftManager = draftManager
+        self.profileRepository = profileRepository
 
-        var userName = "John"
-        var userHandle = "john_doe"
-        if let firebaseUser = FirebaseAuthService.shared.currentUser {
-            if let name = firebaseUser.displayName, !name.isEmpty {
-                userName = name
-            } else if let email = firebaseUser.email, !email.isEmpty {
-                let prefix = email.components(separatedBy: "@").first ?? "john"
-                userName = prefix.capitalized
-                userHandle = prefix.lowercased()
+        let userId = profileRepository.getCurrentUserId()
+        if let profile = profileRepository.getProfile(forId: userId) {
+            self.currentUser = MoodUser(
+                id: profile.id,
+                name: profile.displayName,
+                username: profile.username,
+                avatarImageName: profile.avatarImageName,
+                avatarImageData: profile.avatarImageData,
+                avatarColorHex: profile.avatarColorHex,
+                currentMoodEmoji: profile.currentMoodEmoji,
+                currentMoodText: profile.currentMoodText,
+                currentMoodColorHex: profile.currentMoodColorHex
+            )
+        } else {
+            var userName = "John"
+            var userHandle = "john_doe"
+            if let firebaseUser = FirebaseAuthService.shared.currentUser {
+                if let name = firebaseUser.displayName, !name.isEmpty {
+                    userName = name
+                } else if let email = firebaseUser.email, !email.isEmpty {
+                    let prefix = email.components(separatedBy: "@").first ?? "john"
+                    userName = prefix.capitalized
+                    userHandle = prefix.lowercased()
+                }
             }
+            
+            self.currentUser = MoodUser(
+                id: userId,
+                name: userName,
+                username: userHandle,
+                avatarImageName: nil,
+                avatarColorHex: "38B2AC",
+                currentMoodEmoji: nil,
+                currentMoodText: nil,
+                currentMoodColorHex: nil
+            )
         }
-        
-        self.currentUser = MoodUser(
-            id: FirebaseAuthService.shared.currentUser?.uid ?? "current_user",
-            name: userName,
-            username: userHandle,
-            avatarImageName: nil,
-            avatarColorHex: "38B2AC",
-            currentMoodEmoji: nil,
-            currentMoodText: nil,
-            currentMoodColorHex: nil
-        )
 
+        observeProfileUpdates()
         loadDraftIfAvailable()
+    }
+    
+    private func observeProfileUpdates() {
+        profileRepository.profileUpdatesPublisher
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] profile in
+                guard let self = self else { return }
+                let currentId = self.profileRepository.getCurrentUserId()
+                if profile.id == currentId {
+                    self.currentUser = MoodUser(
+                        id: profile.id,
+                        name: profile.displayName,
+                        username: profile.username,
+                        avatarImageName: profile.avatarImageName,
+                        avatarImageData: profile.avatarImageData,
+                        avatarColorHex: profile.avatarColorHex,
+                        currentMoodEmoji: profile.currentMoodEmoji,
+                        currentMoodText: profile.currentMoodText,
+                        currentMoodColorHex: profile.currentMoodColorHex
+                    )
+                }
+            }
+            .store(in: &cancellables)
     }
     
     // MARK: - Validation
