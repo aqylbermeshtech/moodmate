@@ -246,7 +246,7 @@ struct PostDetailView: View {
             .padding(.horizontal, 16)
             
             VStack(alignment: .leading, spacing: 4) {
-                Text("\(user.displayName)  \(post.caption)")
+                Text("\(Text(user.username).bold()) \(Text(post.caption))")
                     .font(.system(size: 13))
                     .foregroundStyle(Color.theme.primaryText)
                     .multilineTextAlignment(.leading)
