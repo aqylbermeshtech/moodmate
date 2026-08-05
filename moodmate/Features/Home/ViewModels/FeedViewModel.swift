@@ -36,14 +36,31 @@ final class FeedViewModel: ObservableObject {
 
     // MARK: - Lifecycle
 
+    private var isObserving = false
+
     func startObserving() {
+        guard !isObserving else { return }
+        isObserving = true
+
         observePosts()
         observeProfileUpdates()
+
+        Task { [weak self] in
+            guard let self else { return }
+            do {
+                let initialPosts = try await postService.fetchPosts()
+                self.posts = initialPosts.map { FeedPost(from: $0) }
+            } catch {
+                self.errorMessage = error.localizedDescription
+            }
+        }
     }
 
     func stopObserving() {
+        isObserving = false
         cancellables.removeAll()
     }
+
 
     // MARK: - Public API
 
