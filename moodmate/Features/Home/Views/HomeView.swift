@@ -103,8 +103,9 @@ struct HomeView: View {
 
             LazyVStack(spacing: 24) {
                 ForEach(viewModel.feed.posts) { post in
-                    FeedCard(
+                    PostCardView(
                         post: post,
+                        style: .feed,
                         onLike:     { viewModel.feed.toggleLike(for: post) },
                         onBookmark: { viewModel.feed.toggleBookmark(for: post) },
                         onComment: {

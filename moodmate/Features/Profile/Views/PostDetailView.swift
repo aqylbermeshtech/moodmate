@@ -17,14 +17,20 @@ struct MockComment: Identifiable {
 }
 
 struct PostDetailView: View {
-    let post: ProfilePost
-    let user: UserProfile
+    let post: FeedPost
     
     @State private var comments: [MockComment] = []
     @State private var commentText = ""
     @State private var isLiked = false
     @State private var likesCount = 0
     @State private var isBookmarked = false
+    
+    /// A local copy of the post that reflects interactive state changes (like, bookmark).
+    @State private var displayPost: FeedPost?
+    
+    private var currentPost: FeedPost {
+        displayPost ?? post
+    }
     
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -34,8 +40,14 @@ struct PostDetailView: View {
             
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    // Full post card
-                    postCard
+                    // Full post card (unified component)
+                    PostCardView(
+                        post: currentPost,
+                        style: .detail,
+                        onLike: toggleLike,
+                        onBookmark: toggleBookmark,
+                        onComment: {}
+                    )
                     
                     // Comments Section Title
                     Text("Comments (\(comments.count))")
@@ -85,202 +97,15 @@ struct PostDetailView: View {
         }
     }
     
-    // MARK: - Post Visual Card (similar to FeedCard but self-contained)
-    private var postCard: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            // Header
-            HStack(spacing: 10) {
-                // Mini user avatar
-                ZStack {
-                    Circle()
-                        .fill(
-                            LinearGradient(
-                                colors: [
-                                    Color(hex: user.avatarColorHex).opacity(0.85),
-                                    Color(hex: user.avatarColorHex)
-                                ],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                    
-                    Text(getInitials(user.displayName))
-                        .font(.system(size: 13, weight: .bold, design: .rounded))
-                        .foregroundStyle(.white)
-                }
-                .frame(width: 38, height: 38)
-                
-                VStack(alignment: .leading, spacing: 2) {
-                    HStack(spacing: 4) {
-                        Text(user.displayName)
-                            .font(.system(size: 14, weight: .semibold, design: .rounded))
-                            .foregroundStyle(Color.theme.primaryText)
-                        
-                        Text("@\(user.username)")
-                            .font(.system(size: 11))
-                            .foregroundStyle(Color.theme.secondaryText)
-                    }
-                    
-                    HStack(spacing: 6) {
-                        if let moodEmoji = user.currentMoodEmoji, let moodText = user.currentMoodText {
-                            HStack(spacing: 4) {
-                                Text(moodEmoji)
-                                    .font(.system(size: 10))
-                                Text(moodText)
-                                    .font(.system(size: 10, weight: .bold))
-                            }
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2.5)
-                            .background(Color.adaptiveMoodColor(hex: user.currentMoodColorHex ?? "38B2AC").opacity(0.15))
-                            .foregroundStyle(Color.adaptiveMoodColor(hex: user.currentMoodColorHex ?? "38B2AC"))
-                            .clipShape(Capsule())
-                        }
-                        
-                        Text("•")
-                            .font(.system(size: 10))
-                            .foregroundStyle(Color.theme.tertiaryText)
-                        
-                        Text(formatDate(post.createdAt))
-                            .font(.system(size: 11))
-                            .foregroundStyle(Color.theme.secondaryText)
-                    }
-                }
-                
-                Spacer()
-            }
-            .padding(.horizontal, 16)
-            
-            // Large Post Visual (Premium mindfulness quote background card)
-            ZStack {
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                Color.adaptiveMoodColor(hex: post.postGradientStartHex),
-                                Color.adaptiveMoodColor(hex: post.postGradientEndHex)
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .frame(height: 220)
-                    .shadow(color: Color.theme.shadow, radius: 10, x: 0, y: 6)
-                
-                // Abstract Circles
-                GeometryReader { geo in
-                    ZStack {
-                        Circle()
-                            .fill(Color.white.opacity(0.12))
-                            .frame(width: geo.size.width * 0.45, height: geo.size.width * 0.45)
-                            .blur(radius: 20)
-                            .offset(x: geo.size.width * 0.15, y: -geo.size.height * 0.1)
-                        
-                        Circle()
-                            .fill(Color.black.opacity(0.08))
-                            .frame(width: geo.size.width * 0.6, height: geo.size.width * 0.6)
-                            .blur(radius: 30)
-                            .offset(x: -geo.size.width * 0.2, y: geo.size.height * 0.2)
-                    }
-                }
-                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                
-                // Quote text overlay
-                VStack {
-                    Image(systemName: "quote.opening")
-                        .font(.system(size: 24))
-                        .foregroundStyle(.white.opacity(0.4))
-                        .padding(.bottom, 4)
-                    
-                    Text(post.quoteText)
-                        .font(.system(size: 20, weight: .bold, design: .serif))
-                        .foregroundStyle(.white)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 28)
-                        .minimumScaleFactor(0.85)
-                    
-                    Image(systemName: "quote.closing")
-                        .font(.system(size: 24))
-                        .foregroundStyle(.white.opacity(0.4))
-                        .padding(.top, 4)
-                }
-            }
-            .padding(.horizontal, 16)
-            
-            // Actions (Like, Comment, Bookmark)
-            HStack(spacing: 20) {
-                // Like Button
-                Button(action: toggleLike) {
-                    HStack(spacing: 6) {
-                        Image(systemName: isLiked ? "heart.fill" : "heart")
-                            .font(.system(size: 18, weight: .medium))
-                            .foregroundStyle(isLiked ? Color.red : Color.theme.primaryText.opacity(0.8))
-                        
-                        Text("\(likesCount)")
-                            .font(.system(size: 13, weight: .semibold, design: .rounded))
-                            .foregroundStyle(Color.theme.secondaryText)
-                    }
-                }
-                .buttonStyle(ScaleButtonStyle())
-                
-                // Comment Info
-                HStack(spacing: 6) {
-                    Image(systemName: "bubble.right")
-                        .font(.system(size: 18, weight: .medium))
-                        .foregroundStyle(Color.theme.primaryText.opacity(0.8))
-                    
-                    Text("\(comments.count)")
-                        .font(.system(size: 13, weight: .semibold, design: .rounded))
-                        .foregroundStyle(Color.theme.secondaryText)
-                }
-                
-                Spacer()
-                
-                // Bookmark Button
-                Button(action: toggleBookmark) {
-                    Image(systemName: isBookmarked ? "bookmark.fill" : "bookmark")
-                        .font(.system(size: 18, weight: .medium))
-                        .foregroundStyle(isBookmarked ? Color(hex: "FAB005") : Color.theme.primaryText.opacity(0.8))
-                }
-                .buttonStyle(ScaleButtonStyle())
-            }
-            .padding(.horizontal, 16)
-            
-            VStack(alignment: .leading, spacing: 4) {
-                Text("\(Text(user.username).bold()) \(Text(post.caption))")
-                    .font(.system(size: 13))
-                    .foregroundStyle(Color.theme.primaryText)
-                    .multilineTextAlignment(.leading)
-            }
-            .padding(.horizontal, 16)
-        }
-        .padding(.vertical, 16)
-        .background(Color.theme.cardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .stroke(Color.theme.border, lineWidth: 1)
-        )
-        .padding(.horizontal, 16)
-    }
-    
     // MARK: - Comment Row Component
     private func commentRow(comment: MockComment) -> some View {
         HStack(alignment: .top, spacing: 10) {
-            ZStack {
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [Color(hex: comment.avatarColorHex).opacity(0.85), Color(hex: comment.avatarColorHex)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                
-                Text(getInitials(comment.name))
-                    .font(.system(size: 11, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
-            }
-            .frame(width: 32, height: 32)
+            AvatarView(
+                name: comment.name,
+                colorHex: comment.avatarColorHex,
+                size: 32,
+                showBorder: false
+            )
             
             VStack(alignment: .leading, spacing: 3) {
                 HStack(spacing: 4) {
@@ -353,6 +178,7 @@ struct PostDetailView: View {
         self.isLiked = post.isLiked
         self.likesCount = post.likesCount
         self.isBookmarked = post.isBookmarked
+        self.displayPost = post
         
         // Setup initial mock comments
         self.comments = [
@@ -369,13 +195,24 @@ struct PostDetailView: View {
             } else {
                 likesCount -= 1
             }
+            updateDisplayPost()
         }
     }
     
     private func toggleBookmark() {
         withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
             isBookmarked.toggle()
+            updateDisplayPost()
         }
+    }
+    
+    private func updateDisplayPost() {
+        var updated = post
+        updated.isLiked = isLiked
+        updated.likesCount = likesCount
+        updated.isBookmarked = isBookmarked
+        updated.commentsCount = comments.count
+        displayPost = updated
     }
     
     private func addComment() {
@@ -392,47 +229,24 @@ struct PostDetailView: View {
         withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
             comments.append(newComment)
             commentText = ""
+            updateDisplayPost()
         }
-    }
-    
-    private func formatDate(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MMM d, h:mm a"
-        return formatter.string(from: date)
     }
 }
 
 #Preview {
     NavigationStack {
         PostDetailView(
-            post: ProfilePost(
+            post: FeedPost(
                 id: "1",
+                user: MoodUser(id: "1", name: "Michele", username: "mj", avatarColorHex: "4DABF7", currentMoodEmoji: "😌", currentMoodText: "Calm", currentMoodColorHex: "4A5568"),
+                timeAgo: "2h ago",
                 quoteText: "Grateful hearts see awesome things.",
                 caption: "Reflected on the beauty of nature. Grateful for the warm sun.",
-                postGradientStartHex: "38B2AC",
-                postGradientEndHex: "805AD5",
                 likesCount: 12,
                 commentsCount: 2,
                 isLiked: false,
-                isBookmarked: false,
-                createdAt: Date()
-            ),
-            user: UserProfile(
-                id: "1",
-                displayName: "Michele",
-                username: "mj",
-                avatarColorHex: "4DABF7",
-                bio: "Mindfulness guide",
-                currentMoodEmoji: "😌",
-                currentMoodText: "Calm",
-                currentMoodColorHex: "4A5568",
-                moodStreak: 5,
-                postsCount: 10,
-                followersCount: 200,
-                followingCount: 150,
-                isFollowing: true,
-                achievements: [],
-                moodHistory: []
+                isBookmarked: false
             )
         )
     }

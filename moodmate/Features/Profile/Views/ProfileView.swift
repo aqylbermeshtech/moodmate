@@ -524,7 +524,7 @@ struct ProfileView: View {
                 
                 LazyVGrid(columns: columns, spacing: 3) {
                     ForEach(viewModel.posts) { post in
-                        NavigationLink(destination: PostDetailView(post: post, user: profile)) {
+                        NavigationLink(destination: PostDetailView(post: FeedPost(from: post, user: profile))) {
                             postGridCell(post: post)
                         }
                         .buttonStyle(PlainButtonStyle())
