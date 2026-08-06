@@ -20,14 +20,12 @@ struct SettingsView: View {
     
     var body: some View {
         ZStack {
-            // Premium background gradient
             Color.theme.backgroundGradient
                 .ignoresSafeArea()
             
             ScrollView {
                 VStack(spacing: 24) {
-                    
-                    // SECTION 1: Account settings card
+
                     VStack(alignment: .leading, spacing: 0) {
                         Text("Account Settings")
                             .font(.system(size: 13, weight: .bold, design: .rounded))
@@ -54,8 +52,7 @@ struct SettingsView: View {
                                 .stroke(Color.theme.border, lineWidth: 1)
                         )
                     }
-                    
-                    // SECTION 2: Notifications & Appearance card
+ 
                     VStack(alignment: .leading, spacing: 0) {
                         Text("Preferences")
                             .font(.system(size: 13, weight: .bold, design: .rounded))
@@ -64,7 +61,6 @@ struct SettingsView: View {
                             .padding(.bottom, 8)
                         
                         VStack(spacing: 0) {
-                            // Notifications Toggle
                             HStack {
                                 Label {
                                     VStack(alignment: .leading, spacing: 2) {
@@ -91,7 +87,7 @@ struct SettingsView: View {
                                 .background(Color.theme.divider)
                                 .padding(.horizontal, 16)
                             
-                            // Weekly Digest Toggle
+
                             HStack {
                                 Label {
                                     VStack(alignment: .leading, spacing: 2) {
@@ -117,8 +113,7 @@ struct SettingsView: View {
                             Divider()
                                 .background(Color.theme.divider)
                                 .padding(.horizontal, 16)
-                            
-                            // App Theme Picker
+
                             HStack {
                                 Label {
                                     VStack(alignment: .leading, spacing: 2) {
@@ -156,8 +151,7 @@ struct SettingsView: View {
                                 .stroke(Color.theme.border, lineWidth: 1)
                         )
                     }
-                    
-                    // SECTION 3: Support Card
+
                     VStack(alignment: .leading, spacing: 0) {
                         Text("Support")
                             .font(.system(size: 13, weight: .bold, design: .rounded))
@@ -187,8 +181,7 @@ struct SettingsView: View {
                                 .stroke(Color.theme.border, lineWidth: 1)
                         )
                     }
-                    
-                    // SECTION 4: Sign out button
+
                     Button(action: {
                         showSignOutConfirmation = true
                     }) {
