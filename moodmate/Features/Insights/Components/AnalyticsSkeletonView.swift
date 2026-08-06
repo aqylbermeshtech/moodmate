@@ -17,7 +17,6 @@ struct AnalyticsSkeletonView: View {
     
     var body: some View {
         VStack(spacing: 20) {
-            // Skeleton Date Filter
             HStack(spacing: 8) {
                 ForEach(0..<4) { _ in
                     Capsule()
@@ -27,7 +26,6 @@ struct AnalyticsSkeletonView: View {
             }
             .padding(.horizontal, 20)
             
-            // Skeleton Overview Cards Grid
             LazyVGrid(columns: columns, spacing: 12) {
                 ForEach(0..<6) { _ in
                     RoundedRectangle(cornerRadius: 18, style: .continuous)
@@ -36,14 +34,12 @@ struct AnalyticsSkeletonView: View {
                 }
             }
             .padding(.horizontal, 20)
-            
-            // Skeleton Chart Block
+
             RoundedRectangle(cornerRadius: 24, style: .continuous)
                 .fill(Color.primary.opacity(isAnimating ? 0.12 : 0.04))
                 .frame(height: 240)
                 .padding(.horizontal, 20)
-            
-            // Skeleton Calendar Block
+
             RoundedRectangle(cornerRadius: 24, style: .continuous)
                 .fill(Color.primary.opacity(isAnimating ? 0.12 : 0.04))
                 .frame(height: 280)

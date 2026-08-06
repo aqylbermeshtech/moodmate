@@ -63,7 +63,7 @@ struct DiscoverHashtag: Identifiable, Equatable, Codable {
 struct DiscoverCategory: Identifiable, Equatable, Codable {
     let id: String
     let name: String
-    let iconName: String // SF Symbol
+    let iconName: String 
     let gradientStartHex: String
     let gradientEndHex: String
 }

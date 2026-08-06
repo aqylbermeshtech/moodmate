@@ -86,8 +86,6 @@ private struct AchievementCardView: View {
                     .lineLimit(2)
                     .frame(height: 28)
             }
-            
-            // Progress Bar
             VStack(spacing: 4) {
                 GeometryReader { geo in
                     ZStack(alignment: .leading) {

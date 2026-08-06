@@ -13,7 +13,6 @@ struct GoalsSectionView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            // Header
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
                     Text("Tracked Goals")
@@ -31,8 +30,7 @@ struct GoalsSectionView: View {
                     .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(.secondary)
             }
-            
-            // Goals List
+
             VStack(spacing: 12) {
                 ForEach(goals) { goal in
                     GoalRowCard(goal: goal, onToggle: { onToggleGoal(goal) })
@@ -97,8 +95,7 @@ private struct GoalRowCard: View {
                     .font(.system(size: 12, weight: .bold, design: .rounded))
                     .foregroundStyle(goal.isCompleted ? Color(hex: goal.colorHex) : .secondary)
             }
-            
-            // Progress Bar
+
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
                     Capsule()

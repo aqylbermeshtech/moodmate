@@ -1,12 +1,3 @@
-//
-//  FeedViewModel.swift
-//  moodmate
-//
-//  Owns all feed-specific state: the list of posts, optimistic like/bookmark
-//  interactions with rollback on failure, and newly-created post insertion.
-//  HomeViewModel composes this instead of duplicating feed logic.
-//
-
 import Combine
 import Foundation
 

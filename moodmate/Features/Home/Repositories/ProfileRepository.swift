@@ -1,12 +1,3 @@
-//
-//  ProfileRepository.swift
-//  moodmate
-//
-//  Thin adapter that satisfies ProfileRepositoryProtocol by delegating
-//  to the app-wide ProfileServiceProtocol. HomeViewModel never imports
-//  ProfileService directly — it only depends on this narrower protocol.
-//
-
 import Combine
 import Foundation
 

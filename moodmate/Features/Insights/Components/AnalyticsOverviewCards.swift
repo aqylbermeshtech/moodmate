@@ -17,7 +17,6 @@ struct AnalyticsOverviewCards: View {
     
     var body: some View {
         LazyVGrid(columns: columns, spacing: 12) {
-            // 1. Current Mood
             OverviewCard(
                 iconName: "face.smiling.fill",
                 iconColor: Color(hex: data.currentMoodColorHex),
@@ -25,8 +24,7 @@ struct AnalyticsOverviewCards: View {
                 valueText: "\(data.currentMoodEmoji) \(data.currentMoodName)",
                 subtitle: "Latest check-in"
             )
-            
-            // 2. Current Streak
+
             OverviewCard(
                 iconName: "flame.fill",
                 iconColor: .orange,
@@ -34,8 +32,7 @@ struct AnalyticsOverviewCards: View {
                 valueText: "\(data.streaks.currentStreakDays) Days",
                 subtitle: "Best: \(data.streaks.longestStreakDays) Days"
             )
-            
-            // 3. Total Posts
+
             OverviewCard(
                 iconName: "photo.stack.fill",
                 iconColor: .teal,
@@ -43,8 +40,7 @@ struct AnalyticsOverviewCards: View {
                 valueText: "\(data.totalPostsCount)",
                 subtitle: "Mood logs shared"
             )
-            
-            // 4. Likes Received
+
             OverviewCard(
                 iconName: "heart.fill",
                 iconColor: .pink,
@@ -52,8 +48,7 @@ struct AnalyticsOverviewCards: View {
                 valueText: "\(data.engagement.totalLikesReceived)",
                 subtitle: "Received on posts"
             )
-            
-            // 5. Comments Received
+
             OverviewCard(
                 iconName: "bubble.left.and.bubble.right.fill",
                 iconColor: .purple,
@@ -61,8 +56,7 @@ struct AnalyticsOverviewCards: View {
                 valueText: "\(data.engagement.totalCommentsReceived)",
                 subtitle: "Social responses"
             )
-            
-            // 6. Followers
+
             OverviewCard(
                 iconName: "person.2.fill",
                 iconColor: .indigo,

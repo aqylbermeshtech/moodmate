@@ -25,10 +25,7 @@ struct ImagePreviewCard: View {
                         .stroke(Color.theme.border, lineWidth: 1)
                 )
                 .shadow(color: Color.theme.shadow, radius: 10, x: 0, y: 5)
-            
-            // Action Overlay Buttons
             HStack(spacing: 8) {
-                // Replace button
                 Button(action: onReplace) {
                     HStack(spacing: 4) {
                         Image(systemName: "arrow.triangle.2.circlepath")
@@ -43,8 +40,6 @@ struct ImagePreviewCard: View {
                     .clipShape(Capsule())
                 }
                 .buttonStyle(ScaleButtonStyle())
-                
-                // Remove button
                 Button(action: onRemove) {
                     Image(systemName: "xmark")
                         .font(.system(size: 12, weight: .bold))

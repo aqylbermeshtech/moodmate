@@ -10,9 +10,7 @@ import SwiftUI
 // MARK: - Post Card Style
 
 enum PostCardStyle {
-    /// Used in the home feed — adds bottom divider, header username is a NavigationLink.
     case feed
-    /// Used in the post detail screen — card background with rounded corners, no divider, no nav link on header.
     case detail
 }
 
@@ -202,8 +200,6 @@ struct PostCardView: View {
                 )
                 .frame(height: 220)
                 .shadow(color: Color.theme.shadow, radius: 10, x: 0, y: 6)
-
-            // Abstract Circles (from detail style, adds premium feel)
             GeometryReader { geo in
                 ZStack {
                     Circle()

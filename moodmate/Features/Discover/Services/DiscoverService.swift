@@ -80,8 +80,7 @@ final class DiscoverService {
         
         let lowered = query.lowercased()
         var results: [SearchResult] = []
-        
-        // Search users
+
         for user in suggestedUsers where user.displayName.lowercased().contains(lowered) || user.username.lowercased().contains(lowered) {
             results.append(SearchResult(
                 id: "sr_user_\(user.id)",
@@ -93,8 +92,7 @@ final class DiscoverService {
                 userBio: user.bio
             ))
         }
-        
-        // Search posts
+
         for post in allPosts where post.quoteText.lowercased().contains(lowered) || post.caption.lowercased().contains(lowered) {
             results.append(SearchResult(
                 id: "sr_post_\(post.id)",
@@ -109,8 +107,7 @@ final class DiscoverService {
                 postUserId: post.userId
             ))
         }
-        
-        // Search moods
+
         for mood in trendingMoods where mood.name.lowercased().contains(lowered) {
             results.append(SearchResult(
                 id: "sr_mood_\(mood.id)",
@@ -121,8 +118,7 @@ final class DiscoverService {
                 moodPostCount: mood.postCount
             ))
         }
-        
-        // Search hashtags
+
         for tag in hashtags where tag.name.lowercased().contains(lowered) {
             results.append(SearchResult(
                 id: "sr_tag_\(tag.id)",
@@ -242,8 +238,7 @@ final class DiscoverService {
             SuggestedUser(id: "su25", displayName: "Iris Zhao",       username: "iris_paints",     avatarColorHex: "9B2C2C", bio: "Oil painter. Every canvas is a conversation.",     moodEmoji: "🖌️", moodText: "Inspired",   moodColorHex: "805AD5", isFollowing: false)
         ]
     }
-    
-    // swiftlint:disable function_body_length
+
     private func setupDiscoverPosts() {
         let moodSets: [(emoji: String, text: String, colorHex: String)] = [
             ("😊", "Happy",      "38B2AC"),
@@ -436,5 +431,4 @@ final class DiscoverService {
             )
         }
     }
-    // swiftlint:enable function_body_length
 }

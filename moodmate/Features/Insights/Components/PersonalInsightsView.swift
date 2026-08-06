@@ -12,7 +12,6 @@ struct PersonalInsightsView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            // Header
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 6) {
                     Text("Personal AI Insights")
@@ -30,8 +29,7 @@ struct PersonalInsightsView: View {
                     .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(.secondary)
             }
-            
-            // Carousel or Cards
+
             VStack(spacing: 10) {
                 ForEach(insights) { insight in
                     InsightCard(insight: insight)

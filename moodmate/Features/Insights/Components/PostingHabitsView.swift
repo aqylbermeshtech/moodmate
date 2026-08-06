@@ -13,7 +13,6 @@ struct PostingHabitsView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            // Header
             VStack(alignment: .leading, spacing: 4) {
                 Text("Posting Habits & Activity")
                     .font(.system(size: 18, weight: .bold, design: .rounded))
@@ -23,15 +22,13 @@ struct PostingHabitsView: View {
                     .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(Color.theme.secondaryText)
             }
-            
-            // Metrics Row
+
             HStack(spacing: 12) {
                 HabitMetricBadge(title: "Peak Day", value: habits.mostActiveDay, icon: "calendar.day.timeline.left")
                 HabitMetricBadge(title: "Peak Time", value: habits.mostActiveHourLabel, icon: "clock.fill")
                 HabitMetricBadge(title: "Weekly Avg", value: "\(String(format: "%.1f", habits.avgPostsPerWeek))", icon: "paperplane.fill")
             }
-            
-            // Sub-metrics
+
             HStack(spacing: 16) {
                 Label("Longest break: \(habits.longestBreakDays) days", systemImage: "arrow.pause.circle.fill")
                     .font(.system(size: 12, weight: .semibold, design: .rounded))
@@ -43,8 +40,7 @@ struct PostingHabitsView: View {
                     .font(.system(size: 12, weight: .bold, design: .rounded))
                     .foregroundStyle(.teal)
             }
-            
-            // Hourly Bar Chart
+
             VStack(alignment: .leading, spacing: 8) {
                 Text("Posts by Time of Day")
                     .font(.system(size: 12, weight: .bold, design: .rounded))

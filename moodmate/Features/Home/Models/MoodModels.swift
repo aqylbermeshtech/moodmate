@@ -28,7 +28,6 @@ struct MoodOption: Identifiable, Equatable {
 // MARK: - Catalog
 
 extension MoodOption {
-
     static let catalog: [MoodOption] = [
         MoodOption(emoji: "😊", text: "Happy",     colorHex: "38B2AC"),
         MoodOption(emoji: "😌", text: "Calm",      colorHex: "4A5568"),

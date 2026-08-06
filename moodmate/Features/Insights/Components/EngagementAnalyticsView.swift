@@ -13,7 +13,6 @@ struct EngagementAnalyticsView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            // Header
             VStack(alignment: .leading, spacing: 4) {
                 Text("Community & Social Engagement")
                     .font(.system(size: 18, weight: .bold, design: .rounded))
@@ -23,8 +22,7 @@ struct EngagementAnalyticsView: View {
                     .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(.secondary)
             }
-            
-            // Averages Row
+
             HStack(spacing: 12) {
                 MetricPill(
                     icon: "heart.fill",
@@ -47,8 +45,7 @@ struct EngagementAnalyticsView: View {
                     value: "\(engagement.followersCount)"
                 )
             }
-            
-            // Top Performing Posts Highlights
+
             VStack(alignment: .leading, spacing: 10) {
                 Text("Highlights")
                     .font(.system(size: 13, weight: .bold, design: .rounded))
@@ -62,8 +59,7 @@ struct EngagementAnalyticsView: View {
                     TopPostCard(title: "💬 Most Commented Post", post: topCommented)
                 }
             }
-            
-            // Follower Growth Chart
+
             VStack(alignment: .leading, spacing: 8) {
                 Text("Follower Growth")
                     .font(.system(size: 13, weight: .bold, design: .rounded))

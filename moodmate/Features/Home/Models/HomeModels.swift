@@ -121,7 +121,6 @@ struct FeedPost: Identifiable, Equatable {
         )
     }
 
-    // Convert from PostModel
     init(from postModel: PostModel) {
         self.id = postModel.id
         self.user = postModel.author
@@ -141,7 +140,6 @@ struct FeedPost: Identifiable, Equatable {
         self.isBookmarked = postModel.isBookmarked
     }
 
-    // Convert from ProfilePost + UserProfile (used when navigating from Profile grid)
     init(from profilePost: ProfilePost, user: UserProfile) {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMM d, h:mm a"

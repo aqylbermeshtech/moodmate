@@ -1,12 +1,3 @@
-//
-//  HomeView.swift
-//  moodmate
-//
-//  Single responsibility: renders the home feed.
-//  Tab navigation, the bottom nav bar, and the create-post sheet
-//  are all owned by RootTabContainerView — not here.
-//
-
 import SwiftUI
 
 struct HomeView: View {

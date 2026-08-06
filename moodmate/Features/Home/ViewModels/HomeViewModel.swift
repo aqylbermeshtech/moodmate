@@ -1,22 +1,3 @@
-//
-//  HomeViewModel.swift
-//  moodmate
-//
-//  Focused responsibilities:
-//    • current-user display name and avatar
-//    • greeting / date presentation strings
-//    • selected mood (single SelectedMood value, not three flat properties)
-//    • mood-picker presentation flag
-//    • friends list
-//    • composes FeedViewModel for all feed interactions
-//
-//  Does NOT:
-//    • reference any singleton service directly
-//    • start subscriptions in init
-//    • contain withAnimation calls
-//    • define domain models (see MoodModels.swift, HomeModels.swift)
-//
-
 import Combine
 import Foundation
 

@@ -14,7 +14,6 @@ struct MoodDistributionChart: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            // Section Header
             VStack(alignment: .leading, spacing: 4) {
                 Text("Mood Distribution")
                     .font(.system(size: 18, weight: .bold, design: .rounded))
@@ -26,7 +25,6 @@ struct MoodDistributionChart: View {
             }
             
             ZStack {
-                // Apple Charts SectorMark Donut Chart
                 Chart(items) { item in
                     SectorMark(
                         angle: .value("Count", item.count),
@@ -39,7 +37,6 @@ struct MoodDistributionChart: View {
                 }
                 .frame(height: 220)
                 
-                // Donut Center Text Summary
                 VStack(spacing: 2) {
                     if let selected = selectedSlice {
                         Text(selected.moodEmoji)
@@ -60,8 +57,7 @@ struct MoodDistributionChart: View {
                     }
                 }
             }
-            
-            // Legend Grid
+
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
                 ForEach(items) { item in
                     Button {

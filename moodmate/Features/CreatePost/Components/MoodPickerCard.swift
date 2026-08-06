@@ -23,7 +23,6 @@ struct MoodPickerCard: View {
     var body: some View {
         Button(action: onTap) {
             HStack(spacing: 14) {
-                // Large Mood Icon Badge
                 ZStack {
                     Circle()
                         .fill(

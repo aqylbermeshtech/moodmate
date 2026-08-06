@@ -1,12 +1,3 @@
-//
-//  FriendsRepository.swift
-//  moodmate
-//
-//  Builds the friends list for the home feed by reading current profiles
-//  from ProfileService. Keeping the mapping logic here means HomeViewModel
-//  stays free of ProfileService details.
-//
-
 import Foundation
 
 final class FriendsRepository: FriendsRepositoryProtocol {

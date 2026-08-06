@@ -19,13 +19,11 @@ struct DayDetailSheet: View {
     
     var body: some View {
         VStack(spacing: 20) {
-            // Sheet Handle / Drag Indicator
             Capsule()
                 .fill(Color.secondary.opacity(0.3))
                 .frame(width: 36, height: 5)
                 .padding(.top, 10)
-            
-            // Header Info
+
             VStack(spacing: 8) {
                 Text(formattedDateString)
                     .font(.system(size: 13, weight: .semibold, design: .rounded))
@@ -44,8 +42,7 @@ struct DayDetailSheet: View {
                     .font(.system(size: 22, weight: .bold, design: .rounded))
                     .foregroundStyle(Color(hex: record.colorHex))
             }
-            
-            // Details Card
+
             VStack(alignment: .leading, spacing: 14) {
                 HStack {
                     Label("Mood Score", systemImage: "star.fill")
@@ -78,8 +75,7 @@ struct DayDetailSheet: View {
             .padding(.horizontal, 20)
             
             Spacer()
-            
-            // Close Button
+
             Button {
                 dismiss()
             } label: {
