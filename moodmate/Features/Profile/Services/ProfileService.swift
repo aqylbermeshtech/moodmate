@@ -22,10 +22,7 @@ final class ProfileService: ProfileServiceProtocol {
     
     private let storageKey = "moodmate_user_profiles_v2.json"
     private let fileManager = FileManager.default
-    
-    // Bump this number whenever the mock friend data changes (names, IDs, bios, etc.).
-    // On launch, if the stored version doesn't match, mock friend profiles are re-seeded
-    // from scratch while the real authenticated user's profile is always preserved.
+
     private static let mockDataVersion = 2
     private static let mockDataVersionKey = "moodmate_mock_data_version"
     
@@ -35,21 +32,14 @@ final class ProfileService: ProfileServiceProtocol {
     }
     
     private init() {
-        // Load persisted profiles FIRST so setupMockData can see what already exists.
         loadPersistedProfiles()
-        // If the mock data version on disk is outdated, wipe only the friend profiles
-        // (IDs "1"–"5") so they get re-seeded with the current correct values.
-        // The authenticated user's own profile is never touched here.
         invalidateStaleMockProfilesIfNeeded()
         setupMockData()
     }
-    
-    // Removes friend profiles whose seed data has changed since they were last persisted.
-    // The authenticated user's profile (any non "1"–"5" ID) is always left intact.
+
     private func invalidateStaleMockProfilesIfNeeded() {
         let storedVersion = UserDefaults.standard.integer(forKey: Self.mockDataVersionKey)
         guard storedVersion < Self.mockDataVersion else { return }
-        // Wipe stale mock friend profiles so setupMockData re-seeds them fresh.
         for id in ["1", "2", "3", "4", "5"] {
             profiles.removeValue(forKey: id)
         }
@@ -71,7 +61,6 @@ final class ProfileService: ProfileServiceProtocol {
     // MARK: - Async Methods
     
     func fetchProfile(forId id: String?) async throws -> UserProfile? {
-        // Simulate subtle network latency
         try await Task.sleep(nanoseconds: 100_000_000)
         let actualId = id ?? getCurrentUserId()
         return profiles[actualId]
@@ -96,7 +85,6 @@ final class ProfileService: ProfileServiceProtocol {
         avatarImageData: Data? = nil,
         clearAvatar: Bool = false
     ) async throws -> UserProfile {
-        // Simulate network processing latency
         try await Task.sleep(nanoseconds: 200_000_000)
         
         let actualId = id.isEmpty ? getCurrentUserId() : id
@@ -123,8 +111,7 @@ final class ProfileService: ProfileServiceProtocol {
         
         profiles[actualId] = profile
         persistProfiles()
-        
-        // Notify subscribers across the entire application
+
         profileSubject.send(profile)
         
         return profile
@@ -178,8 +165,7 @@ final class ProfileService: ProfileServiceProtocol {
         if cleaned.unicodeScalars.contains(where: { !validCharacters.contains($0) }) {
             return (false, "Only letters, numbers, and underscores are allowed.")
         }
-        
-        // Check uniqueness against existing profiles
+
         let isTaken = profiles.values.contains { profile in
             profile.id != currentUserId && profile.username.lowercased() == cleaned
         }
@@ -245,10 +231,7 @@ final class ProfileService: ProfileServiceProtocol {
     func syncWithFirebaseUser(user: User) {
         let currentId = user.uid
         migrateMockProfileToAuthenticatedUser(currentId: currentId)
-        
-        // If a locally-persisted profile already exists, use it as-is.
-        // Only bootstrap displayName/username from Firebase Auth on first creation —
-        // never overwrite saved edits with stale Firebase Auth data.
+
         let isNewProfile = profiles[currentId] == nil
         
         var profile = profiles[currentId] ?? UserProfile(
@@ -268,9 +251,6 @@ final class ProfileService: ProfileServiceProtocol {
             achievements: [],
             moodHistory: []
         )
-        
-        // Only apply Firebase Auth name/username when bootstrapping a brand-new profile.
-        // For existing profiles, the user's saved edits take priority.
         if isNewProfile {
             if let displayName = user.displayName, !displayName.isEmpty {
                 profile.displayName = displayName
@@ -348,8 +328,7 @@ final class ProfileService: ProfileServiceProtocol {
     
     private func setupMockData() {
         let currentId = getCurrentUserId()
-        
-        // Only seed the current user profile if it wasn't already restored from disk.
+
         if profiles[currentId] == nil {
             var currentUserProfile = UserProfile(
                 id: currentId,
@@ -388,9 +367,7 @@ final class ProfileService: ProfileServiceProtocol {
         if posts[currentId] == nil {
             posts[currentId] = defaultUserPosts()
         }
-        
-        // For each mock friend profile, only seed it if it wasn't already restored from disk.
-        // This preserves any in-app changes (follow state, profile edits) across launches.
+
         if profiles["1"] == nil {
             profiles["1"] = UserProfile(
                 id: "1",

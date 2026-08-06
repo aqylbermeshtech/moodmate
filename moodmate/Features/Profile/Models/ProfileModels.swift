@@ -94,7 +94,7 @@ struct Achievement: Identifiable, Equatable, Codable {
     var id: String { title }
     let title: String
     let description: String
-    let icon: String // Emoji or SF Symbol name
+    let icon: String
     let unlockedAt: Date
 }
 

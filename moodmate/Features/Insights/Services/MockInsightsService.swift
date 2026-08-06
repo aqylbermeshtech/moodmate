@@ -9,11 +9,9 @@ import Foundation
 
 @MainActor
 final class MockInsightsService: InsightsServiceProtocol {
-    
-    // Simulates network latency
-    private let simulatedDelayNanoseconds: UInt64 = 400_000_000 // 0.4s
-    
-    // In-memory state for goals
+ 
+    private let simulatedDelayNanoseconds: UInt64 = 400_000_000
+
     private var userGoals: [Goal] = [
         Goal(id: "goal-1", title: "Daily Check-in", targetDescription: "Post your mood every single day", currentValue: 12, targetValue: 30, unit: "days", iconName: "flame.fill", colorHex: "FF6B6B", isCompleted: false),
         Goal(id: "goal-2", title: "30-Day Streak", targetDescription: "Maintain an uninterrupted 30-day streak", currentValue: 12, targetValue: 30, unit: "days", iconName: "bolt.fill", colorHex: "FFD166", isCompleted: false),
@@ -84,7 +82,6 @@ final class MockInsightsService: InsightsServiceProtocol {
             var dayComp = components
             dayComp.day = day
             if let date = calendar.date(from: dayComp) {
-                // Pick deterministic mood based on day number
                 let mood = moods[(day * 3 + (dayComp.month ?? 1)) % moods.count]
                 let dateString = formatter.string(from: date)
                 

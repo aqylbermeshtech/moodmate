@@ -32,12 +32,10 @@ struct FollowListView: View {
     
     var body: some View {
         ZStack {
-            // Premium background gradient
             Color.theme.backgroundGradient
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // Custom Search Bar
                 searchBarField
                     .padding(.horizontal, 16)
                     .padding(.top, 12)
@@ -99,7 +97,6 @@ struct FollowListView: View {
     // MARK: - User Row View
     private func userRow(user: UserProfile) -> some View {
         HStack(spacing: 12) {
-            // Avatar
             AvatarView(
                 imageData: user.avatarImageData,
                 name: user.displayName,
@@ -120,8 +117,7 @@ struct FollowListView: View {
             }
             
             Spacer()
-            
-            // Follow / Unfollow Button
+
             if user.id != viewModel.getCurrentUserId() {
                 Button(action: {
                     toggleFollow(for: user)

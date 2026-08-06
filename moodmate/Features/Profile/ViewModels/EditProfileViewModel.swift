@@ -21,8 +21,7 @@ final class EditProfileViewModel: ObservableObject {
     @Published var birthday: Date = Date()
     @Published var privacySetting: PrivacySetting = .publicVisibility
     @Published var avatarColorHex: String = "38B2AC"
-    
-    // Avatar state
+
     @Published var selectedAvatarImage: UIImage? = nil
     @Published var currentAvatarData: Data? = nil
     @Published var isAvatarRemoved: Bool = false
@@ -31,8 +30,7 @@ final class EditProfileViewModel: ObservableObject {
             loadSelectedPhotosItem()
         }
     }
-    
-    // UI & Validation States
+
     @Published var displayNameError: String? = nil
     @Published var usernameError: String? = nil
     @Published var bioError: String? = nil
@@ -43,8 +41,7 @@ final class EditProfileViewModel: ObservableObject {
     @Published var errorMessage: String? = nil
     @Published var showSuccessToast: Bool = false
     @Published var hasPendingAvatarChange: Bool = false
-    
-    // Navigation / Presentation
+
     @Published var showPickerOptions: Bool = false
     @Published var activePickerSource: ImagePickerSourceType? = nil
     @Published var showRemoveAvatarConfirmation: Bool = false
@@ -54,8 +51,7 @@ final class EditProfileViewModel: ObservableObject {
     
     private let profileService: ProfileServiceProtocol
     private let userId: String
-    
-    // Curated gradient avatar background choices
+
     let avatarColors = [
         "38B2AC", // Teal
         "4DABF7", // Blue
@@ -116,9 +112,7 @@ final class EditProfileViewModel: ObservableObject {
     }
     
     // MARK: - Validation
-    
-    // Mutating validation: writes error messages to @Published vars.
-    // Call this only from user-triggered actions (onChange, save), never during view rendering.
+
     @discardableResult
     func validateProfile() -> Bool {
         let isNameValid = validateDisplayName()
@@ -127,10 +121,7 @@ final class EditProfileViewModel: ObservableObject {
         
         return isNameValid && isUserValid && isBioValid
     }
-    
-    // Pure read-only check used by `isFormValid` so SwiftUI can safely call it during rendering
-    // without mutating any @Published properties (which would cause the
-    // "Publishing changes from within view updates" runtime warning/glitch).
+
     private var isDisplayNameValid: Bool {
         let trimmed = displayName.trimmingCharacters(in: .whitespacesAndNewlines)
         return !trimmed.isEmpty && trimmed.count <= maxDisplayNameLength
@@ -184,8 +175,7 @@ final class EditProfileViewModel: ObservableObject {
     var bioRemainingCharacters: Int {
         maxBioLength - bio.count
     }
-    
-    // Pure computed property — safe to call from view body/toolbar without side effects.
+
     var isFormValid: Bool {
         isDisplayNameValid && isUsernameValid && isBioValid
     }

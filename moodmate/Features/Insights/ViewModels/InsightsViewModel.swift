@@ -31,8 +31,7 @@ final class InsightsViewModel: ObservableObject {
     
     @Published var state: InsightsState = .loading
     @Published var selectedMoodSlice: MoodDistributionItem? = nil
-    
-    // Calendar properties
+
     @Published var selectedCalendarMonth: Date = Date()
     @Published var calendarEntries: [String: MoodRecord] = [:]
     @Published var selectedCalendarRecord: MoodRecord? = nil
@@ -62,9 +61,7 @@ final class InsightsViewModel: ObservableObject {
     }
     
     func loadDashboardData() async {
-        // If state is not already loaded, show loading skeleton
         if case .loaded = state {
-            // Keep loaded state while updating for smooth animation transition
         } else {
             state = .loading
         }
@@ -113,7 +110,6 @@ final class InsightsViewModel: ObservableObject {
             selectedCalendarRecord = record
             showCalendarDetailSheet = true
         } else {
-            // Create a default record snapshot for days without a logged post
             selectedCalendarRecord = MoodRecord(
                 id: "empty-\(key)",
                 date: date,

@@ -24,7 +24,6 @@ struct EditProfileView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                // Premium background gradient
                 Color.theme.backgroundGradient
                     .ignoresSafeArea()
                 
@@ -45,15 +44,12 @@ struct EditProfileView: View {
                             .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                             .transition(.opacity.combined(with: .move(edge: .top)))
                         }
-                        
-                        // 1. Live Interactive Avatar Header
+
                         avatarSection
                             .padding(.top, 10)
-                        
-                        // 2. Color Theme Selector Section
+
                         colorThemeSection
-                        
-                        // 3. Main Form Inputs
+
                         formFieldsSection
                         
                         Spacer(minLength: 40)
@@ -62,8 +58,7 @@ struct EditProfileView: View {
                     .padding(.bottom, 40)
                 }
                 .scrollDismissesKeyboard(.interactively)
-                
-                // Floating Success Toast Notification
+
                 if editViewModel.showSuccessToast {
                     VStack {
                         SuccessToastView(message: "Profile updated successfully!")
@@ -237,14 +232,12 @@ struct EditProfileView: View {
     
     private var formFieldsSection: some View {
         VStack(spacing: 20) {
-            // 1. Personal Details Group
             VStack(alignment: .leading, spacing: 16) {
                 Text("PERSONAL INFO")
                     .font(.system(size: 11, weight: .bold, design: .rounded))
                     .foregroundStyle(Color.theme.secondaryText)
                     .padding(.horizontal, 4)
-                
-                // Display Name Field
+
                 VStack(alignment: .leading, spacing: 6) {
                     HStack {
                         Text("Display Name")
@@ -273,8 +266,7 @@ struct EditProfileView: View {
                             .padding(.horizontal, 4)
                     }
                 }
-                
-                // Username Field
+
                 VStack(alignment: .leading, spacing: 6) {
                     Text("Username")
                         .font(.system(size: 13, weight: .bold, design: .rounded))
@@ -299,8 +291,7 @@ struct EditProfileView: View {
                             .padding(.horizontal, 4)
                     }
                 }
-                
-                // Bio Text Area
+
                 VStack(alignment: .leading, spacing: 6) {
                     HStack {
                         Text("Bio")
@@ -345,8 +336,7 @@ struct EditProfileView: View {
                 RoundedRectangle(cornerRadius: 20, style: .continuous)
                     .stroke(Color.theme.border, lineWidth: 1)
             )
-            
-            // 2. Additional Information Group
+
             VStack(alignment: .leading, spacing: 16) {
                 Text("ADDITIONAL DETAILS")
                     .font(.system(size: 11, weight: .bold, design: .rounded))
@@ -366,8 +356,7 @@ struct EditProfileView: View {
                         icon: "mappin.and.ellipse"
                     )
                 }
-                
-                // Birthday Field
+
                 VStack(alignment: .leading, spacing: 10) {
                     Toggle(isOn: $editViewModel.hasBirthday.animation()) {
                         HStack(spacing: 8) {
@@ -402,8 +391,7 @@ struct EditProfileView: View {
                 RoundedRectangle(cornerRadius: 20, style: .continuous)
                     .stroke(Color.theme.border, lineWidth: 1)
             )
-            
-            // 3. Privacy Settings Group
+
             VStack(alignment: .leading, spacing: 14) {
                 Text("PRIVACY SETTINGS")
                     .font(.system(size: 11, weight: .bold, design: .rounded))

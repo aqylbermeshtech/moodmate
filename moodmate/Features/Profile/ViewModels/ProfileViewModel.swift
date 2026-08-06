@@ -11,7 +11,7 @@ import Combine
 
 @MainActor
 final class ProfileViewModel: ObservableObject {
-    let userId: String? // nil means current authenticated user
+    let userId: String?
     private let profileService: ProfileServiceProtocol
     
     @Published var profile: UserProfile?
@@ -45,8 +45,7 @@ final class ProfileViewModel: ObservableObject {
                 }
                 .store(in: &cancellables)
         }
-        
-        // Listen to real-time profile updates across the app
+
         profileService.profileUpdatesPublisher
             .receive(on: DispatchQueue.main)
             .sink { [weak self] updatedProfile in
@@ -98,16 +97,11 @@ final class ProfileViewModel: ObservableObject {
     }
     
     private func loadProfileData(for profileId: String) async {
-        // Load all synchronous data first but keep isLoading = true so the view
-        // stays on the spinner — this prevents the stale cached name from flashing
-        // on screen before the fresh fetch overwrites it.
         self.posts = profileService.getPosts(forId: profileId)
         self.followers = profileService.getFollowers(forId: profileId)
         self.following = profileService.getFollowing(forId: profileId)
         self.hasMorePosts = true
-        
-        // Await the fresh profile before revealing the UI.
-        // Fall back to the cached version only if the fetch fails.
+
         if let freshProfile = try? await profileService.fetchProfile(forId: profileId) {
             self.profile = freshProfile
         } else {
@@ -189,12 +183,10 @@ final class ProfileViewModel: ObservableObject {
         guard !isLazyLoadingPosts && hasMorePosts else { return }
         
         isLazyLoadingPosts = true
-        
-        // Simulate network latency (0.8s delay)
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) { [weak self] in
             guard let self = self else { return }
-            
-            // Generate some mock historical posts
+
             let currentPostCount = self.posts.count
             if currentPostCount >= 9 {
                 self.hasMorePosts = false

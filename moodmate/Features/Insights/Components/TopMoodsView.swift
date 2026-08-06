@@ -12,7 +12,6 @@ struct TopMoodsView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            // Header
             VStack(alignment: .leading, spacing: 4) {
                 Text("Top Moods Ranking")
                     .font(.system(size: 18, weight: .bold, design: .rounded))
@@ -22,8 +21,7 @@ struct TopMoodsView: View {
                     .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(.secondary)
             }
-            
-            // List of ranked mood bars
+
             VStack(spacing: 12) {
                 ForEach(topMoods) { item in
                     TopMoodRow(item: item)

@@ -14,12 +14,11 @@ struct InsightsView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                // Background gradient matching Home & Discover
+
                 Color.theme.backgroundGradient
                     .ignoresSafeArea()
                 
                 VStack(spacing: 0) {
-                    // Header Bar & Date Filter Picker
                     VStack(spacing: 12) {
                         headerBar
                         
@@ -27,8 +26,7 @@ struct InsightsView: View {
                     }
                     .padding(.bottom, 10)
                     .background(.ultraThinMaterial)
-                    
-                    // Main Scrollable Content Area
+
                     ScrollView {
                         VStack(spacing: 24) {
                             switch viewModel.state {
@@ -47,23 +45,20 @@ struct InsightsView: View {
                                 }
                                 
                             case .loaded(let dashboardData):
-                                // 1. Mood Overview Cards
+
                                 AnalyticsOverviewCards(data: dashboardData)
                                     .padding(.top, 12)
-                                
-                                // 2. Mood Distribution Donut Chart
+
                                 MoodDistributionChart(
                                     items: dashboardData.distribution,
                                     selectedSlice: $viewModel.selectedMoodSlice
                                 )
-                                
-                                // 3. Weekly Mood Trend Chart
+
                                 WeeklyTrendChart(
                                     trendPoints: dashboardData.weeklyTrend,
                                     dateFilterSubtitle: viewModel.selectedFilter.subtitle
                                 )
-                                
-                                // 4. Monthly Mood Calendar
+
                                 MoodCalendarView(
                                     currentMonth: viewModel.selectedCalendarMonth,
                                     entries: viewModel.calendarEntries,
@@ -74,26 +69,19 @@ struct InsightsView: View {
                                         viewModel.selectCalendarDate(date)
                                     }
                                 )
-                                
-                                // 5. Streaks Section
+
                                 StreaksSectionView(streaks: dashboardData.streaks)
-                                
-                                // 6. Posting Habits Section
+
                                 PostingHabitsView(habits: dashboardData.postingHabits)
-                                
-                                // 7. Engagement Section
+
                                 EngagementAnalyticsView(engagement: dashboardData.engagement)
                                 
-                                // 8. Top Moods Ranking
                                 TopMoodsView(topMoods: dashboardData.topMoods)
-                                
-                                // 9. Personal Insights
+
                                 PersonalInsightsView(insights: dashboardData.personalInsights)
-                                
-                                // 10. Badges & Achievements
+
                                 AchievementsSectionView(achievements: dashboardData.achievements)
-                                
-                                // 11. Goals Tracking
+
                                 GoalsSectionView(
                                     goals: dashboardData.goals,
                                     onToggleGoal: { goal in
@@ -102,7 +90,7 @@ struct InsightsView: View {
                                 )
                             }
                         }
-                        .padding(.bottom, 110) // Bottom tab bar spacing
+                        .padding(.bottom, 110)
                     }
                     .refreshable {
                         await viewModel.refresh()
@@ -142,8 +130,6 @@ struct InsightsView: View {
             }
             
             Spacer()
-            
-            // Streak Pill Badge
             HStack(spacing: 6) {
                 Text("🔥")
                     .font(.system(size: 16))

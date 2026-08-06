@@ -14,7 +14,6 @@ struct WeeklyTrendChart: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            // Header
             VStack(alignment: .leading, spacing: 4) {
                 Text("Mood Score Trend")
                     .font(.system(size: 18, weight: .bold, design: .rounded))
@@ -24,11 +23,9 @@ struct WeeklyTrendChart: View {
                     .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(Color.theme.secondaryText)
             }
-            
-            // Chart Area
+
             Chart {
                 ForEach(trendPoints) { point in
-                    // Area Gradient Fill
                     AreaMark(
                         x: .value("Day", point.dayLabel),
                         y: .value("Score", point.averageScore)
@@ -41,8 +38,6 @@ struct WeeklyTrendChart: View {
                             endPoint: .bottom
                         )
                     )
-                    
-                    // Line Mark
                     LineMark(
                         x: .value("Day", point.dayLabel),
                         y: .value("Score", point.averageScore)
@@ -56,8 +51,7 @@ struct WeeklyTrendChart: View {
                             endPoint: .trailing
                         )
                     )
-                    
-                    // Point Mark (Emoji Annotations)
+
                     PointMark(
                         x: .value("Day", point.dayLabel),
                         y: .value("Score", point.averageScore)

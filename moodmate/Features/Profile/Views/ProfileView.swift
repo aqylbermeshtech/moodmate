@@ -21,7 +21,6 @@ struct ProfileView: View {
     
     var body: some View {
         ZStack {
-            // Premium background gradient
             Color.theme.backgroundGradient
                 .ignoresSafeArea()
             
@@ -33,34 +32,27 @@ struct ProfileView: View {
             } else if let profile = viewModel.profile {
                 ScrollView {
                     VStack(spacing: 24) {
-                        // 1. Large Profile Header
                         profileHeaderView(profile: profile)
                             .padding(.horizontal, 20)
                             .padding(.top, 10)
                         
-                        // 2. Statistics Section
                         statsView(profile: profile)
                             .padding(.horizontal, 20)
                         
-                        // 3. Action Buttons
                         actionsView(profile: profile)
                             .padding(.horizontal, 20)
-                        
-                        // 4. Mood History (Calendar / Timeline)
+
                         moodHistoryView(profile: profile)
                             .padding(.horizontal, 20)
-                        
-                        // 5. Analytics (Weekly chart & insights)
+
                         analyticsSection(profile: profile)
                             .padding(.horizontal, 20)
-                        
-                        // 6. Achievements Section
+ 
                         achievementsSection(profile: profile)
-                        
-                        // 7. Posts Section (3-column adaptive grid with lazy loading)
+
                         postsSection(profile: profile)
                         
-                        Spacer(minLength: 100) // Space for bottom tab bar overlay
+                        Spacer(minLength: 100)
                     }
                 }
                 .scrollIndicators(.hidden)
@@ -122,7 +114,7 @@ struct ProfileView: View {
     // MARK: - 1. Profile Header View
     private func profileHeaderView(profile: UserProfile) -> some View {
         VStack(spacing: 16) {
-            // Profile image with avatar data / initials + current mood badge
+           
             AvatarView(
                 imageData: profile.avatarImageData,
                 name: profile.displayName,
@@ -131,8 +123,7 @@ struct ProfileView: View {
                 showBorder: true,
                 moodEmoji: profile.currentMoodEmoji
             )
-            
-            // Name, Username & bio & location
+
             VStack(spacing: 6) {
                 Text(profile.displayName)
                     .font(.system(size: 24, weight: .bold, design: .rounded))
@@ -171,8 +162,7 @@ struct ProfileView: View {
                         .padding(.top, 4)
                 }
             }
-            
-            // Streak badge
+
             if profile.moodStreak > 0 {
                 HStack(spacing: 6) {
                     Image(systemName: "flame.fill")
@@ -253,7 +243,6 @@ struct ProfileView: View {
     private func actionsView(profile: UserProfile) -> some View {
         HStack(spacing: 12) {
             if viewModel.isOwnProfile {
-                // Edit Profile Button
                 NavigationLink(destination: EditProfileView(viewModel: viewModel)) {
                     HStack {
                         Image(systemName: "pencil")
@@ -270,7 +259,6 @@ struct ProfileView: View {
                 }
                 .buttonStyle(ScaleButtonStyle())
             } else {
-                // Follow / Unfollow Button
                 Button(action: {
                     viewModel.toggleFollow()
                 }) {
@@ -289,8 +277,7 @@ struct ProfileView: View {
                 }
                 .buttonStyle(ScaleButtonStyle())
             }
-            
-            // Share Button
+
             Button(action: {
                 showShareAlert = true
             }) {
@@ -322,7 +309,6 @@ struct ProfileView: View {
                 .foregroundStyle(Color.theme.primaryText)
             
             HStack(spacing: 8) {
-                // Show last 7 days of mood entries
                 ForEach(profile.moodHistory.reversed().prefix(7)) { entry in
                     VStack(spacing: 8) {
                         Text(dayOfWeekAbbreviation(for: entry.date))
@@ -371,13 +357,10 @@ struct ProfileView: View {
                 .foregroundStyle(Color.theme.primaryText)
             
             VStack(spacing: 16) {
-                // 7-day Bar Chart Visualization
                 HStack(alignment: .bottom, spacing: 12) {
                     ForEach(profile.moodHistory.reversed().prefix(7)) { entry in
                         VStack(spacing: 8) {
                             Spacer()
-                            
-                            // Height of bar based on mood value simulator
                             RoundedRectangle(cornerRadius: 6, style: .continuous)
                                 .fill(
                                     LinearGradient(
@@ -400,8 +383,7 @@ struct ProfileView: View {
                 
                 Divider()
                     .background(Color.theme.divider)
-                
-                // Insights summary
+
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("MOST COMMON MOOD")
@@ -529,7 +511,6 @@ struct ProfileView: View {
                         }
                         .buttonStyle(PlainButtonStyle())
                         .onAppear {
-                            // Detect when we reach the last post to simulate lazy loading
                             if post.id == viewModel.posts.last?.id {
                                 viewModel.loadMorePosts()
                             }
@@ -537,8 +518,7 @@ struct ProfileView: View {
                     }
                 }
                 .padding(.horizontal, 2)
-                
-                // Show ProgressView while lazy loading
+
                 if viewModel.isLazyLoadingPosts {
                     HStack {
                         Spacer()
@@ -587,7 +567,7 @@ struct ProfileView: View {
     // MARK: - Helpers
     private func dayOfWeekAbbreviation(for date: Date) -> String {
         let formatter = DateFormatter()
-        formatter.dateFormat = "E" // Sun, Mon, etc.
+        formatter.dateFormat = "E"
         return String(formatter.string(from: date).first ?? "M")
     }
     

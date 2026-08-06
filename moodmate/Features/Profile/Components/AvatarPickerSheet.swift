@@ -70,7 +70,6 @@ struct AvatarPickerOptionsView: View {
     
     var body: some View {
         VStack(spacing: 20) {
-            // Drag Indicator
             Capsule()
                 .fill(Color.theme.secondaryText.opacity(0.3))
                 .frame(width: 38, height: 5)
@@ -81,7 +80,6 @@ struct AvatarPickerOptionsView: View {
                 .foregroundStyle(Color.theme.primaryText)
             
             VStack(spacing: 12) {
-                // Photo Library Option
                 Button(action: {
                     dismiss()
                     onSelectLibrary()
@@ -118,8 +116,7 @@ struct AvatarPickerOptionsView: View {
                     )
                 }
                 .buttonStyle(ScaleButtonStyle())
-                
-                // Camera Option
+
                 Button(action: {
                     dismiss()
                     onSelectCamera()
@@ -156,8 +153,7 @@ struct AvatarPickerOptionsView: View {
                     )
                 }
                 .buttonStyle(ScaleButtonStyle())
-                
-                // Remove Avatar Option
+
                 if hasCustomAvatar {
                     Button(action: {
                         dismiss()

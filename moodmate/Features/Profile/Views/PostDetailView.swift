@@ -25,7 +25,6 @@ struct PostDetailView: View {
     @State private var likesCount = 0
     @State private var isBookmarked = false
     
-    /// A local copy of the post that reflects interactive state changes (like, bookmark).
     @State private var displayPost: FeedPost?
     
     private var currentPost: FeedPost {
@@ -34,13 +33,11 @@ struct PostDetailView: View {
     
     var body: some View {
         ZStack(alignment: .bottom) {
-            // Background
             Color.theme.backgroundGradient
                 .ignoresSafeArea()
             
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    // Full post card (unified component)
                     PostCardView(
                         post: currentPost,
                         style: .detail,
@@ -48,8 +45,6 @@ struct PostDetailView: View {
                         onBookmark: toggleBookmark,
                         onComment: {}
                     )
-                    
-                    // Comments Section Title
                     Text("Comments (\(comments.count))")
                         .font(.system(size: 16, weight: .bold, design: .rounded))
                         .foregroundStyle(Color.theme.primaryText)
@@ -57,7 +52,6 @@ struct PostDetailView: View {
                         .padding(.top, 4)
                     
                     if comments.isEmpty {
-                        // Empty Comments State
                         VStack(spacing: 8) {
                             Image(systemName: "bubble.left.and.bubble.right")
                                 .font(.system(size: 32))
@@ -72,7 +66,6 @@ struct PostDetailView: View {
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 24)
                     } else {
-                        // Comments list
                         LazyVStack(spacing: 16) {
                             ForEach(comments) { comment in
                                 commentRow(comment: comment)
@@ -81,13 +74,12 @@ struct PostDetailView: View {
                         .padding(.horizontal, 20)
                     }
                     
-                    Spacer(minLength: 100) // Padding for input text field
+                    Spacer(minLength: 100)
                 }
                 .padding(.top, 12)
             }
             .scrollDismissesKeyboard(.interactively)
-            
-            // Bottom comment input bar
+
             commentInputBar
         }
         .navigationTitle("Post")
@@ -179,8 +171,7 @@ struct PostDetailView: View {
         self.likesCount = post.likesCount
         self.isBookmarked = post.isBookmarked
         self.displayPost = post
-        
-        // Setup initial mock comments
+
         self.comments = [
             MockComment(name: "Michele", username: "mj", avatarColorHex: "4DABF7", text: "Such a beautiful quote! Grateful for this reminder today. 🙏🧘‍♀️", timeAgo: "1h ago"),
             MockComment(name: "Pepper", username: "pepperoni", avatarColorHex: "FF6B6B", text: "Love the positive energy, keep tracking! 💪✨", timeAgo: "45m ago")

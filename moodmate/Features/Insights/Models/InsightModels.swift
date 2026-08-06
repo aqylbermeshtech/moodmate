@@ -38,7 +38,7 @@ struct MoodRecord: Identifiable, Codable, Equatable {
     let date: Date
     let moodEmoji: String
     let moodName: String
-    let score: Int // 1 (lowest) to 6 (highest)
+    let score: Int
     let colorHex: String
     let note: String?
     let postId: String?
@@ -50,16 +50,16 @@ struct MoodDistributionItem: Identifiable, Codable, Equatable {
     let moodEmoji: String
     let moodName: String
     let count: Int
-    let percentage: Double // 0.0 to 100.0
+    let percentage: Double
     let colorHex: String
 }
 
 // MARK: - Weekly Trend Point (Line Chart)
 struct WeeklyTrendPoint: Identifiable, Codable, Equatable {
     let id: String
-    let dayLabel: String // e.g. "Mon", "Tue"
+    let dayLabel: String
     let date: Date
-    let averageScore: Double // 1.0 to 6.0
+    let averageScore: Double
     let primaryMoodEmoji: String
     let colorHex: String
 }
@@ -69,20 +69,20 @@ struct StreakData: Codable, Equatable {
     let currentStreakDays: Int
     let longestStreakDays: Int
     let bestMonthName: String
-    let consistencyScorePercentage: Int // 0-100%
+    let consistencyScorePercentage: Int
 }
 
 // MARK: - Posting Habits Data
 struct PostingHabitsHourlyPoint: Identifiable, Codable, Equatable {
     let id: String
-    let hourLabel: String // e.g. "9 AM"
-    let hourOfDay: Int // 0-23
+    let hourLabel: String
+    let hourOfDay: Int
     let postCount: Int
 }
 
 struct PostingHabitsData: Codable, Equatable {
-    let mostActiveDay: String // e.g. "Sunday"
-    let mostActiveHourLabel: String // e.g. "8:00 PM"
+    let mostActiveDay: String
+    let mostActiveHourLabel: String 
     let avgPostsPerWeek: Double
     let postingConsistencyPercentage: Int
     let longestBreakDays: Int
