@@ -5,6 +5,8 @@ struct HomeView: View {
     // MARK: - Dependencies
 
     @ObservedObject var viewModel: HomeViewModel
+    @State private var selectedPostForComments: FeedPost?
+    @State private var isShowingComments = false
 
     var onCreatePost: () -> Void
     var onNavigateToProfile: () -> Void
@@ -32,6 +34,13 @@ struct HomeView: View {
             Color.theme.primaryBackground.ignoresSafeArea()
         }
         .navigationBarHidden(true)
+        .navigationDestination(isPresented: $isShowingComments) {
+            if let post = selectedPostForComments {
+                PostDetailView(post: post) { updatedPost in
+                    viewModel.feed.updatePost(updatedPost)
+                }
+            }
+        }
         .task {
             viewModel.onAppear()
         }
@@ -100,11 +109,8 @@ struct HomeView: View {
                         onLike:     { viewModel.feed.toggleLike(for: post) },
                         onBookmark: { viewModel.feed.toggleBookmark(for: post) },
                         onComment: {
-                            viewModel.selectMood(
-                                emoji: "💬",
-                                text: "Commented on @\(post.user.username)'s post",
-                                colorHex: "38B2AC"
-                            )
+                            selectedPostForComments = post
+                            isShowingComments = true
                         }
                     )
                 }

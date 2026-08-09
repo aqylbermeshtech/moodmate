@@ -102,6 +102,11 @@ final class FeedViewModel: ObservableObject {
         }
     }
 
+    func updatePost(_ updatedPost: FeedPost) {
+        guard let index = posts.firstIndex(where: { $0.id == updatedPost.id }) else { return }
+        posts[index] = updatedPost
+    }
+
     func clearError() {
         errorMessage = nil
     }

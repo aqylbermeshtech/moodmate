@@ -18,6 +18,7 @@ struct MockComment: Identifiable {
 
 struct PostDetailView: View {
     let post: FeedPost
+    var onPostUpdated: (FeedPost) -> Void = { _ in }
     
     @State private var comments: [MockComment] = []
     @State private var commentText = ""
@@ -204,6 +205,7 @@ struct PostDetailView: View {
         updated.isBookmarked = isBookmarked
         updated.commentsCount = comments.count
         displayPost = updated
+        onPostUpdated(updated)
     }
     
     private func addComment() {
