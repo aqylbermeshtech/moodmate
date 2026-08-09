@@ -19,6 +19,8 @@ struct MockComment: Identifiable {
 struct PostDetailView: View {
     let post: FeedPost
     var onPostUpdated: (FeedPost) -> Void = { _ in }
+    @EnvironmentObject private var navigationVisibility: NavigationVisibilityCoordinator
+    @Environment(\.dismiss) private var dismiss
     
     @State private var comments: [MockComment] = []
     @State private var commentText = ""
@@ -85,8 +87,30 @@ struct PostDetailView: View {
         }
         .navigationTitle("Post")
         .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button {
+                    updateNavigationVisibility(false)
+                    dismiss()
+                } label: {
+                    Image(systemName: "chevron.left")
+                }
+                .accessibilityLabel("Back")
+            }
+        }
         .onAppear {
+            updateNavigationVisibility(true)
             initializePostState()
+        }
+        .onDisappear {
+            updateNavigationVisibility(false)
+        }
+    }
+
+    private func updateNavigationVisibility(_ isDetailPresented: Bool) {
+        Task { @MainActor in
+            navigationVisibility.isPostDetailPresented = isDetailPresented
         }
     }
     
@@ -242,5 +266,6 @@ struct PostDetailView: View {
                 isBookmarked: false
             )
         )
+        .environmentObject(NavigationVisibilityCoordinator())
     }
 }

@@ -6,6 +6,12 @@
 //
 
 import SwiftUI
+import Combine
+
+@MainActor
+final class NavigationVisibilityCoordinator: ObservableObject {
+    @Published var isPostDetailPresented = false
+}
 
 struct RootTabContainerView: View {
     // MARK: - Tab & Sheet State (owned here, nowhere else)
@@ -13,6 +19,7 @@ struct RootTabContainerView: View {
     @State private var showCreatePostSheet = false
 
     @StateObject private var homeViewModel = HomeViewModel()
+    @StateObject private var navigationVisibility = NavigationVisibilityCoordinator()
 
     // MARK: - Body
     var body: some View {
@@ -21,11 +28,14 @@ struct RootTabContainerView: View {
                 .safeAreaInset(edge: .bottom) {
                     Color.clear.frame(height: 90)
                 }
-            BottomNavigationBar(selectedTab: $selectedTab) {
-                showCreatePostSheet = true
+            if !navigationVisibility.isPostDetailPresented {
+                BottomNavigationBar(selectedTab: $selectedTab) {
+                    showCreatePostSheet = true
+                }
+                .padding(.bottom, 8)
             }
-            .padding(.bottom, 8)
         }
+        .environmentObject(navigationVisibility)
         .fullScreenCover(isPresented: $showCreatePostSheet) {
             CreatePostView { newPost in
                 homeViewModel.addNewlyCreatedPost(newPost)
