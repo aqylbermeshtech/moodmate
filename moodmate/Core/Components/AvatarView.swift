@@ -57,28 +57,18 @@ struct AvatarView: View {
                         .frame(width: size, height: size)
                         .clipShape(Circle())
                 } else {
-                    // Initials Fallback with Gradient
+                    // Initials fallback uses one quiet, opaque color.
                     ZStack {
                         Circle()
-                            .fill(
-                                LinearGradient(
-                                    colors: [
-                                        Color(hex: colorHex).opacity(0.85),
-                                        Color(hex: colorHex)
-                                    ],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
+                            .fill(Color.theme.secondaryBackground)
                         
                         Text(getInitials(name))
-                            .font(.system(size: size * 0.38, weight: .bold, design: .rounded))
-                            .foregroundStyle(.white)
+                            .font(.system(size: size * 0.38, weight: .medium))
+                            .foregroundStyle(Color.theme.primaryText)
                     }
                     .frame(width: size, height: size)
                 }
             }
-            .shadow(color: Color(hex: colorHex).opacity(0.25), radius: size * 0.08, x: 0, y: size * 0.05)
             .overlay(
                 Circle()
                     .stroke(Color.theme.border, lineWidth: showBorder ? max(2, size * 0.035) : 0)
@@ -103,13 +93,12 @@ struct AvatarView: View {
                 Button(action: overlayAction) {
                     ZStack {
                         Circle()
-                            .fill(Color.teal)
+                            .fill(Color.theme.accent)
                             .frame(width: size * 0.32, height: size * 0.32)
-                            .shadow(color: Color.teal.opacity(0.4), radius: 6, x: 0, y: 3)
                         
                         Image(systemName: overlayIcon)
                             .font(.system(size: size * 0.16, weight: .bold))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(Color.theme.primaryBackground)
                     }
                 }
                 .buttonStyle(PlainButtonStyle())

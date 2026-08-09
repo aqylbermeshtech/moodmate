@@ -43,7 +43,7 @@ struct DiscoverCard: View {
                     }
                     .padding(.horizontal, 7)
                     .padding(.vertical, 3)
-                    .background(.ultraThinMaterial)
+                    .background(Color.theme.surface)
                     .clipShape(Capsule())
                     
                     Text(post.quoteText)

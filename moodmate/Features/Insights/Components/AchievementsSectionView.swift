@@ -109,7 +109,7 @@ private struct AchievementCardView: View {
         .padding(14)
         .background {
             RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(.ultraThinMaterial)
+                .fill(Color.theme.surface)
                 .overlay(
                     RoundedRectangle(cornerRadius: 20, style: .continuous)
                         .stroke(

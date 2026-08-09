@@ -25,13 +25,7 @@ struct MoodPickerCard: View {
             HStack(spacing: 14) {
                 ZStack {
                     Circle()
-                        .fill(
-                            LinearGradient(
-                                colors: [activeColor.opacity(0.25), activeColor.opacity(0.1)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
+                        .fill(activeColor.opacity(0.14))
                         .frame(width: 52, height: 52)
                     
                     Text(selectedMoodEmoji ?? "➕")
@@ -40,13 +34,13 @@ struct MoodPickerCard: View {
                 
                 VStack(alignment: .leading, spacing: 3) {
                     Text(selectedMoodEmoji != nil ? "Mood Selected" : "How are you feeling?")
-                        .font(.system(size: 11, weight: .bold, design: .rounded))
+                        .font(.caption.weight(.medium))
                         .foregroundStyle(activeColor)
                         .textCase(.uppercase)
                     
                     if let emoji = selectedMoodEmoji, let text = selectedMoodText {
                         Text("\(emoji) Feeling \(text)")
-                            .font(.system(size: 17, weight: .bold, design: .rounded))
+                            .font(.body.weight(.medium))
                             .foregroundStyle(Color.theme.primaryText)
                     } else {
                         Text("Tap to select your mood")
@@ -59,7 +53,7 @@ struct MoodPickerCard: View {
                 
                 HStack(spacing: 6) {
                     Text(selectedMoodEmoji != nil ? "Change" : "Choose")
-                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                        .font(.caption.weight(.medium))
                         .foregroundStyle(activeColor)
                     
                     Image(systemName: "chevron.right")
@@ -74,17 +68,17 @@ struct MoodPickerCard: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 14)
             .background(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                RoundedRectangle(cornerRadius: AppRadius.card, style: .continuous)
                     .fill(Color.theme.surface)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                RoundedRectangle(cornerRadius: AppRadius.card, style: .continuous)
                     .stroke(
                         selectedMoodEmoji != nil ? activeColor.opacity(0.6) : Color.theme.border,
-                        lineWidth: selectedMoodEmoji != nil ? 1.5 : 1
+                        lineWidth: 0.5
                     )
             )
-            .shadow(color: selectedMoodEmoji != nil ? activeColor.opacity(0.15) : Color.theme.shadow, radius: 10, x: 0, y: 4)
+            .shadow(color: Color.theme.shadow, radius: AppShadow.radius, y: AppShadow.y)
         }
         .buttonStyle(ScaleButtonStyle())
     }

@@ -33,7 +33,7 @@ struct PostDetailView: View {
     
     var body: some View {
         ZStack(alignment: .bottom) {
-            Color.theme.backgroundGradient
+            Color.theme.primaryBackground
                 .ignoresSafeArea()
             
             ScrollView {
@@ -147,7 +147,7 @@ struct PostDetailView: View {
             Button(action: addComment) {
                 ZStack {
                     Circle()
-                        .fill(commentText.isEmpty ? Color.teal.opacity(0.5) : Color.teal)
+                        .fill(commentText.isEmpty ? Color.theme.accent.opacity(0.5) : Color.theme.accent)
                         .frame(width: 38, height: 38)
                     
                     Image(systemName: "paperplane.fill")

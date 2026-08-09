@@ -35,7 +35,7 @@ struct SuccessToastView: View {
         )
         .overlay(
             RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .stroke(Color.teal.opacity(0.3), lineWidth: 1)
+                .stroke(Color.theme.accent.opacity(0.3), lineWidth: 0.5)
         )
         .padding(.horizontal, 24)
         .transition(.move(edge: .top).combined(with: .opacity))

@@ -38,10 +38,9 @@ enum HomeTab: Int, CaseIterable, Identifiable {
     }
 }
 
-// MARK: - Glass Bottom Navigation Bar
+// MARK: - Integrated Bottom Navigation Bar
 struct BottomNavigationBar: View {
     @Binding var selectedTab: HomeTab
-    @Namespace private var activeTabAnimation
     var onAddTap: () -> Void
     
     var body: some View {
@@ -52,14 +51,9 @@ struct BottomNavigationBar: View {
                         ZStack {
                             Circle()
                                 .fill(
-                                    LinearGradient(
-                                        colors: [.teal, .teal.opacity(0.85)],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    )
+                                    Color.theme.accent
                                 )
                                 .frame(width: 52, height: 52)
-                                .shadow(color: .teal.opacity(0.35), radius: 8, x: 0, y: 4)
                             
                             Image(systemName: tab.iconName)
                                 .font(.system(size: 20, weight: .bold))
@@ -71,7 +65,7 @@ struct BottomNavigationBar: View {
                     .frame(maxWidth: .infinity)
                 } else {
                     Button {
-                        withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                        withAnimation(.easeOut(duration: 0.18)) {
                             selectedTab = tab
                         }
                     } label: {
@@ -80,19 +74,17 @@ struct BottomNavigationBar: View {
                                 .font(.system(size: 18, weight: selectedTab == tab ? .bold : .medium))
 
                             if selectedTab == tab {
-                                Text(tab.label)
-                                    .font(.system(size: 10, weight: .bold))
+                                    Text(tab.label)
+                                    .font(.caption2.weight(.medium))
                                     .transition(.scale.combined(with: .opacity))
                             }
                         }
-                        .foregroundStyle(selectedTab == tab ? Color.teal : Color.theme.secondaryText)
+                        .foregroundStyle(selectedTab == tab ? Color.theme.accent : Color.theme.secondaryText)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 8)
                         .background {
                             if selectedTab == tab {
-                                Capsule()
-                                    .fill(Color.teal.opacity(0.15))
-                                    .matchedGeometryEffect(id: "ACTIVE_TAB_HIGHLIGHT", in: activeTabAnimation)
+                                    Capsule().fill(Color.theme.accent.opacity(0.12))
                             }
                         }
                     }
@@ -104,13 +96,12 @@ struct BottomNavigationBar: View {
         .padding(.vertical, 6)
         .background {
             Capsule()
-                .fill(Color.theme.cardBackground)
+                .fill(Color.theme.surface)
                 .overlay(
-                    Capsule()
-                        .stroke(Color.theme.border, lineWidth: 1)
+                    Capsule().stroke(Color.theme.border, lineWidth: 0.5)
                 )
         }
-        .shadow(color: Color.theme.shadow, radius: 16, x: 0, y: 8)
+        .shadow(color: Color.theme.shadow, radius: AppShadow.radius, y: AppShadow.y)
         .padding(.horizontal, 20)
     }
 }
@@ -119,11 +110,7 @@ struct BottomNavigationBar: View {
 // MARK: - Preview
 #Preview {
     ZStack {
-        LinearGradient(
-            colors: [.purple.opacity(0.3), .blue.opacity(0.2)],
-            startPoint: .top,
-            endPoint: .bottom
-        )
+        Color.theme.primaryBackground
         .ignoresSafeArea()
         
         VStack {

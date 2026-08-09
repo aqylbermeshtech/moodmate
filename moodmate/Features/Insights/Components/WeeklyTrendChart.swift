@@ -32,25 +32,15 @@ struct WeeklyTrendChart: View {
                     )
                     .interpolationMethod(.catmullRom)
                     .foregroundStyle(
-                        LinearGradient(
-                            colors: [Color.teal.opacity(0.4), Color.teal.opacity(0.02)],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
+                        Color.theme.accent.opacity(0.14)
                     )
                     LineMark(
                         x: .value("Day", point.dayLabel),
                         y: .value("Score", point.averageScore)
                     )
                     .interpolationMethod(.catmullRom)
-                    .lineStyle(StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [Color.teal, Color.purple],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
+                    .lineStyle(StrokeStyle(lineWidth: 1.5, lineCap: .round, lineJoin: .round))
+                    .foregroundStyle(Color.theme.accent)
 
                     PointMark(
                         x: .value("Day", point.dayLabel),

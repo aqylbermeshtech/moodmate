@@ -16,7 +16,7 @@ struct TabPlaceholderView: View {
         VStack(spacing: 16) {
             Image(systemName: systemImage)
                 .font(.system(size: 54))
-                .foregroundStyle(.teal.gradient)
+                .foregroundStyle(Color.theme.accent)
                 .padding()
                 .background(Circle().fill(.teal.opacity(0.08)))
             

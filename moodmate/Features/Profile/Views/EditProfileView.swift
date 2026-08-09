@@ -24,7 +24,7 @@ struct EditProfileView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color.theme.backgroundGradient
+                Color.theme.primaryBackground
                     .ignoresSafeArea()
                 
                 ScrollView {
@@ -95,7 +95,7 @@ struct EditProfileView: View {
                         } else {
                             Text("Save")
                                 .font(.system(size: 16, weight: .bold))
-                                .foregroundStyle(editViewModel.isFormValid ? Color.teal : Color.secondary)
+                                .foregroundStyle(editViewModel.isFormValid ? Color.theme.accent : Color.theme.secondaryText)
                         }
                     }
                     .disabled(!editViewModel.isFormValid || editViewModel.isSaving || editViewModel.isUploadingAvatar)
@@ -170,7 +170,7 @@ struct EditProfileView: View {
                 .foregroundStyle(.teal)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 6)
-                .background(Color.teal.opacity(0.12))
+                .background(Color.theme.accent.opacity(0.12))
                 .clipShape(Capsule())
             }
             .buttonStyle(PlainButtonStyle())

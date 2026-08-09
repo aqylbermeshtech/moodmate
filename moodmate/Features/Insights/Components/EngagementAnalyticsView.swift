@@ -72,13 +72,13 @@ struct EngagementAnalyticsView: View {
                     )
                     .interpolationMethod(.monotone)
                     .lineStyle(StrokeStyle(lineWidth: 3))
-                    .foregroundStyle(Color.teal)
+                    .foregroundStyle(Color.theme.accent)
                     
                     PointMark(
                         x: .value("Month", point.label),
                         y: .value("Followers", point.count)
                     )
-                    .foregroundStyle(Color.teal)
+                    .foregroundStyle(Color.theme.accent)
                     .annotation(position: .top) {
                         Text("\(point.count)")
                             .font(.system(size: 10, weight: .bold, design: .rounded))
@@ -101,7 +101,7 @@ struct EngagementAnalyticsView: View {
         .padding(18)
         .background {
             RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(.ultraThinMaterial)
+                .fill(Color.theme.surface)
                 .overlay(
                     RoundedRectangle(cornerRadius: 24, style: .continuous)
                         .stroke(

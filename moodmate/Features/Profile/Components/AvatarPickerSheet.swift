@@ -200,6 +200,6 @@ struct AvatarPickerOptionsView: View {
             .padding(.top, 4)
             .padding(.bottom, 24)
         }
-        .background(Color.theme.backgroundGradient.ignoresSafeArea())
+        .background(Color.theme.primaryBackground.ignoresSafeArea())
     }
 }

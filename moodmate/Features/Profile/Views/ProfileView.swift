@@ -21,7 +21,7 @@ struct ProfileView: View {
     
     var body: some View {
         ZStack {
-            Color.theme.backgroundGradient
+            Color.theme.primaryBackground
                 .ignoresSafeArea()
             
             if viewModel.isLoading || viewModel.isWaitingForAuthentication {
@@ -79,7 +79,7 @@ struct ProfileView: View {
                     .foregroundStyle(.white)
                     .padding(.horizontal, 24)
                     .padding(.vertical, 12)
-                    .background(Color.teal)
+                    .background(Color.theme.accent)
                     .clipShape(Capsule())
                 }
             }
@@ -174,7 +174,7 @@ struct ProfileView: View {
                 }
                 .padding(.horizontal, 10)
                 .padding(.vertical, 5)
-                .background(Color.orange.opacity(0.12))
+                .background(Color.theme.warning.opacity(0.12))
                 .clipShape(Capsule())
             }
         }
@@ -253,7 +253,7 @@ struct ProfileView: View {
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
-                    .background(Color.teal)
+                    .background(Color.theme.accent)
                     .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                     .shadow(color: Color.teal.opacity(0.2), radius: 6, x: 0, y: 3)
                 }
@@ -271,7 +271,7 @@ struct ProfileView: View {
                     .foregroundStyle(profile.isFollowing ? Color.theme.primaryText : Color.white)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
-                    .background(profile.isFollowing ? Color.theme.groupedBackground : Color.teal)
+                    .background(profile.isFollowing ? Color.theme.groupedBackground : Color.theme.accent)
                     .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                     .shadow(color: profile.isFollowing ? Color.clear : Color.teal.opacity(0.2), radius: 6, x: 0, y: 3)
                 }
@@ -331,7 +331,7 @@ struct ProfileView: View {
                         }
                         .overlay(
                             Circle()
-                                .stroke(Color.teal, lineWidth: Calendar.current.isDateInToday(entry.date) ? 2 : 0)
+                                .stroke(Color.theme.accent, lineWidth: Calendar.current.isDateInToday(entry.date) ? 1 : 0)
                                 .frame(width: 40, height: 40)
                         )
                     }
@@ -452,7 +452,7 @@ struct ProfileView: View {
         HStack(spacing: 12) {
             ZStack {
                 Circle()
-                    .fill(Color.teal.opacity(0.12))
+                                    .fill(Color.theme.accent.opacity(0.12))
                     .frame(width: 48, height: 48)
                 
                 Image(systemName: achievement.icon)

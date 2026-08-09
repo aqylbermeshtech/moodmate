@@ -14,21 +14,15 @@ struct DiscoverView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color.theme.backgroundGradient
+                Color.theme.primaryBackground
                     .ignoresSafeArea()
                 
                 VStack(spacing: 0) {
                     VStack(spacing: 12) {
                         HStack {
                             Text("Discover")
-                                .font(.system(size: 28, weight: .bold, design: .rounded))
-                                .foregroundStyle(
-                                    LinearGradient(
-                                        colors: [Color.teal, Color.purple],
-                                        startPoint: .leading,
-                                        endPoint: .trailing
-                                    )
-                                )
+                                .font(.title.weight(.medium))
+                                .foregroundStyle(Color.theme.primaryText)
                             
                             Spacer()
                         }
@@ -73,7 +67,7 @@ struct DiscoverView: View {
                                 }
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 6)
-                                .background(Color.teal.opacity(0.12))
+                                .background(Color.theme.accent.opacity(0.12))
                                 .clipShape(Capsule())
                                 
                                 Spacer()
@@ -83,7 +77,7 @@ struct DiscoverView: View {
                         }
                     }
                     .padding(.bottom, 10)
-                    .background(.ultraThinMaterial)
+                    .background(Color.theme.primaryBackground)
                     
                     ZStack {
                         if viewModel.isSearchActive && !viewModel.searchText.isEmpty {

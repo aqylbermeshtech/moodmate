@@ -165,8 +165,7 @@ struct PostCardView: View {
                         .scaledToFill()
                         .frame(maxWidth: .infinity)
                         .frame(height: 250)
-                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                        .shadow(color: Color.theme.shadow, radius: 8, x: 0, y: 4)
+                        .clipShape(RoundedRectangle(cornerRadius: AppRadius.image, style: .continuous))
                 } else {
                     ZStack {
                         RoundedRectangle(cornerRadius: 16, style: .continuous)
@@ -187,52 +186,26 @@ struct PostCardView: View {
 
     private var quoteContentSection: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            Color.adaptiveMoodColor(hex: post.postGradientStartHex),
-                            Color.adaptiveMoodColor(hex: post.postGradientEndHex)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
+            RoundedRectangle(cornerRadius: AppRadius.image, style: .continuous)
+                .fill(postAccentColor.opacity(0.22))
                 .frame(height: 220)
-                .shadow(color: Color.theme.shadow, radius: 10, x: 0, y: 6)
-            GeometryReader { geo in
-                ZStack {
-                    Circle()
-                        .fill(Color.white.opacity(0.12))
-                        .frame(width: geo.size.width * 0.45, height: geo.size.width * 0.45)
-                        .blur(radius: 20)
-                        .offset(x: geo.size.width * 0.15, y: -geo.size.height * 0.1)
-
-                    Circle()
-                        .fill(Color.black.opacity(0.08))
-                        .frame(width: geo.size.width * 0.6, height: geo.size.width * 0.6)
-                        .blur(radius: 30)
-                        .offset(x: -geo.size.width * 0.2, y: geo.size.height * 0.2)
-                }
-            }
-            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
 
             VStack {
                 Image(systemName: "quote.opening")
                     .font(.system(size: 24))
-                    .foregroundStyle(.white.opacity(0.4))
+                    .foregroundStyle(postAccentColor)
                     .padding(.bottom, 4)
 
                 Text(post.quoteText)
-                    .font(.system(size: 20, weight: .bold, design: .serif))
-                    .foregroundStyle(.white)
+                    .font(.title3.weight(.regular))
+                    .foregroundStyle(Color.theme.primaryText)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 28)
                     .minimumScaleFactor(0.85)
 
                 Image(systemName: "quote.closing")
                     .font(.system(size: 24))
-                    .foregroundStyle(.white.opacity(0.4))
+                    .foregroundStyle(postAccentColor)
                     .padding(.top, 4)
             }
         }

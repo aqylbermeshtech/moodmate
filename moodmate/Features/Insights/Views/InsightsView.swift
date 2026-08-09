@@ -15,7 +15,7 @@ struct InsightsView: View {
         NavigationStack {
             ZStack {
 
-                Color.theme.backgroundGradient
+                Color.theme.primaryBackground
                     .ignoresSafeArea()
                 
                 VStack(spacing: 0) {
@@ -25,7 +25,7 @@ struct InsightsView: View {
                         DateFilterPicker(selectedFilter: $viewModel.selectedFilter)
                     }
                     .padding(.bottom, 10)
-                    .background(.ultraThinMaterial)
+                    .background(Color.theme.primaryBackground)
 
                     ScrollView {
                         VStack(spacing: 24) {
@@ -115,14 +115,8 @@ struct InsightsView: View {
         HStack(alignment: .center) {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Insights")
-                    .font(.system(size: 28, weight: .bold, design: .rounded))
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [Color.teal, Color.purple],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
+                    .font(.title.weight(.medium))
+                    .foregroundStyle(Color.theme.primaryText)
                 
                 Text(greetingMessage)
                     .font(.system(size: 13, weight: .semibold, design: .rounded))
@@ -140,11 +134,11 @@ struct InsightsView: View {
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
-            .background(Color.orange.opacity(0.12))
+            .background(Color.theme.warning.opacity(0.12))
             .clipShape(Capsule())
             .overlay(
                 Capsule()
-                    .stroke(Color.orange.opacity(0.3), lineWidth: 1)
+                    .stroke(Color.theme.warning.opacity(0.3), lineWidth: 0.5)
             )
         }
         .padding(.horizontal, 20)

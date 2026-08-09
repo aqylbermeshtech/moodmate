@@ -31,7 +31,7 @@ struct TopMoodsView: View {
         .padding(18)
         .background {
             RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(.ultraThinMaterial)
+                .fill(Color.theme.surface)
                 .overlay(
                     RoundedRectangle(cornerRadius: 24, style: .continuous)
                         .stroke(

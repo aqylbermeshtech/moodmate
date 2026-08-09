@@ -18,38 +18,21 @@ struct PublishButton: View {
             HStack(spacing: 8) {
                 if isPublishing {
                     ProgressView()
-                        .tint(.white)
+                        .tint(Color.theme.primaryBackground)
                         .scaleEffect(0.85)
                 } else {
                     Image(systemName: "paperplane.fill")
                         .font(.system(size: 13, weight: .bold))
                     
                     Text("Publish")
-                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                        .font(.subheadline.weight(.medium))
                 }
             }
-            .foregroundStyle(.white)
+            .foregroundStyle(Color.theme.primaryBackground)
             .padding(.horizontal, 18)
             .padding(.vertical, 9)
-            .background(
-                Group {
-                    if isValid && !isPublishing {
-                        LinearGradient(
-                            colors: [accentColor, accentColor.opacity(0.85)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    } else {
-                        LinearGradient(
-                            colors: [Color.gray.opacity(0.4), Color.gray.opacity(0.3)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    }
-                }
-            )
-            .clipShape(Capsule())
-            .shadow(color: isValid && !isPublishing ? accentColor.opacity(0.35) : Color.clear, radius: 8, x: 0, y: 4)
+            .background(isValid && !isPublishing ? accentColor : Color.theme.tertiaryText)
+            .clipShape(RoundedRectangle(cornerRadius: AppRadius.control, style: .continuous))
         }
         .disabled(!isValid || isPublishing)
         .buttonStyle(ScaleButtonStyle())

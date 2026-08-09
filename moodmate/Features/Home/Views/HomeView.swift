@@ -29,7 +29,7 @@ struct HomeView: View {
         }
         .scrollIndicators(.hidden)
         .background {
-            Color.theme.backgroundGradient.ignoresSafeArea()
+            Color.theme.primaryBackground.ignoresSafeArea()
         }
         .navigationBarHidden(true)
         .task {

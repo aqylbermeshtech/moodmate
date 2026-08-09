@@ -54,7 +54,7 @@ struct DiscoverSearchBar: View {
                 .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                 .overlay(
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .stroke(isFocused ? Color.teal.opacity(0.4) : Color.theme.border, lineWidth: 1)
+                        .stroke(isFocused ? Color.theme.accent.opacity(0.4) : Color.theme.border, lineWidth: 0.5)
                 )
                 
                 if isSearchActive {

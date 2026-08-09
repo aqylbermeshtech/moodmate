@@ -23,7 +23,7 @@ struct GoalsSectionView: View {
                     
                     Text("\(goals.filter(\.isCompleted).count) / \(goals.count) Completed")
                         .font(.system(size: 12, weight: .bold, design: .rounded))
-                        .foregroundStyle(.teal)
+                        .foregroundStyle(Color.theme.accent)
                 }
                 
                 Text("Set targets and watch your progress grow")
@@ -40,18 +40,9 @@ struct GoalsSectionView: View {
         .padding(18)
         .background {
             RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(.ultraThinMaterial)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 24, style: .continuous)
-                        .stroke(
-                            LinearGradient(
-                                colors: [.white.opacity(0.4), .white.opacity(0.1)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            ),
-                            lineWidth: 1
-                        )
-                )
+                .fill(Color.theme.surface)
+                .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous)
+                    .stroke(Color.theme.border, lineWidth: 0.5))
         }
         .shadow(color: .black.opacity(0.04), radius: 10, x: 0, y: 5)
         .padding(.horizontal, 20)
@@ -103,13 +94,7 @@ private struct GoalRowCard: View {
                         .frame(height: 6)
                     
                     Capsule()
-                        .fill(
-                            LinearGradient(
-                                colors: [Color(hex: goal.colorHex), Color(hex: goal.colorHex).opacity(0.7)],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
+                        .fill(Color(hex: goal.colorHex))
                         .frame(width: geo.size.width * CGFloat(goal.progressFraction), height: 6)
                 }
             }

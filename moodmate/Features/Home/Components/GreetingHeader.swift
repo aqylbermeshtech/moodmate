@@ -53,7 +53,7 @@ struct ScaleButtonStyle: ButtonStyle {
 
 #Preview {
     ZStack {
-        Color.teal.opacity(0.1).ignoresSafeArea()
+        Color.theme.primaryBackground.ignoresSafeArea()
         GreetingHeader(viewModel: HomeViewModel(), onProfileTap: {})
             .padding()
     }

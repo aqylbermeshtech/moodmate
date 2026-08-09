@@ -70,7 +70,7 @@ struct AnalyticsEmptyStateView: View {
         .frame(maxWidth: .infinity)
         .background {
             RoundedRectangle(cornerRadius: 28, style: .continuous)
-                .fill(.ultraThinMaterial)
+                .fill(Color.theme.surface)
                 .overlay(
                     RoundedRectangle(cornerRadius: 28, style: .continuous)
                         .stroke(Color.white.opacity(0.3), lineWidth: 1)

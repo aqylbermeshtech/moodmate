@@ -23,21 +23,21 @@ struct RootView: View {
                     .transition(.opacity)
             }
         }
-        .animation(.spring(response: 0.45, dampingFraction: 0.8), value: sessionManager.isAuthenticated)
+        .animation(.easeOut(duration: 0.2), value: sessionManager.isAuthenticated)
         .animation(.easeOut(duration: 0.25), value: sessionManager.isResolvingSession)
         .preferredColorScheme(themeManager.selectedAppearance.colorScheme)
     }
     
     private var splashView: some View {
         ZStack {
-            Color.theme.backgroundGradient
+            Color.theme.primaryBackground
                 .ignoresSafeArea()
-            VStack(spacing: 14) {
+            VStack(spacing: AppSpacing.md) {
                 Image(systemName: "leaf.circle.fill")
-                    .font(.system(size: 56))
+                    .font(.system(size: 48, weight: .regular))
                     .foregroundStyle(Color.theme.accent)
                 Text("MoodMate")
-                    .font(.system(size: 32, weight: .bold, design: .rounded))
+                    .font(.title.weight(.medium))
                     .foregroundStyle(Color.theme.primaryText)
             }
         }

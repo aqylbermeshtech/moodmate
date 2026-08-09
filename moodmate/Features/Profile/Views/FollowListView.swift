@@ -32,7 +32,7 @@ struct FollowListView: View {
     
     var body: some View {
         ZStack {
-            Color.theme.backgroundGradient
+            Color.theme.primaryBackground
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {

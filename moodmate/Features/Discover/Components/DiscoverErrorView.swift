@@ -39,7 +39,7 @@ struct DiscoverErrorView: View {
             .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .stroke(Color.orange.opacity(0.3), lineWidth: 1)
+                    .stroke(Color.theme.warning.opacity(0.3), lineWidth: 0.5)
             )
             .padding(.horizontal, 20)
         } else {
@@ -76,7 +76,7 @@ struct DiscoverErrorView: View {
                     .foregroundStyle(.white)
                     .padding(.horizontal, 24)
                     .padding(.vertical, 12)
-                    .background(Color.teal)
+                    .background(Color.theme.accent)
                     .clipShape(Capsule())
                 }
                 .buttonStyle(ScaleButtonStyle())

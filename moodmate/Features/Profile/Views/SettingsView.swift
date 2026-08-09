@@ -20,7 +20,7 @@ struct SettingsView: View {
     
     var body: some View {
         ZStack {
-            Color.theme.backgroundGradient
+            Color.theme.primaryBackground
                 .ignoresSafeArea()
             
             ScrollView {

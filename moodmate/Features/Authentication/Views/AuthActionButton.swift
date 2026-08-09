@@ -17,18 +17,17 @@ struct AuthActionButton: View {
             if isLoading {
                 ProgressView()
                     .progressViewStyle(.circular)
-                    .tint(.white)
+                    .tint(Color.theme.primaryBackground)
             } else {
                 Text(title)
-                    .font(.headline)
-                    .foregroundStyle(.white)
+                    .font(.body.weight(.medium))
+                    .foregroundStyle(Color.theme.primaryBackground)
             }
         }
         .frame(maxWidth: .infinity)
-        .frame(height: 52)
-        .background(Color.teal)
-        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-        .shadow(color: Color.theme.shadow, radius: 10, x: 0, y: 6)
+        .frame(height: 48)
+        .background(Color.theme.accent)
+        .clipShape(RoundedRectangle(cornerRadius: AppRadius.control, style: .continuous))
         .disabled(isLoading)
     }
 }

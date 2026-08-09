@@ -34,7 +34,7 @@ struct AnalyticsErrorView: View {
                     .foregroundStyle(.teal)
                     .padding(.horizontal, 20)
                     .padding(.vertical, 10)
-                    .background(Color.teal.opacity(0.12))
+                    .background(Color.theme.accent.opacity(0.12))
                     .clipShape(Capsule())
             }
         }
@@ -42,10 +42,10 @@ struct AnalyticsErrorView: View {
         .frame(maxWidth: .infinity)
         .background {
             RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(.ultraThinMaterial)
+                .fill(Color.theme.surface)
                 .overlay(
                     RoundedRectangle(cornerRadius: 24, style: .continuous)
-                        .stroke(Color.orange.opacity(0.3), lineWidth: 1)
+                        .stroke(Color.theme.warning.opacity(0.3), lineWidth: 0.5)
                 )
         }
         .padding(.horizontal, 20)
