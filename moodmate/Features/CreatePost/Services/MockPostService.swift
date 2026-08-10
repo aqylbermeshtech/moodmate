@@ -7,17 +7,23 @@
 
 import Foundation
 import Combine
+import OSLog
 
 final class MockPostService: PostServiceProtocol {
     static let shared = MockPostService()
     
-    @Published private var posts: [PostModel] = []
+    @Published private var posts: [PostModel] = [] {
+        didSet {
+            logger.debug("service posts changed: \(self.posts.map(\.id).joined(separator: ","), privacy: .public)")
+        }
+    }
     
     var postsPublisher: AnyPublisher<[PostModel], Never> {
         $posts.eraseToAnyPublisher()
     }
     
     private var cancellables = Set<AnyCancellable>()
+    private let logger = Logger(subsystem: "com.moodmate", category: "PostService")
     
     init() {
         seedInitialPosts()
@@ -59,14 +65,24 @@ final class MockPostService: PostServiceProtocol {
         posts.removeAll { $0.id == id }
     }
     
-    func toggleLike(postId: String) async throws {
+    func setLike(postId: String, isLiked: Bool) async throws {
         if let index = posts.firstIndex(where: { $0.id == postId }) {
-            posts[index].isLiked.toggle()
-            if posts[index].isLiked {
-                posts[index].likesCount += 1
+            var updatedPosts = posts
+            let previousLiked = posts[index].isLiked
+            let previousCount = posts[index].likesCount
+            guard previousLiked != isLiked else { return }
+
+            updatedPosts[index].isLiked = isLiked
+            if isLiked {
+                updatedPosts[index].likesCount += 1
             } else {
-                posts[index].likesCount -= 1
+                updatedPosts[index].likesCount -= 1
             }
+
+            posts = updatedPosts
+            logger.debug(
+                "like committed for \(postId, privacy: .public): liked \(previousLiked, privacy: .public)->\(self.posts[index].isLiked, privacy: .public), count \(previousCount, privacy: .public)->\(self.posts[index].likesCount, privacy: .public)"
+            )
         }
     }
     

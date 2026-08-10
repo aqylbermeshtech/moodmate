@@ -13,6 +13,6 @@ protocol PostServiceProtocol {
     func fetchPosts() async throws -> [PostModel]
     func createPost(_ post: PostModel) async throws -> PostModel
     func deletePost(id: String) async throws
-    func toggleLike(postId: String) async throws
+    func setLike(postId: String, isLiked: Bool) async throws
     func toggleBookmark(postId: String) async throws
 }

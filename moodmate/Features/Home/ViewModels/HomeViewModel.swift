@@ -48,6 +48,13 @@ final class HomeViewModel: ObservableObject {
             postService: postService,
             profileRepository: profileRepository
         )
+
+        // Bridge FeedViewModel's change notifications up to HomeViewModel so that
+        // HomeView (which only observes HomeViewModel) re-renders whenever feed
+        // state — such as posts[n].isLiked — changes.
+        feed.objectWillChange
+            .sink { [weak self] _ in self?.objectWillChange.send() }
+            .store(in: &cancellables)
     }
 
     // MARK: - Lifecycle
