@@ -7,6 +7,7 @@
 
 import UIKit
 import Combine
+import FirebaseAuth
 
 protocol ProfileServiceProtocol: AnyObject {
     var profileUpdatesPublisher: AnyPublisher<UserProfile, Never> { get }
@@ -20,6 +21,8 @@ protocol ProfileServiceProtocol: AnyObject {
     func fetchProfile(forId id: String?) async throws -> UserProfile?
 
     func refreshProfile(forId id: String?) async throws -> UserProfile?
+    
+    func syncWithFirebaseUser(user: User)
 
     func updateProfile(
         id: String,

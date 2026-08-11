@@ -13,6 +13,7 @@ import Combine
 final class ProfileViewModel: ObservableObject {
     let userId: String?
     private let profileService: ProfileServiceProtocol
+    private let sessionManager: AppSessionManager
     
     @Published var profile: UserProfile?
     @Published var posts: [ProfilePost] = []
@@ -25,17 +26,20 @@ final class ProfileViewModel: ObservableObject {
     
     private var cancellables = Set<AnyCancellable>()
     
-    init(userId: String? = nil, profileService: ProfileServiceProtocol = ProfileService.shared) {
+    init(userId: String? = nil, profileService: ProfileServiceProtocol = ProfileService.shared,
+         sessionManager: AppSessionManager = AppSessionManager.shared) {
         self.userId = userId
         self.profileService = profileService
+        self.sessionManager = sessionManager
         
         if userId == nil {
-            AppSessionManager.shared.$currentUser
+            sessionManager.$currentUser
                 .receive(on: DispatchQueue.main)
                 .sink { [weak self] user in
                     guard let self else { return }
                     if let user {
-                        ProfileService.shared.syncWithFirebaseUser(user: user)
+                        profileService.syncWithFirebaseUser(user: user)
+                    
                         self.loadProfile()
                     } else {
                         self.profile = nil
@@ -85,15 +89,15 @@ final class ProfileViewModel: ObservableObject {
         isLoading = true
         
         let targetId = userId ?? getCurrentUserId()
-        if let currentFirebaseUser = Auth.auth().currentUser, userId == nil {
-            ProfileService.shared.syncWithFirebaseUser(user: currentFirebaseUser)
+        if let currentFirebaseUser = sessionManager.currentUser, userId == nil {
+            profileService.syncWithFirebaseUser(user: currentFirebaseUser)
         }
         
         await loadProfileData(for: targetId)
     }
     
     private var authenticatedUserId: String? {
-        Auth.auth().currentUser?.uid
+        sessionManager.currentUser?.uid
     }
     
     private func loadProfileData(for profileId: String) async {
@@ -116,7 +120,7 @@ final class ProfileViewModel: ObservableObject {
         guard targetId != getCurrentUserId() else { return }
         
         withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-            if let updated = ProfileService.shared.toggleFollow(targetId: targetId) {
+            if let updated = profileService.toggleFollow(targetId: targetId) {
                 self.profile = updated
             }
         }
@@ -175,8 +179,8 @@ final class ProfileViewModel: ObservableObject {
     
     func loadFollowersAndFollowing() {
         let actualUserId = userId ?? getCurrentUserId()
-        self.followers = ProfileService.shared.getFollowers(forId: actualUserId)
-        self.following = ProfileService.shared.getFollowing(forId: actualUserId)
+        self.followers = profileService.getFollowers(forId: actualUserId)
+        self.following = profileService.getFollowing(forId: actualUserId)
     }
     
     func loadMorePosts() {
