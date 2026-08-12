@@ -117,13 +117,21 @@ final class ProfileViewModel: ObservableObject {
     
     func toggleFollow() {
         guard let targetId = profile?.id else { return }
-        guard targetId != getCurrentUserId() else { return }
-        
+        toggleFollow(for: targetId)
+    }
+
+    @discardableResult
+    func toggleFollow(for targetId: String) -> UserProfile? {
+        guard targetId != getCurrentUserId() else { return nil }
+
+        var updated: UserProfile?
         withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-            if let updated = profileService.toggleFollow(targetId: targetId) {
+            updated = profileService.toggleFollow(targetId: targetId)
+            if let updated, updated.id == profile?.id {
                 self.profile = updated
             }
         }
+        return updated
     }
     
     func updateProfile(

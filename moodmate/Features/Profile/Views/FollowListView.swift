@@ -175,7 +175,7 @@ struct FollowListView: View {
     private func toggleFollow(for user: UserProfile) {
         if let idx = users.firstIndex(where: { $0.id == user.id }) {
             withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
-                if let updated = ProfileService.shared.toggleFollow(targetId: user.id) {
+                if let updated = viewModel.toggleFollow(for: user.id) {
                     users[idx] = updated
                 }
             }
