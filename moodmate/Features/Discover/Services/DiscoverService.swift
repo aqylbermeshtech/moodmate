@@ -7,7 +7,7 @@
 
 import Foundation
 
-final class DiscoverService {
+final class DiscoverService: DiscoverServiceProtocol {
     static let shared = DiscoverService()
     
     private var allPosts: [DiscoverPost] = []

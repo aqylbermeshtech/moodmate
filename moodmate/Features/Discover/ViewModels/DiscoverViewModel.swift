@@ -68,14 +68,22 @@ final class DiscoverViewModel: ObservableObject {
     
     // MARK: - Init
     
-    init() {
+    private let discoverService: DiscoverServiceProtocol
+    private let  profileService: ProfileServiceProtocol
+    
+    init(
+        discoverService: DiscoverServiceProtocol = DiscoverService.shared,
+        profileService: ProfileServiceProtocol = ProfileService.shared
+    ) {
+        self.discoverService = discoverService
+        self.profileService = profileService
         loadRecentSearches()
         setupSearchDebounce()
         observeProfileUpdates()
     }
     
     private func observeProfileUpdates() {
-        ProfileService.shared.profileUpdatesPublisher
+        profileService.profileUpdatesPublisher
             .receive(on: DispatchQueue.main)
             .sink { [weak self] updatedProfile in
                 guard let self = self else { return }
@@ -130,11 +138,11 @@ final class DiscoverViewModel: ObservableObject {
         errorMessage = nil
         currentPage = 0
         
-        async let moods = DiscoverService.shared.getTrendingMoods()
-        async let users = DiscoverService.shared.getSuggestedUsers()
-        async let tags = DiscoverService.shared.getHashtags()
-        async let cats = DiscoverService.shared.getCategories()
-        async let posts = DiscoverService.shared.getDiscoverPosts(page: 0)
+        async let moods = discoverService.getTrendingMoods()
+        async let users = discoverService.getSuggestedUsers()
+        async let tags = discoverService.getHashtags()
+        async let cats = discoverService.getCategories()
+        async let posts = discoverService.getDiscoverPosts(page: 0)
         
         self.trendingMoods = await moods
         self.suggestedUsers = await users
@@ -154,7 +162,7 @@ final class DiscoverViewModel: ObservableObject {
         isLoadingMore = true
         currentPage += 1
         
-        let newPosts = await DiscoverService.shared.getDiscoverPosts(
+        let newPosts = await discoverService.getDiscoverPosts(
             page: currentPage,
             mood: selectedMood,
             category: selectedCategory,
@@ -175,7 +183,7 @@ final class DiscoverViewModel: ObservableObject {
         hasMorePages = true
         errorMessage = nil
         
-        let posts = await DiscoverService.shared.getDiscoverPosts(
+        let posts = await discoverService.getDiscoverPosts(
             page: 0,
             mood: selectedMood,
             category: selectedCategory,
@@ -246,7 +254,7 @@ final class DiscoverViewModel: ObservableObject {
         currentPage = 0
         hasMorePages = true
         
-        let posts = await DiscoverService.shared.getDiscoverPosts(
+        let posts = await discoverService.getDiscoverPosts(
             page: 0,
             mood: selectedMood,
             category: selectedCategory,
@@ -282,7 +290,7 @@ final class DiscoverViewModel: ObservableObject {
             return
         }
         
-        let results = await DiscoverService.shared.search(query: query)
+        let results = await discoverService.search(query: query)
         
         withAnimation(.easeOut(duration: 0.2)) {
             self.searchResults = results
@@ -320,7 +328,7 @@ final class DiscoverViewModel: ObservableObject {
     
     func toggleFollow(user: SuggestedUser) {
         withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-            DiscoverService.shared.toggleFollow(userId: user.id)
+            discoverService.toggleFollow(userId: user.id)
             if let index = suggestedUsers.firstIndex(where: { $0.id == user.id }) {
                 suggestedUsers[index].isFollowing.toggle()
             }
@@ -329,7 +337,7 @@ final class DiscoverViewModel: ObservableObject {
     
     func toggleLike(post: DiscoverPost) {
         withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-            DiscoverService.shared.toggleLike(postId: post.id)
+            discoverService.toggleLike(postId: post.id)
             if let index = discoverPosts.firstIndex(where: { $0.id == post.id }) {
                 discoverPosts[index].isLiked.toggle()
                 discoverPosts[index].likesCount += discoverPosts[index].isLiked ? 1 : -1
