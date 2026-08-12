@@ -25,13 +25,18 @@ final class MockPostService: PostServiceProtocol {
     private var cancellables = Set<AnyCancellable>()
     private let logger = Logger(subsystem: "com.moodmate", category: "PostService")
     
-    init() {
+    private let profileService: ProfileServiceProtocol
+    
+    init(
+        profileService: ProfileServiceProtocol = ProfileService.shared
+    ) {
+        self.profileService = profileService
         seedInitialPosts()
         observeProfileUpdates()
     }
     
     private func observeProfileUpdates() {
-        ProfileService.shared.profileUpdatesPublisher
+        profileService.profileUpdatesPublisher
             .receive(on: DispatchQueue.main)
             .sink { [weak self] updatedProfile in
                 guard let self = self else { return }
