@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct RootView: View {
-    @StateObject private var sessionManager = AppSessionManager.shared
-    @StateObject private var themeManager = ThemeManager.shared
+    @EnvironmentObject var sessionManager: AppSessionManager
+    @EnvironmentObject var themeManager: ThemeManager
     
     var body: some View {
         Group {
@@ -46,4 +46,6 @@ struct RootView: View {
 
 #Preview {
     RootView()
+        .environmentObject(AppSessionManager.shared)
+        .environmentObject(ThemeManager.shared)
 }

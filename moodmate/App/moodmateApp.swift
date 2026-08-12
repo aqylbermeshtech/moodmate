@@ -22,6 +22,8 @@ struct moodmateApp: App {
     var body: some Scene {
         WindowGroup {
             RootView()
+                .environmentObject(AppSessionManager.shared)
+                .environmentObject(ThemeManager.shared)
         }
     }
 }

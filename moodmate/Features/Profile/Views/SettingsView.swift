@@ -10,7 +10,7 @@ import SwiftUI
 struct SettingsView: View {
     @ObservedObject var viewModel: ProfileViewModel
     @Environment(\.dismiss) var dismiss
-    @StateObject private var themeManager = ThemeManager.shared
+    @EnvironmentObject var themeManager: ThemeManager
     
     @State private var notificationsEnabled = true
     @State private var weeklyDigestEnabled = true
@@ -268,4 +268,5 @@ struct SettingsView: View {
     NavigationStack {
         SettingsView(viewModel: ProfileViewModel())
     }
+    .environmentObject(ThemeManager.shared)
 }
