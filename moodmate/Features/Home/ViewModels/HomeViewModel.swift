@@ -36,7 +36,7 @@ final class HomeViewModel: ObservableObject {
     // MARK: - Init
 
     init(
-        postService: PostServiceProtocol = MockPostService.shared,
+        postRepository: PostRepositoryProtocol = PostRepository.shared,
         profileRepository: ProfileRepositoryProtocol = ProfileRepository(),
         friendsRepository: FriendsRepositoryProtocol = FriendsRepository(),
         authService: AuthServiceProtocol = FirebaseAuthService.shared
@@ -45,7 +45,7 @@ final class HomeViewModel: ObservableObject {
         self.friendsRepository = friendsRepository
         self.authService       = authService
         self.feed = FeedViewModel(
-            postService: postService,
+            postRepository: postRepository,
             profileRepository: profileRepository
         )
 

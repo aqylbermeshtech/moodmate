@@ -106,15 +106,3 @@ struct MoodHistoryEntry: Identifiable, Equatable, Codable {
     let text: String
 }
 
-struct ProfilePost: Identifiable, Equatable, Codable {
-    let id: String
-    let quoteText: String
-    let caption: String
-    let postGradientStartHex: String
-    let postGradientEndHex: String
-    var likesCount: Int
-    var commentsCount: Int
-    var isLiked: Bool
-    var isBookmarked: Bool
-    let createdAt: Date
-}

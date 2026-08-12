@@ -140,34 +140,4 @@ struct FeedPost: Identifiable, Equatable {
         self.isBookmarked = postModel.isBookmarked
     }
 
-    init(from profilePost: ProfilePost, user: UserProfile) {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MMM d, h:mm a"
-        
-        self.id = profilePost.id
-        self.user = MoodUser(
-            id: user.id,
-            name: user.displayName,
-            username: user.username,
-            avatarImageData: user.avatarImageData,
-            avatarColorHex: user.avatarColorHex,
-            currentMoodEmoji: user.currentMoodEmoji,
-            currentMoodText: user.currentMoodText,
-            currentMoodColorHex: user.currentMoodColorHex
-        )
-        self.timeAgo = formatter.string(from: profilePost.createdAt)
-        self.postGradientStartHex = profilePost.postGradientStartHex
-        self.postGradientEndHex = profilePost.postGradientEndHex
-        self.quoteText = profilePost.quoteText
-        self.caption = profilePost.caption
-        self.images = []
-        self.moodEmoji = user.currentMoodEmoji
-        self.moodText = user.currentMoodText
-        self.moodColorHex = user.currentMoodColorHex
-        self.visibility = .publicVisibility
-        self.likesCount = profilePost.likesCount
-        self.commentsCount = profilePost.commentsCount
-        self.isLiked = profilePost.isLiked
-        self.isBookmarked = profilePost.isBookmarked
-    }
 }

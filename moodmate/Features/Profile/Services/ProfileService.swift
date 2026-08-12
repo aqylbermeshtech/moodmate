@@ -13,8 +13,7 @@ final class ProfileService: ProfileServiceProtocol {
     static let shared = ProfileService()
     
     private var profiles: [String: UserProfile] = [:]
-    private var posts: [String: [ProfilePost]] = [:]
-    
+
     private let profileSubject = PassthroughSubject<UserProfile, Never>()
     var profileUpdatesPublisher: AnyPublisher<UserProfile, Never> {
         profileSubject.eraseToAnyPublisher()
@@ -54,11 +53,6 @@ final class ProfileService: ProfileServiceProtocol {
     func getProfile(forId id: String?) -> UserProfile? {
         let actualId = id ?? getCurrentUserId()
         return profiles[actualId]
-    }
-    
-    func getPosts(forId id: String?) -> [ProfilePost] {
-        let actualId = id ?? getCurrentUserId()
-        return posts[actualId] ?? []
     }
     
     // MARK: - Async Methods
@@ -272,14 +266,11 @@ final class ProfileService: ProfileServiceProtocol {
         }
         
         profiles[currentId] = profile
-        if posts[currentId] == nil {
-            posts[currentId] = defaultUserPosts()
-        }
-        
+
         persistProfiles()
         profileSubject.send(profile)
     }
-    
+
     // MARK: - Persistence Helpers
     
     private func persistProfiles() {
@@ -323,10 +314,6 @@ final class ProfileService: ProfileServiceProtocol {
         var migratedProfile = mockProfile
         migratedProfile.id = currentId
         profiles[currentId] = migratedProfile
-        
-        if posts[currentId] == nil, let mockPosts = posts[Self.mockUserId] {
-            posts[currentId] = mockPosts
-        }
     }
     
     private func setupMockData() {
@@ -365,10 +352,6 @@ final class ProfileService: ProfileServiceProtocol {
             }
             
             profiles[currentId] = currentUserProfile
-        }
-        
-        if posts[currentId] == nil {
-            posts[currentId] = defaultUserPosts()
         }
 
         if profiles["1"] == nil {
@@ -551,44 +534,4 @@ final class ProfileService: ProfileServiceProtocol {
         return entries
     }
     
-    private func defaultUserPosts() -> [ProfilePost] {
-        return [
-            ProfilePost(
-                id: "up1",
-                quoteText: "The present moment is filled with joy and happiness.",
-                caption: "Enjoyed a peaceful coffee walk this morning. Grateful for the fresh air. ☕️🍃",
-                postGradientStartHex: "38B2AC",
-                postGradientEndHex: "805AD5",
-                likesCount: 14,
-                commentsCount: 2,
-                isLiked: false,
-                isBookmarked: false,
-                createdAt: Date().addingTimeInterval(-7200)
-            ),
-            ProfilePost(
-                id: "up2",
-                quoteText: "Quiet mind, peaceful heart.",
-                caption: "Spend 10 minutes writing down my worries. Writing them helps letting them go. 📝🧘‍♂️",
-                postGradientStartHex: "4DABF7",
-                postGradientEndHex: "BE4BDF",
-                likesCount: 9,
-                commentsCount: 0,
-                isLiked: false,
-                isBookmarked: false,
-                createdAt: Date().addingTimeInterval(-86400 * 2)
-            ),
-            ProfilePost(
-                id: "up3",
-                quoteText: "Grateful for small things, big things, and everything in between.",
-                caption: "Revisited my goals today. Taking it day by day. Every small step counts. 💪✨",
-                postGradientStartHex: "ED64A6",
-                postGradientEndHex: "FEFCBF",
-                likesCount: 28,
-                commentsCount: 5,
-                isLiked: true,
-                isBookmarked: true,
-                createdAt: Date().addingTimeInterval(-86400 * 4)
-            )
-        ]
-    }
 }

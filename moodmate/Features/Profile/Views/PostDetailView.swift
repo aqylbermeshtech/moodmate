@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Combine
 
 struct MockComment: Identifiable {
     let id = UUID()
@@ -18,18 +19,15 @@ struct MockComment: Identifiable {
 
 struct PostDetailView: View {
     let post: FeedPost
-    var onPostUpdated: (FeedPost) -> Void = { _ in }
+    var postRepository: PostRepositoryProtocol = PostRepository.shared
     @EnvironmentObject private var navigationVisibility: NavigationVisibilityCoordinator
     @Environment(\.dismiss) private var dismiss
-    
+
     @State private var comments: [MockComment] = []
     @State private var commentText = ""
-    @State private var isLiked = false
-    @State private var likesCount = 0
-    @State private var isBookmarked = false
-    
     @State private var displayPost: FeedPost?
-    
+    @State private var cancellables = Set<AnyCancellable>()
+
     private var currentPost: FeedPost {
         displayPost ?? post
     }
@@ -192,49 +190,50 @@ struct PostDetailView: View {
     
     // MARK: - Actions & Helpers
     private func initializePostState() {
-        self.isLiked = post.isLiked
-        self.likesCount = post.likesCount
-        self.isBookmarked = post.isBookmarked
         self.displayPost = post
 
         self.comments = [
             MockComment(name: "Michele", username: "mj", avatarColorHex: "4DABF7", text: "Such a beautiful quote! Grateful for this reminder today. 🙏🧘‍♀️", timeAgo: "1h ago"),
             MockComment(name: "Pepper", username: "pepperoni", avatarColorHex: "FF6B6B", text: "Love the positive energy, keep tracking! 💪✨", timeAgo: "45m ago")
         ]
-    }
-    
-    private func toggleLike() {
-        withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-            isLiked.toggle()
-            if isLiked {
-                likesCount += 1
-            } else {
-                likesCount -= 1
+
+        // Keep this post in sync with likes/bookmarks made anywhere else in
+        // the app (Feed, Discover, another profile) instead of only ever
+        // reflecting a local copy that resets the moment this view closes.
+        postRepository.postsPublisher
+            .receive(on: DispatchQueue.main)
+            .sink { updatedPosts in
+                guard let matching = updatedPosts.first(where: { $0.id == post.id }) else { return }
+                var updated = FeedPost(from: matching)
+                updated.commentsCount = max(updated.commentsCount, comments.count)
+                displayPost = updated
             }
-            updateDisplayPost()
+            .store(in: &cancellables)
+    }
+
+    private func toggleLike() {
+        let desiredLikeState = !currentPost.isLiked
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+            displayPost?.isLiked = desiredLikeState
+            displayPost?.likesCount += desiredLikeState ? 1 : -1
+        }
+        Task {
+            try? await postRepository.setLike(postId: currentPost.id, isLiked: desiredLikeState)
         }
     }
-    
+
     private func toggleBookmark() {
         withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-            isBookmarked.toggle()
-            updateDisplayPost()
+            displayPost?.isBookmarked.toggle()
+        }
+        Task {
+            try? await postRepository.toggleBookmark(postId: currentPost.id)
         }
     }
-    
-    private func updateDisplayPost() {
-        var updated = post
-        updated.isLiked = isLiked
-        updated.likesCount = likesCount
-        updated.isBookmarked = isBookmarked
-        updated.commentsCount = comments.count
-        displayPost = updated
-        onPostUpdated(updated)
-    }
-    
+
     private func addComment() {
         guard !commentText.isEmpty else { return }
-        
+
         let newComment = MockComment(
             name: "You",
             username: "johndoe",
@@ -242,11 +241,11 @@ struct PostDetailView: View {
             text: commentText,
             timeAgo: "Just now"
         )
-        
+
         withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
             comments.append(newComment)
             commentText = ""
-            updateDisplayPost()
+            displayPost?.commentsCount = comments.count
         }
     }
 }

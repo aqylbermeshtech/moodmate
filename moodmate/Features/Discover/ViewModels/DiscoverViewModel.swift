@@ -69,17 +69,39 @@ final class DiscoverViewModel: ObservableObject {
     // MARK: - Init
     
     private let discoverService: DiscoverServiceProtocol
-    private let  profileService: ProfileServiceProtocol
-    
+    private let profileService: ProfileServiceProtocol
+    private let postRepository: PostRepositoryProtocol
+
     init(
         discoverService: DiscoverServiceProtocol = DiscoverService.shared,
-        profileService: ProfileServiceProtocol = ProfileService.shared
+        profileService: ProfileServiceProtocol = ProfileService.shared,
+        postRepository: PostRepositoryProtocol = PostRepository.shared
     ) {
         self.discoverService = discoverService
         self.profileService = profileService
+        self.postRepository = postRepository
         loadRecentSearches()
         setupSearchDebounce()
         observeProfileUpdates()
+        observePostUpdates()
+    }
+
+    /// Reconciles the currently-loaded page whenever any post changes
+    /// anywhere in the app (like from Feed/Profile, a new post published)
+    /// so Discover never shows stale like state for a post shown elsewhere.
+    private func observePostUpdates() {
+        postRepository.postsPublisher
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] allPosts in
+                guard let self else { return }
+                guard !self.discoverPosts.isEmpty else { return }
+                let byId = Dictionary(uniqueKeysWithValues: allPosts.map { ($0.id, $0) })
+                self.discoverPosts = self.discoverPosts.map { existing in
+                    guard let updated = byId[existing.id] else { return existing }
+                    return DiscoverPost(from: updated)
+                }
+            }
+            .store(in: &cancellables)
     }
     
     private func observeProfileUpdates() {
@@ -336,11 +358,25 @@ final class DiscoverViewModel: ObservableObject {
     }
     
     func toggleLike(post: DiscoverPost) {
+        guard let index = discoverPosts.firstIndex(where: { $0.id == post.id }) else { return }
+
+        let desiredLikeState = !post.isLiked
+        let previousLiked = post.isLiked
+        let previousCount = post.likesCount
+
         withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-            discoverService.toggleLike(postId: post.id)
-            if let index = discoverPosts.firstIndex(where: { $0.id == post.id }) {
-                discoverPosts[index].isLiked.toggle()
-                discoverPosts[index].likesCount += discoverPosts[index].isLiked ? 1 : -1
+            discoverPosts[index].isLiked = desiredLikeState
+            discoverPosts[index].likesCount = desiredLikeState ? previousCount + 1 : previousCount - 1
+        }
+
+        Task {
+            do {
+                try await postRepository.setLike(postId: post.id, isLiked: desiredLikeState)
+            } catch {
+                if let rollbackIndex = self.discoverPosts.firstIndex(where: { $0.id == post.id }) {
+                    self.discoverPosts[rollbackIndex].isLiked = previousLiked
+                    self.discoverPosts[rollbackIndex].likesCount = previousCount
+                }
             }
         }
     }

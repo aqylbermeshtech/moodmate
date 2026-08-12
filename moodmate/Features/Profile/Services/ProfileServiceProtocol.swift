@@ -14,8 +14,6 @@ protocol ProfileServiceProtocol: AnyObject {
 
     func getProfile(forId id: String?) -> UserProfile?
 
-    func getPosts(forId id: String?) -> [ProfilePost]
-
     func getCurrentUserId() -> String
  
     func fetchProfile(forId id: String?) async throws -> UserProfile?

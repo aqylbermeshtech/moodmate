@@ -15,9 +15,10 @@ final class ProfileViewModel: ObservableObject {
     private let profileService: ProfileServiceProtocol
     private let sessionManager: AppSessionManager
     private let authService: AuthServiceProtocol
+    private let postRepository: PostRepositoryProtocol
 
     @Published var profile: UserProfile?
-    @Published var posts: [ProfilePost] = []
+    @Published var posts: [PostModel] = []
     @Published var followers: [UserProfile] = []
     @Published var following: [UserProfile] = []
 
@@ -29,11 +30,15 @@ final class ProfileViewModel: ObservableObject {
 
     init(userId: String? = nil, profileService: ProfileServiceProtocol = ProfileService.shared,
          sessionManager: AppSessionManager = AppSessionManager.shared,
-         authService: AuthServiceProtocol = FirebaseAuthService.shared) {
+         authService: AuthServiceProtocol = FirebaseAuthService.shared,
+         postRepository: PostRepositoryProtocol = PostRepository.shared) {
         self.userId = userId
         self.profileService = profileService
         self.sessionManager = sessionManager
         self.authService = authService
+        self.postRepository = postRepository
+
+        observePostUpdates()
 
         if userId == nil {
             sessionManager.$currentUser
@@ -66,7 +71,21 @@ final class ProfileViewModel: ObservableObject {
             }
             .store(in: &cancellables)
     }
-    
+
+    /// Reconciles the displayed grid whenever any post changes anywhere in
+    /// the app (like/bookmark from Feed or Discover, a new post published)
+    /// so this profile's posts never drift from the canonical state.
+    private func observePostUpdates() {
+        postRepository.postsPublisher
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] allPosts in
+                guard let self else { return }
+                let targetId = self.userId ?? self.getCurrentUserId()
+                self.posts = allPosts.filter { $0.author.id == targetId }
+            }
+            .store(in: &cancellables)
+    }
+
     var isOwnProfile: Bool {
         guard let profileId = profile?.id else { return false }
         return profileId == getCurrentUserId()
@@ -104,7 +123,6 @@ final class ProfileViewModel: ObservableObject {
     }
     
     private func loadProfileData(for profileId: String) async {
-        self.posts = profileService.getPosts(forId: profileId)
         self.followers = profileService.getFollowers(forId: profileId)
         self.following = profileService.getFollowing(forId: profileId)
         self.hasMorePosts = true
@@ -200,11 +218,12 @@ final class ProfileViewModel: ObservableObject {
     
     func loadMorePosts() {
         guard !isLazyLoadingPosts && hasMorePosts else { return }
-        
+
         isLazyLoadingPosts = true
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) { [weak self] in
-            guard let self = self else { return }
+        Task { [weak self] in
+            guard let self else { return }
+            try? await Task.sleep(nanoseconds: 800_000_000)
 
             let currentPostCount = self.posts.count
             if currentPostCount >= 9 {
@@ -212,47 +231,46 @@ final class ProfileViewModel: ObservableObject {
                 self.isLazyLoadingPosts = false
                 return
             }
-            
+
+            let authorId = self.userId ?? self.getCurrentUserId()
+            let author = MoodUser(
+                id: authorId,
+                name: self.profile?.displayName ?? "",
+                username: self.profile?.username ?? "",
+                avatarImageData: self.profile?.avatarImageData,
+                avatarColorHex: self.profile?.avatarColorHex ?? "38B2AC"
+            )
+
             let additionalPosts = [
-                ProfilePost(
-                    id: "lazy_p\(currentPostCount + 1)",
+                PostModel(
+                    id: "lazy_p\(currentPostCount + 1)", author: author, mood: nil, moodEmoji: nil, moodColorHex: nil,
+                    text: nil, images: [], visibility: .publicVisibility,
+                    createdAt: Date().addingTimeInterval(-86400 * 5), likesCount: 18, commentsCount: 3,
+                    bookmarksCount: 0, isLiked: false, isBookmarked: false,
                     quoteText: "Grateful hearts see awesome things.",
-                    caption: "Reflected on the beauty of nature. The trees, the morning fog, the quiet breeze. 🌲🌫️✨",
-                    postGradientStartHex: "805AD5",
-                    postGradientEndHex: "38B2AC",
-                    likesCount: 18,
-                    commentsCount: 3,
-                    isLiked: false,
-                    isBookmarked: false,
-                    createdAt: Date().addingTimeInterval(-86400 * 5)
+                    gradientStartHex: "805AD5", gradientEndHex: "38B2AC"
                 ),
-                ProfilePost(
-                    id: "lazy_p\(currentPostCount + 2)",
+                PostModel(
+                    id: "lazy_p\(currentPostCount + 2)", author: author, mood: nil, moodEmoji: nil, moodColorHex: nil,
+                    text: nil, images: [], visibility: .publicVisibility,
+                    createdAt: Date().addingTimeInterval(-86400 * 6), likesCount: 22, commentsCount: 1,
+                    bookmarksCount: 0, isLiked: true, isBookmarked: false,
                     quoteText: "Calm is a super power.",
-                    caption: "Had an amazing breathing session today. Keeping my head clear during high pressure moments.",
-                    postGradientStartHex: "4A5568",
-                    postGradientEndHex: "1A202C",
-                    likesCount: 22,
-                    commentsCount: 1,
-                    isLiked: true,
-                    isBookmarked: false,
-                    createdAt: Date().addingTimeInterval(-86400 * 6)
+                    gradientStartHex: "4A5568", gradientEndHex: "1A202C"
                 ),
-                ProfilePost(
-                    id: "lazy_p\(currentPostCount + 3)",
+                PostModel(
+                    id: "lazy_p\(currentPostCount + 3)", author: author, mood: nil, moodEmoji: nil, moodColorHex: nil,
+                    text: nil, images: [], visibility: .publicVisibility,
+                    createdAt: Date().addingTimeInterval(-86400 * 7), likesCount: 35, commentsCount: 4,
+                    bookmarksCount: 0, isLiked: false, isBookmarked: true,
                     quoteText: "Keep moving, keep growing.",
-                    caption: "Setting my intentions for the next month. Focusing on mental wellness, consistency, and peace.",
-                    postGradientStartHex: "ED64A6",
-                    postGradientEndHex: "E2E8F0",
-                    likesCount: 35,
-                    commentsCount: 4,
-                    isLiked: false,
-                    isBookmarked: true,
-                    createdAt: Date().addingTimeInterval(-86400 * 7)
+                    gradientStartHex: "ED64A6", gradientEndHex: "E2E8F0"
                 )
             ]
-            
-            self.posts.append(contentsOf: additionalPosts)
+
+            for post in additionalPosts {
+                _ = try? await self.postRepository.createPost(post)
+            }
             self.isLazyLoadingPosts = false
         }
     }

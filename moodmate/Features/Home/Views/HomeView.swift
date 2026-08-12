@@ -36,9 +36,7 @@ struct HomeView: View {
         .navigationBarHidden(true)
         .navigationDestination(isPresented: $isShowingComments) {
             if let post = selectedPostForComments {
-                PostDetailView(post: post) { updatedPost in
-                    viewModel.feed.updatePost(updatedPost)
-                }
+                PostDetailView(post: post)
             }
         }
         .task {

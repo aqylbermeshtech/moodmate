@@ -506,7 +506,7 @@ struct ProfileView: View {
                 
                 LazyVGrid(columns: columns, spacing: 3) {
                     ForEach(viewModel.posts) { post in
-                        NavigationLink(destination: PostDetailView(post: FeedPost(from: post, user: profile))) {
+                        NavigationLink(destination: PostDetailView(post: FeedPost(from: post))) {
                             postGridCell(post: post)
                         }
                         .buttonStyle(PlainButtonStyle())
@@ -532,24 +532,27 @@ struct ProfileView: View {
         }
     }
     
-    private func postGridCell(post: ProfilePost) -> some View {
+    private func postGridCell(post: PostModel) -> some View {
         ZStack {
             RoundedRectangle(cornerRadius: 4)
                 .fill(
                     LinearGradient(
-                        colors: [Color(hex: post.postGradientStartHex), Color(hex: post.postGradientEndHex)],
+                        colors: [
+                            Color(hex: post.gradientStartHex ?? "38B2AC"),
+                            Color(hex: post.gradientEndHex ?? "805AD5")
+                        ],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
                 )
                 .aspectRatio(1, contentMode: .fit)
-            
+
             VStack {
                 Image(systemName: "quote.opening")
                     .font(.system(size: 12))
                     .foregroundStyle(.white.opacity(0.5))
-                
-                Text(post.quoteText)
+
+                Text(post.quoteText ?? "")
                     .font(.system(size: 9, weight: .bold, design: .serif))
                     .foregroundStyle(.white)
                     .lineLimit(3)

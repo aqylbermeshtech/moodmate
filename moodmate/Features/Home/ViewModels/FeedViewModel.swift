@@ -19,7 +19,7 @@ final class FeedViewModel: ObservableObject {
 
     // MARK: - Dependencies
 
-    private let postService: PostServiceProtocol
+    private let postRepository: PostRepositoryProtocol
     private let profileRepository: ProfileRepositoryProtocol
     private var cancellables = Set<AnyCancellable>()
     private let logger = Logger(subsystem: "com.moodmate", category: "FeedViewModel")
@@ -27,10 +27,10 @@ final class FeedViewModel: ObservableObject {
     // MARK: - Init
 
     init(
-        postService: PostServiceProtocol = MockPostService.shared,
+        postRepository: PostRepositoryProtocol = PostRepository.shared,
         profileRepository: ProfileRepositoryProtocol = ProfileRepository()
     ) {
-        self.postService = postService
+        self.postRepository = postRepository
         self.profileRepository = profileRepository
     }
 
@@ -48,7 +48,7 @@ final class FeedViewModel: ObservableObject {
         Task { [weak self] in
             guard let self else { return }
             do {
-                let initialPosts = try await postService.fetchPosts()
+                let initialPosts = try await postRepository.fetchPosts()
                 self.posts = initialPosts.map { FeedPost(from: $0) }
             } catch {
                 self.errorMessage = error.localizedDescription
@@ -87,7 +87,7 @@ final class FeedViewModel: ObservableObject {
 
         Task {
             do {
-                try await postService.setLike(postId: post.id, isLiked: desiredLikeState)
+                try await postRepository.setLike(postId: post.id, isLiked: desiredLikeState)
             } catch {
                 // Rollback the optimistic update so UI stays consistent.
                 if let rollbackIndex = self.posts.firstIndex(where: { $0.id == post.id }) {
@@ -108,7 +108,7 @@ final class FeedViewModel: ObservableObject {
 
         Task {
             do {
-                try await postService.toggleBookmark(postId: post.id)
+                try await postRepository.toggleBookmark(postId: post.id)
             } catch {
                 if let rollbackIndex = posts.firstIndex(where: { $0.id == post.id }) {
                     posts[rollbackIndex].isBookmarked = previousBookmarked
@@ -118,11 +118,6 @@ final class FeedViewModel: ObservableObject {
         }
     }
 
-    func updatePost(_ updatedPost: FeedPost) {
-        guard let index = posts.firstIndex(where: { $0.id == updatedPost.id }) else { return }
-        posts[index] = updatedPost
-    }
-
     func clearError() {
         errorMessage = nil
     }
@@ -130,7 +125,7 @@ final class FeedViewModel: ObservableObject {
     // MARK: - Private Observation
 
     private func observePosts() {
-        postService.postsPublisher
+        postRepository.postsPublisher
             .receive(on: DispatchQueue.main)
             .sink { [weak self] postModels in
                 guard let self else { return }

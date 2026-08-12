@@ -32,7 +32,7 @@ final class CreatePostViewModel: ObservableObject {
     @Published var errorMessage: String? = nil
     
     // MARK: - Dependencies
-    private let postService: PostServiceProtocol
+    private let postRepository: PostRepositoryProtocol
     private let draftManager: DraftManager
     private let profileRepository: ProfileRepositoryProtocol
     private var cancellables = Set<AnyCancellable>()
@@ -40,12 +40,12 @@ final class CreatePostViewModel: ObservableObject {
     @Published var currentUser: MoodUser
     
     init(
-        postService: PostServiceProtocol = MockPostService.shared,
+        postRepository: PostRepositoryProtocol = PostRepository.shared,
         draftManager: DraftManager = DraftManager.shared,
         profileRepository: ProfileRepositoryProtocol = ProfileRepository(),
         authService: AuthServiceProtocol = FirebaseAuthService.shared
     ) {
-        self.postService = postService
+        self.postRepository = postRepository
         self.draftManager = draftManager
         self.profileRepository = profileRepository
 
@@ -310,7 +310,7 @@ final class CreatePostViewModel: ObservableObject {
         
         Task {
             do {
-                let created = try await postService.createPost(newPost)
+                let created = try await postRepository.createPost(newPost)
 
                 clearDraft()
 

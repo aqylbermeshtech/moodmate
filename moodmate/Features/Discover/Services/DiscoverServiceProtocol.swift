@@ -14,8 +14,6 @@ protocol DiscoverServiceProtocol: AnyObject {
     func search(query: String) async -> [SearchResult]
 
     func toggleFollow(userId: String)
-
-    func toggleLike(postId: String)
 }
 
 extension DiscoverServiceProtocol {
