@@ -7,7 +7,7 @@
 
 import UIKit
 
-final class ProfileImageService {
+final class ProfileImageService: ProfileImageServiceProtocol {
     static let shared = ProfileImageService()
     
     private let memoryCache = NSCache<NSString, UIImage>()

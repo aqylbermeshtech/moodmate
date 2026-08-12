@@ -50,6 +50,7 @@ final class EditProfileViewModel: ObservableObject {
     let maxDisplayNameLength: Int = 50
     
     private let profileService: ProfileServiceProtocol
+    private let profileImageService: ProfileImageServiceProtocol
     private let userId: String
 
     let avatarColors = [
@@ -62,9 +63,12 @@ final class EditProfileViewModel: ObservableObject {
         "667EEA"  // Indigo
     ]
     
-    init(profileService: ProfileServiceProtocol = ProfileService.shared, userId: String? = nil) {
+    init(profileService: ProfileServiceProtocol = ProfileService.shared,
+         profileImageService: ProfileImageServiceProtocol = ProfileImageService.shared,
+         userId: String? = nil) {
         self.profileService = profileService
-        self.userId = userId ?? ProfileService.shared.getCurrentUserId()
+        self.profileImageService = profileImageService
+        self.userId = userId ?? profileService.getCurrentUserId()
         loadProfile()
     }
     
@@ -200,7 +204,7 @@ final class EditProfileViewModel: ObservableObject {
         var avatarDataToSave: Data? = nil
         if let newImage = selectedAvatarImage {
             isUploadingAvatar = true
-            avatarDataToSave = ProfileImageService.shared.compressAvatar(newImage)
+            avatarDataToSave = profileImageService.compressAvatar(newImage)
             hasPendingAvatarChange = true
             isUploadingAvatar = false
         } else if !isAvatarRemoved {
