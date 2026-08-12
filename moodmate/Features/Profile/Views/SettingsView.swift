@@ -256,7 +256,7 @@ struct SettingsView: View {
     
     private func signOutUser() {
         do {
-            try FirebaseAuthService.shared.signOut()
+            try viewModel.signOut()
             dismiss()
         } catch {
             print("Failed to sign out: \(error.localizedDescription)")

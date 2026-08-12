@@ -42,7 +42,8 @@ final class CreatePostViewModel: ObservableObject {
     init(
         postService: PostServiceProtocol = MockPostService.shared,
         draftManager: DraftManager = DraftManager.shared,
-        profileRepository: ProfileRepositoryProtocol = ProfileRepository()
+        profileRepository: ProfileRepositoryProtocol = ProfileRepository(),
+        authService: AuthServiceProtocol = FirebaseAuthService.shared
     ) {
         self.postService = postService
         self.draftManager = draftManager
@@ -64,7 +65,7 @@ final class CreatePostViewModel: ObservableObject {
         } else {
             var userName = "John"
             var userHandle = "john_doe"
-            if let firebaseUser = FirebaseAuthService.shared.currentUser {
+            if let firebaseUser = authService.currentUser {
                 if let name = firebaseUser.displayName, !name.isEmpty {
                     userName = name
                 } else if let email = firebaseUser.email, !email.isEmpty {

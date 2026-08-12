@@ -14,24 +14,27 @@ final class ProfileViewModel: ObservableObject {
     let userId: String?
     private let profileService: ProfileServiceProtocol
     private let sessionManager: AppSessionManager
-    
+    private let authService: AuthServiceProtocol
+
     @Published var profile: UserProfile?
     @Published var posts: [ProfilePost] = []
     @Published var followers: [UserProfile] = []
     @Published var following: [UserProfile] = []
-    
+
     @Published var isLoading = true
     @Published var isLazyLoadingPosts = false
     @Published var hasMorePosts = true
-    
+
     private var cancellables = Set<AnyCancellable>()
-    
+
     init(userId: String? = nil, profileService: ProfileServiceProtocol = ProfileService.shared,
-         sessionManager: AppSessionManager = AppSessionManager.shared) {
+         sessionManager: AppSessionManager = AppSessionManager.shared,
+         authService: AuthServiceProtocol = FirebaseAuthService.shared) {
         self.userId = userId
         self.profileService = profileService
         self.sessionManager = sessionManager
-        
+        self.authService = authService
+
         if userId == nil {
             sessionManager.$currentUser
                 .receive(on: DispatchQueue.main)
@@ -115,6 +118,10 @@ final class ProfileViewModel: ObservableObject {
         self.isLoading = false
     }
     
+    func signOut() throws {
+        try authService.signOut()
+    }
+
     func toggleFollow() {
         guard let targetId = profile?.id else { return }
         toggleFollow(for: targetId)
