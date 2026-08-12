@@ -30,8 +30,11 @@ final class ProfileService: ProfileServiceProtocol {
         let paths = fileManager.urls(for: .documentDirectory, in: .userDomainMask)
         return paths[0].appendingPathComponent(storageKey)
     }
-    
-    private init() {
+
+    private let profileImageService: ProfileImageServiceProtocol
+
+    init(profileImageService: ProfileImageServiceProtocol = ProfileImageService.shared) {
+        self.profileImageService = profileImageService
         loadPersistedProfiles()
         invalidateStaleMockProfilesIfNeeded()
         setupMockData()
@@ -103,9 +106,9 @@ final class ProfileService: ProfileServiceProtocol {
         if clearAvatar {
             profile.avatarImageData = nil
             profile.avatarImageName = nil
-            try? await ProfileImageService.shared.deleteAvatar(userId: actualId)
+            try? await profileImageService.deleteAvatar(userId: actualId)
         } else if let newAvatarData = avatarImageData {
-            let compressedData = try await ProfileImageService.shared.saveAvatar(data: newAvatarData, userId: actualId)
+            let compressedData = try await profileImageService.saveAvatar(data: newAvatarData, userId: actualId)
             profile.avatarImageData = compressedData
         }
         
@@ -121,7 +124,7 @@ final class ProfileService: ProfileServiceProtocol {
         guard let data = image.jpegData(compressionQuality: 0.8) else {
             throw ProfileImageError.compressionFailed
         }
-        let savedData = try await ProfileImageService.shared.saveAvatar(data: data, userId: userId)
+        let savedData = try await profileImageService.saveAvatar(data: data, userId: userId)
         
         if var profile = profiles[userId] {
             profile.avatarImageData = savedData
@@ -134,7 +137,7 @@ final class ProfileService: ProfileServiceProtocol {
     }
     
     func deleteAvatar(userId: String) async throws {
-        try await ProfileImageService.shared.deleteAvatar(userId: userId)
+        try await profileImageService.deleteAvatar(userId: userId)
         if var profile = profiles[userId] {
             profile.avatarImageData = nil
             profile.avatarImageName = nil
