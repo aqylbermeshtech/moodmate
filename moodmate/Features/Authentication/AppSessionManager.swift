@@ -16,16 +16,19 @@ final class AppSessionManager: ObservableObject {
     @Published var isResolvingSession = true
     
     static let shared = AppSessionManager()
-    
-    private init() {
-        FirebaseAuthService.shared.addAuthStateListener { [weak self] user in
+
+    init(
+        authService: AuthServiceProtocol = FirebaseAuthService.shared,
+        profileService: ProfileServiceProtocol = ProfileService.shared
+    ) {
+        authService.addAuthStateListener { [weak self] user in
             guard let self = self else { return }
             Task { @MainActor in
                 self.currentUser = user
                 self.isAuthenticated = user != nil
                 self.isResolvingSession = false
                 if let user {
-                    ProfileService.shared.syncWithFirebaseUser(user: user)
+                    profileService.syncWithFirebaseUser(user: user)
                 }
             }
         }
