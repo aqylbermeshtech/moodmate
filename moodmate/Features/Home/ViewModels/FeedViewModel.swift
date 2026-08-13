@@ -1,13 +1,15 @@
 import Combine
 import Foundation
+import Observation
 import OSLog
 
 @MainActor
-final class FeedViewModel: ObservableObject {
+@Observable
+final class FeedViewModel {
 
-    // MARK: - Published State
+    // MARK: - Observed State
 
-    @Published private(set) var posts: [FeedPost] = [] {
+    private(set) var posts: [FeedPost] = [] {
         didSet {
             guard let firstPost = posts.first else { return }
             logger.debug(
@@ -15,7 +17,7 @@ final class FeedViewModel: ObservableObject {
             )
         }
     }
-    @Published private(set) var errorMessage: String?
+    private(set) var errorMessage: String?
 
     // MARK: - Dependencies
 
