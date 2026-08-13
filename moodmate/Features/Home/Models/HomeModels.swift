@@ -53,7 +53,7 @@ struct FeedPost: Identifiable, Equatable {
     var moodEmoji: String?
     var moodText: String?
     var moodColorHex: String?
-    var visibility: PostVisibility
+    var visibility: Visibility
     var likesCount: Int
     var commentsCount: Int
     var isLiked: Bool
@@ -71,7 +71,7 @@ struct FeedPost: Identifiable, Equatable {
         moodEmoji: String? = nil,
         moodText: String? = nil,
         moodColorHex: String? = nil,
-        visibility: PostVisibility = .publicVisibility,
+        visibility: Visibility = .publicVisibility,
         likesCount: Int = 0,
         commentsCount: Int = 0,
         isLiked: Bool = false,

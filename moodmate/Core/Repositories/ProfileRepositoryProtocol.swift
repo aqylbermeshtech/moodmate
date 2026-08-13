@@ -27,7 +27,7 @@ protocol ProfileRepositoryProtocol: AnyObject {
         bio: String,
         location: String?,
         birthday: Date?,
-        privacySetting: PrivacySetting,
+        privacySetting: Visibility,
         avatarColorHex: String,
         avatarImageData: Data?,
         clearAvatar: Bool

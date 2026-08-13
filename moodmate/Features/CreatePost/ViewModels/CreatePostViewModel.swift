@@ -19,7 +19,7 @@ final class CreatePostViewModel: ObservableObject {
     
     @Published var text: String = ""
     @Published var selectedImages: [UIImage] = []
-    @Published var visibility: PostVisibility = .publicVisibility
+    @Published var visibility: Visibility = .publicVisibility
     
     // MARK: - View UI State
     @Published var isPublishing: Bool = false

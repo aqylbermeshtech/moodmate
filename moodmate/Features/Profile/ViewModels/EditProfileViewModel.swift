@@ -19,7 +19,7 @@ final class EditProfileViewModel: ObservableObject {
     @Published var location: String = ""
     @Published var hasBirthday: Bool = false
     @Published var birthday: Date = Date()
-    @Published var privacySetting: PrivacySetting = .publicVisibility
+    @Published var privacySetting: Visibility = .publicVisibility
     @Published var avatarColorHex: String = "38B2AC"
 
     @Published var selectedAvatarImage: UIImage? = nil

@@ -8,9 +8,9 @@
 import SwiftUI
 
 struct VisibilitySelector: View {
-    @Binding var selectedVisibility: PostVisibility
+    @Binding var selectedVisibility: Visibility
     @Namespace private var segmentAnimation
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
@@ -18,18 +18,18 @@ struct VisibilitySelector: View {
                     .font(.system(size: 13, weight: .bold, design: .rounded))
                     .foregroundStyle(Color.theme.secondaryText)
                     .textCase(.uppercase)
-                
+
                 Spacer()
-                
-                Text(selectedVisibility.description)
+
+                Text(postVisibilityDescription(for: selectedVisibility))
                     .font(.system(size: 11, weight: .medium))
                     .foregroundStyle(Color.theme.tertiaryText)
                     .lineLimit(1)
             }
             .padding(.horizontal, 4)
-            
+
             HStack(spacing: 6) {
-                ForEach(PostVisibility.allCases) { visibility in
+                ForEach(Visibility.allCases) { visibility in
                     let isSelected = selectedVisibility == visibility
                     
                     Button {
@@ -69,6 +69,14 @@ struct VisibilitySelector: View {
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
                     .stroke(Color.theme.border, lineWidth: 1)
             )
+        }
+    }
+
+    private func postVisibilityDescription(for visibility: Visibility) -> String {
+        switch visibility {
+        case .publicVisibility: return "Visible to everyone on MoodMate"
+        case .friendsOnly: return "Visible only to your friends"
+        case .privateVisibility: return "Only visible to you"
         }
     }
 }

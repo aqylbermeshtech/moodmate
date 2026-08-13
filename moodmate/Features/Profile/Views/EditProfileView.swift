@@ -399,7 +399,7 @@ struct EditProfileView: View {
                     .padding(.horizontal, 4)
                 
                 Picker("Privacy Setting", selection: $editViewModel.privacySetting) {
-                    ForEach(PrivacySetting.allCases) { setting in
+                    ForEach(Visibility.allCases) { setting in
                         Label(setting.rawValue, systemImage: setting.iconName)
                             .tag(setting)
                     }
@@ -427,7 +427,7 @@ struct EditProfileView: View {
         }
     }
     
-    private func privacyDescription(for setting: PrivacySetting) -> String {
+    private func privacyDescription(for setting: Visibility) -> String {
         switch setting {
         case .publicVisibility:
             return "Anyone on MoodMate can view your profile and public posts."

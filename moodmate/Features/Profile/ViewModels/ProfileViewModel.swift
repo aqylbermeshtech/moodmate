@@ -168,7 +168,7 @@ final class ProfileViewModel: ObservableObject {
         bio: String,
         location: String? = nil,
         birthday: Date? = nil,
-        privacySetting: PrivacySetting = .publicVisibility,
+        privacySetting: Visibility = .publicVisibility,
         avatarColorHex: String,
         avatarImageData: Data? = nil,
         clearAvatar: Bool = false

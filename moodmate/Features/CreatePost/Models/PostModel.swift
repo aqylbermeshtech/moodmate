@@ -8,31 +8,6 @@
 import SwiftUI
 import Foundation
 
-// MARK: - Post Visibility
-enum PostVisibility: String, Codable, CaseIterable, Identifiable {
-    case publicVisibility = "Public"
-    case friendsOnly = "Friends"
-    case privateVisibility = "Private"
-    
-    var id: String { rawValue }
-    
-    var iconName: String {
-        switch self {
-        case .publicVisibility: return "globe"
-        case .friendsOnly: return "person.2.fill"
-        case .privateVisibility: return "lock.fill"
-        }
-    }
-    
-    var description: String {
-        switch self {
-        case .publicVisibility: return "Visible to everyone on MoodMate"
-        case .friendsOnly: return "Visible only to your friends"
-        case .privateVisibility: return "Only visible to you"
-        }
-    }
-}
-
 // MARK: - Post Model
 struct PostModel: Identifiable, Codable, Equatable {
     let id: String
@@ -42,7 +17,7 @@ struct PostModel: Identifiable, Codable, Equatable {
     var moodColorHex: String?
     var text: String?
     var images: [String]
-    var visibility: PostVisibility
+    var visibility: Visibility
     let createdAt: Date
     var likesCount: Int
     var commentsCount: Int
@@ -68,6 +43,6 @@ struct PostDraft: Codable, Equatable {
     var moodColorHex: String?
     var text: String
     var imageBase64Strings: [String]
-    var visibility: PostVisibility
+    var visibility: Visibility
     var savedAt: Date
 }
