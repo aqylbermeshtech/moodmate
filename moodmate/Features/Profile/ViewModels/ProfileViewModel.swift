@@ -12,7 +12,8 @@ import Combine
 @MainActor
 final class ProfileViewModel: ObservableObject {
     let userId: String?
-    private let profileService: ProfileServiceProtocol
+    private let profileRepository: ProfileRepositoryProtocol
+    private let followRepository: FollowRepositoryProtocol
     private let sessionManager: AppSessionManager
     private let authService: AuthServiceProtocol
     private let postRepository: PostRepositoryProtocol
@@ -28,12 +29,14 @@ final class ProfileViewModel: ObservableObject {
 
     private var cancellables = Set<AnyCancellable>()
 
-    init(userId: String? = nil, profileService: ProfileServiceProtocol = ProfileService.shared,
+    init(userId: String? = nil, profileRepository: ProfileRepositoryProtocol = ProfileRepository.shared,
+         followRepository: FollowRepositoryProtocol = FollowRepository.shared,
          sessionManager: AppSessionManager = AppSessionManager.shared,
          authService: AuthServiceProtocol = FirebaseAuthService.shared,
          postRepository: PostRepositoryProtocol = PostRepository.shared) {
         self.userId = userId
-        self.profileService = profileService
+        self.profileRepository = profileRepository
+        self.followRepository = followRepository
         self.sessionManager = sessionManager
         self.authService = authService
         self.postRepository = postRepository
@@ -46,8 +49,8 @@ final class ProfileViewModel: ObservableObject {
                 .sink { [weak self] user in
                     guard let self else { return }
                     if let user {
-                        profileService.syncWithFirebaseUser(user: user)
-                    
+                        profileRepository.syncWithFirebaseUser(user: user)
+
                         self.loadProfile()
                     } else {
                         self.profile = nil
@@ -58,7 +61,7 @@ final class ProfileViewModel: ObservableObject {
                 .store(in: &cancellables)
         }
 
-        profileService.profileUpdatesPublisher
+        profileRepository.profileUpdatesPublisher
             .receive(on: DispatchQueue.main)
             .sink { [weak self] updatedProfile in
                 guard let self = self else { return }
@@ -96,7 +99,7 @@ final class ProfileViewModel: ObservableObject {
     }
     
     func getCurrentUserId() -> String {
-        authenticatedUserId ?? profileService.getCurrentUserId()
+        authenticatedUserId ?? AppSessionManager.currentUserId()
     }
     
     func loadProfile() {
@@ -112,7 +115,7 @@ final class ProfileViewModel: ObservableObject {
         
         let targetId = userId ?? getCurrentUserId()
         if let currentFirebaseUser = sessionManager.currentUser, userId == nil {
-            profileService.syncWithFirebaseUser(user: currentFirebaseUser)
+            profileRepository.syncWithFirebaseUser(user: currentFirebaseUser)
         }
         
         await loadProfileData(for: targetId)
@@ -123,16 +126,16 @@ final class ProfileViewModel: ObservableObject {
     }
     
     private func loadProfileData(for profileId: String) async {
-        self.followers = profileService.getFollowers(forId: profileId)
-        self.following = profileService.getFollowing(forId: profileId)
+        self.followers = followRepository.getFollowers(forId: profileId)
+        self.following = followRepository.getFollowing(forId: profileId)
         self.hasMorePosts = true
 
-        if let freshProfile = try? await profileService.fetchProfile(forId: profileId) {
+        if let freshProfile = try? await profileRepository.fetchProfile(forId: profileId) {
             self.profile = freshProfile
         } else {
-            self.profile = profileService.getProfile(forId: profileId)
+            self.profile = profileRepository.getProfile(forId: profileId)
         }
-        
+
         self.isLoading = false
     }
     
@@ -151,7 +154,7 @@ final class ProfileViewModel: ObservableObject {
 
         var updated: UserProfile?
         withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-            updated = profileService.toggleFollow(targetId: targetId)
+            updated = followRepository.toggleFollow(targetId: targetId)
             if let updated, updated.id == profile?.id {
                 self.profile = updated
             }
@@ -171,7 +174,7 @@ final class ProfileViewModel: ObservableObject {
         clearAvatar: Bool = false
     ) async throws -> UserProfile {
         let actualUserId = userId ?? getCurrentUserId()
-        let updated = try await profileService.updateProfile(
+        let updated = try await profileRepository.updateProfile(
             id: actualUserId,
             displayName: displayName,
             username: username,
@@ -191,8 +194,8 @@ final class ProfileViewModel: ObservableObject {
     
     func uploadAvatar(_ image: UIImage) async throws -> Data {
         let actualUserId = userId ?? getCurrentUserId()
-        let data = try await profileService.uploadAvatar(image: image, userId: actualUserId)
-        if let currentProfile = profileService.getProfile(forId: actualUserId) {
+        let data = try await profileRepository.uploadAvatar(image: image, userId: actualUserId)
+        if let currentProfile = profileRepository.getProfile(forId: actualUserId) {
             withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
                 self.profile = currentProfile
             }
@@ -202,8 +205,8 @@ final class ProfileViewModel: ObservableObject {
     
     func deleteAvatar() async throws {
         let actualUserId = userId ?? getCurrentUserId()
-        try await profileService.deleteAvatar(userId: actualUserId)
-        if let currentProfile = profileService.getProfile(forId: actualUserId) {
+        try await profileRepository.deleteAvatar(userId: actualUserId)
+        if let currentProfile = profileRepository.getProfile(forId: actualUserId) {
             withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
                 self.profile = currentProfile
             }
@@ -212,8 +215,8 @@ final class ProfileViewModel: ObservableObject {
     
     func loadFollowersAndFollowing() {
         let actualUserId = userId ?? getCurrentUserId()
-        self.followers = profileService.getFollowers(forId: actualUserId)
-        self.following = profileService.getFollowing(forId: actualUserId)
+        self.followers = followRepository.getFollowers(forId: actualUserId)
+        self.following = followRepository.getFollowing(forId: actualUserId)
     }
     
     func loadMorePosts() {

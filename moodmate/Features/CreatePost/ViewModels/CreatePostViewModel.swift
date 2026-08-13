@@ -42,14 +42,14 @@ final class CreatePostViewModel: ObservableObject {
     init(
         postRepository: PostRepositoryProtocol = PostRepository.shared,
         draftManager: DraftManager = DraftManager.shared,
-        profileRepository: ProfileRepositoryProtocol = ProfileRepository(),
+        profileRepository: ProfileRepositoryProtocol = ProfileRepository.shared,
         authService: AuthServiceProtocol = FirebaseAuthService.shared
     ) {
         self.postRepository = postRepository
         self.draftManager = draftManager
         self.profileRepository = profileRepository
 
-        let userId = profileRepository.getCurrentUserId()
+        let userId = AppSessionManager.currentUserId()
         if let profile = profileRepository.getProfile(forId: userId) {
             self.currentUser = MoodUser(
                 id: profile.id,
@@ -96,7 +96,7 @@ final class CreatePostViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] profile in
                 guard let self = self else { return }
-                let currentId = self.profileRepository.getCurrentUserId()
+                let currentId = AppSessionManager.currentUserId()
                 if profile.id == currentId {
                     self.currentUser = MoodUser(
                         id: profile.id,

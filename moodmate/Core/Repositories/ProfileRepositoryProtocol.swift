@@ -1,25 +1,23 @@
-//
-//  ProfileServiceProtocol.swift
-//  moodmate
-//
-//  Created by Antigravity on 31.07.2026.
-//
-
 import UIKit
 import Combine
 import FirebaseAuth
 
-protocol ProfileServiceProtocol: AnyObject {
+protocol ProfileRepositoryProtocol: AnyObject {
     var profileUpdatesPublisher: AnyPublisher<UserProfile, Never> { get }
 
     func getProfile(forId id: String?) -> UserProfile?
 
-    func getCurrentUserId() -> String
- 
+    /// All known profiles. Used by FollowRepository's mock follower/
+    /// following queries, which need to enumerate rather than look up by
+    /// id. A real backend implementation would likely serve this narrower
+    /// (e.g. a proper follow-edges query instead of "all profiles") — kept
+    /// as-is here to preserve today's mock behavior exactly.
+    func allProfiles() -> [UserProfile]
+
     func fetchProfile(forId id: String?) async throws -> UserProfile?
 
     func refreshProfile(forId id: String?) async throws -> UserProfile?
-    
+
     func syncWithFirebaseUser(user: User)
 
     func updateProfile(
@@ -34,16 +32,18 @@ protocol ProfileServiceProtocol: AnyObject {
         avatarImageData: Data?,
         clearAvatar: Bool
     ) async throws -> UserProfile
-    
+
     func uploadAvatar(image: UIImage, userId: String) async throws -> Data
 
     func deleteAvatar(userId: String) async throws
- 
-    func toggleFollow(targetId: String) -> UserProfile?
 
-    func getFollowers(forId id: String?) -> [UserProfile]
-
-    func getFollowing(forId id: String?) -> [UserProfile]
-    
     func validateUsername(username: String, currentUserId: String) -> (isValid: Bool, error: String?)
+
+    /// Upserts an already-fully-formed profile record (persist + broadcast),
+    /// with no field validation or avatar handling of its own. This is the
+    /// primitive FollowRepository writes through when it bumps
+    /// followers/following counts — those aren't user-edited profile
+    /// fields, so they don't belong going through updateProfile's
+    /// validation/avatar pipeline.
+    func setProfile(_ profile: UserProfile)
 }

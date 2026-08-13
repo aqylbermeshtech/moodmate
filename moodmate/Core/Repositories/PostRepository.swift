@@ -34,27 +34,27 @@ final class PostRepository: PostRepositoryProtocol {
 
     private var cancellables = Set<AnyCancellable>()
     private let logger = Logger(subsystem: "com.moodmate", category: "PostRepository")
-    private let profileService: ProfileServiceProtocol
+    private let profileRepository: ProfileRepositoryProtocol
 
-    init(profileService: ProfileServiceProtocol = ProfileService.shared) {
-        self.profileService = profileService
+    init(profileRepository: ProfileRepositoryProtocol = ProfileRepository.shared) {
+        self.profileRepository = profileRepository
         seedInitialPosts()
         observeProfileUpdates()
     }
 
     private func observeProfileUpdates() {
-        profileService.profileUpdatesPublisher
+        profileRepository.profileUpdatesPublisher
             .receive(on: DispatchQueue.main)
             .sink { [weak self] updatedProfile in
                 guard let self else { return }
 
                 // The first time a real Firebase user profile comes through,
                 // re-author whatever mock-seeded posts still belong to the
-                // pre-auth placeholder id — mirrors ProfileService's own
+                // pre-auth placeholder id — mirrors ProfileRepository's own
                 // mock-profile-to-authenticated-user migration.
-                if updatedProfile.id != Self.mockCurrentUserId,
-                   !self.posts(forAuthor: Self.mockCurrentUserId).isEmpty {
-                    self.migrateAuthor(from: Self.mockCurrentUserId, to: updatedProfile.id)
+                if updatedProfile.id != AppSessionManager.mockUserId,
+                   !self.posts(forAuthor: AppSessionManager.mockUserId).isEmpty {
+                    self.migrateAuthor(from: AppSessionManager.mockUserId, to: updatedProfile.id)
                 }
 
                 for i in 0..<self.posts.count {
@@ -134,8 +134,6 @@ final class PostRepository: PostRepositoryProtocol {
     }
 
     // MARK: - Mock Data Seeding
-
-    private static let mockCurrentUserId = "current_user_mock"
 
     private func seedInitialPosts() {
         posts = handAuthoredPosts + currentUserSeedPosts + generatedDiscoverPosts
@@ -243,11 +241,12 @@ final class PostRepository: PostRepositoryProtocol {
     }
 
     /// The signed-in (or pre-auth mock) viewer's own 3 seed posts. Authored
-    /// against `mockCurrentUserId`; `migrateAuthor` re-points them at the
-    /// real Firebase uid the first time `ProfileService.syncWithFirebaseUser`
-    /// runs, mirroring how ProfileService migrates the mock profile itself.
+    /// against `AppSessionManager.mockUserId`; `migrateAuthor` re-points
+    /// them at the real Firebase uid the first time
+    /// `ProfileRepository.syncWithFirebaseUser` runs, mirroring how
+    /// ProfileRepository migrates the mock profile itself.
     private var currentUserSeedPosts: [PostModel] {
-        let viewer = MoodUser(id: Self.mockCurrentUserId, name: "John", username: "johndoe", avatarColorHex: "38B2AC")
+        let viewer = MoodUser(id: AppSessionManager.mockUserId, name: "John", username: "johndoe", avatarColorHex: "38B2AC")
         return [
             PostModel(
                 id: "up1",

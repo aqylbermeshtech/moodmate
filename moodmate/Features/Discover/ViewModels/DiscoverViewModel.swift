@@ -69,16 +69,16 @@ final class DiscoverViewModel: ObservableObject {
     // MARK: - Init
     
     private let discoverService: DiscoverServiceProtocol
-    private let profileService: ProfileServiceProtocol
+    private let profileRepository: ProfileRepositoryProtocol
     private let postRepository: PostRepositoryProtocol
 
     init(
         discoverService: DiscoverServiceProtocol = DiscoverService.shared,
-        profileService: ProfileServiceProtocol = ProfileService.shared,
+        profileRepository: ProfileRepositoryProtocol = ProfileRepository.shared,
         postRepository: PostRepositoryProtocol = PostRepository.shared
     ) {
         self.discoverService = discoverService
-        self.profileService = profileService
+        self.profileRepository = profileRepository
         self.postRepository = postRepository
         loadRecentSearches()
         setupSearchDebounce()
@@ -105,7 +105,7 @@ final class DiscoverViewModel: ObservableObject {
     }
     
     private func observeProfileUpdates() {
-        profileService.profileUpdatesPublisher
+        profileRepository.profileUpdatesPublisher
             .receive(on: DispatchQueue.main)
             .sink { [weak self] updatedProfile in
                 guard let self = self else { return }

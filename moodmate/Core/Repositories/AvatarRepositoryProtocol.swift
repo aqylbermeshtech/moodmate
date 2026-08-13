@@ -1,6 +1,6 @@
 import UIKit
 
-protocol ProfileImageServiceProtocol: AnyObject {
+protocol AvatarRepositoryProtocol: AnyObject {
     func compressAvatar(_ image: UIImage, maxDimension: CGFloat, compressionQuality: CGFloat) -> Data?
 
     func generateThumbnail(from data: Data, size: CGSize) -> UIImage?
@@ -12,7 +12,7 @@ protocol ProfileImageServiceProtocol: AnyObject {
     func deleteAvatar(userId: String) async throws
 }
 
-extension ProfileImageServiceProtocol {
+extension AvatarRepositoryProtocol {
     func compressAvatar(_ image: UIImage, maxDimension: CGFloat = 512, compressionQuality: CGFloat = 0.8) -> Data? {
         compressAvatar(image, maxDimension: maxDimension, compressionQuality: compressionQuality)
     }

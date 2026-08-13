@@ -37,7 +37,7 @@ final class HomeViewModel: ObservableObject {
 
     init(
         postRepository: PostRepositoryProtocol = PostRepository.shared,
-        profileRepository: ProfileRepositoryProtocol = ProfileRepository(),
+        profileRepository: ProfileRepositoryProtocol = ProfileRepository.shared,
         friendsRepository: FriendsRepositoryProtocol = FriendsRepository(),
         authService: AuthServiceProtocol = FirebaseAuthService.shared
     ) {
@@ -117,7 +117,7 @@ final class HomeViewModel: ObservableObject {
 private extension HomeViewModel {
 
     func loadCurrentUser() {
-        let userId = profileRepository.getCurrentUserId()
+        let userId = AppSessionManager.currentUserId()
         if let profile = profileRepository.getProfile(forId: userId) {
             applyCurrentUser(profile)
         } else if let name = authService.currentUserDisplayName {
@@ -134,7 +134,7 @@ private extension HomeViewModel {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] profile in
                 guard let self else { return }
-                let currentId = profileRepository.getCurrentUserId()
+                let currentId = AppSessionManager.currentUserId()
 
                 if profile.id == currentId {
                     updateCurrentUser(profile)

@@ -49,8 +49,8 @@ final class EditProfileViewModel: ObservableObject {
     let maxBioLength: Int = 160
     let maxDisplayNameLength: Int = 50
     
-    private let profileService: ProfileServiceProtocol
-    private let profileImageService: ProfileImageServiceProtocol
+    private let profileRepository: ProfileRepositoryProtocol
+    private let avatarRepository: AvatarRepositoryProtocol
     private let userId: String
 
     let avatarColors = [
@@ -63,12 +63,12 @@ final class EditProfileViewModel: ObservableObject {
         "667EEA"  // Indigo
     ]
     
-    init(profileService: ProfileServiceProtocol = ProfileService.shared,
-         profileImageService: ProfileImageServiceProtocol = ProfileImageService.shared,
+    init(profileRepository: ProfileRepositoryProtocol = ProfileRepository.shared,
+         avatarRepository: AvatarRepositoryProtocol = AvatarRepository.shared,
          userId: String? = nil) {
-        self.profileService = profileService
-        self.profileImageService = profileImageService
-        self.userId = userId ?? profileService.getCurrentUserId()
+        self.profileRepository = profileRepository
+        self.avatarRepository = avatarRepository
+        self.userId = userId ?? AppSessionManager.currentUserId()
         loadProfile()
     }
     
@@ -78,12 +78,12 @@ final class EditProfileViewModel: ObservableObject {
         isLoadingProfile = true
         errorMessage = nil
         
-        if let currentProfile = profileService.getProfile(forId: userId) {
+        if let currentProfile = profileRepository.getProfile(forId: userId) {
             populateFields(from: currentProfile)
             isLoadingProfile = false
         } else {
             Task {
-                if let fetched = try? await profileService.fetchProfile(forId: userId) {
+                if let fetched = try? await profileRepository.fetchProfile(forId: userId) {
                     populateFields(from: fetched)
                 }
                 isLoadingProfile = false
@@ -132,7 +132,7 @@ final class EditProfileViewModel: ObservableObject {
     }
     
     private var isUsernameValid: Bool {
-        profileService.validateUsername(username: username, currentUserId: userId).isValid
+        profileRepository.validateUsername(username: username, currentUserId: userId).isValid
     }
     
     private var isBioValid: Bool {
@@ -161,7 +161,7 @@ final class EditProfileViewModel: ObservableObject {
     
     @discardableResult
     func validateUsername() -> Bool {
-        let (isValid, error) = profileService.validateUsername(username: username, currentUserId: userId)
+        let (isValid, error) = profileRepository.validateUsername(username: username, currentUserId: userId)
         usernameError = error
         return isValid
     }
@@ -204,7 +204,7 @@ final class EditProfileViewModel: ObservableObject {
         var avatarDataToSave: Data? = nil
         if let newImage = selectedAvatarImage {
             isUploadingAvatar = true
-            avatarDataToSave = profileImageService.compressAvatar(newImage)
+            avatarDataToSave = avatarRepository.compressAvatar(newImage)
             hasPendingAvatarChange = true
             isUploadingAvatar = false
         } else if !isAvatarRemoved {
@@ -212,7 +212,7 @@ final class EditProfileViewModel: ObservableObject {
         }
         
         do {
-            _ = try await profileService.updateProfile(
+            _ = try await profileRepository.updateProfile(
                 id: userId,
                 displayName: cleanedName,
                 username: cleanedUsername,
@@ -259,7 +259,7 @@ final class EditProfileViewModel: ObservableObject {
     func uploadAvatar(_ image: UIImage) async {
         isUploadingAvatar = true
         do {
-            let data = try await profileService.uploadAvatar(image: image, userId: userId)
+            let data = try await profileRepository.uploadAvatar(image: image, userId: userId)
             self.currentAvatarData = data
             self.selectedAvatarImage = nil
             self.isAvatarRemoved = false
@@ -272,7 +272,7 @@ final class EditProfileViewModel: ObservableObject {
     func deleteAvatar() async {
         isUploadingAvatar = true
         do {
-            try await profileService.deleteAvatar(userId: userId)
+            try await profileRepository.deleteAvatar(userId: userId)
             self.currentAvatarData = nil
             self.selectedAvatarImage = nil
             self.isAvatarRemoved = true

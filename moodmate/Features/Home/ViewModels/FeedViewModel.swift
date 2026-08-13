@@ -30,7 +30,7 @@ final class FeedViewModel {
 
     init(
         postRepository: PostRepositoryProtocol = PostRepository.shared,
-        profileRepository: ProfileRepositoryProtocol = ProfileRepository()
+        profileRepository: ProfileRepositoryProtocol = ProfileRepository.shared
     ) {
         self.postRepository = postRepository
         self.profileRepository = profileRepository

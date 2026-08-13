@@ -2,9 +2,9 @@ import Foundation
 
 final class FriendsRepository: FriendsRepositoryProtocol {
 
-    private let service: ProfileServiceProtocol
+    private let service: ProfileRepositoryProtocol
 
-    init(service: ProfileServiceProtocol = ProfileService.shared) {
+    init(service: ProfileRepositoryProtocol = ProfileRepository.shared) {
         self.service = service
     }
 
