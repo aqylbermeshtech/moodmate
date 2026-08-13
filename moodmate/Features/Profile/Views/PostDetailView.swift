@@ -255,7 +255,7 @@ struct PostDetailView: View {
         PostDetailView(
             post: FeedPost(
                 id: "1",
-                user: MoodUser(id: "1", name: "Michele", username: "mj", avatarColorHex: "4DABF7", currentMoodEmoji: "😌", currentMoodText: "Calm", currentMoodColorHex: "4A5568"),
+                authorId: "2",
                 timeAgo: "2h ago",
                 quoteText: "Grateful hearts see awesome things.",
                 caption: "Reflected on the beauty of nature. Grateful for the warm sun.",

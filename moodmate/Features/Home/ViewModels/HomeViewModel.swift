@@ -44,10 +44,7 @@ final class HomeViewModel: ObservableObject {
         self.profileRepository = profileRepository
         self.friendsRepository = friendsRepository
         self.authService       = authService
-        self.feed = FeedViewModel(
-            postRepository: postRepository,
-            profileRepository: profileRepository
-        )
+        self.feed = FeedViewModel(postRepository: postRepository)
     }
 
     // MARK: - Lifecycle

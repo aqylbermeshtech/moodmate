@@ -17,10 +17,37 @@ final class DiscoverService: DiscoverServiceProtocol {
 
     private let pageSize = 20
     private let postRepository: PostRepositoryProtocol
+    private let profileRepository: ProfileRepositoryProtocol
 
-    init(postRepository: PostRepositoryProtocol = PostRepository.shared) {
+    init(
+        postRepository: PostRepositoryProtocol = PostRepository.shared,
+        profileRepository: ProfileRepositoryProtocol = ProfileRepository.shared
+    ) {
         self.postRepository = postRepository
+        self.profileRepository = profileRepository
         setupMockData()
+        publishSuggestedUserProfiles()
+    }
+
+    /// suggestedUsers is the one canonical roster for these 25 mock
+    /// identities. Publishing them into ProfileRepository (if not already
+    /// present) lets UserStore resolve display names for the generated
+    /// Discover posts authored by them, without a second copy of the same
+    /// roster living in PostRepository's seed data.
+    private func publishSuggestedUserProfiles() {
+        for user in suggestedUsers where profileRepository.getProfile(forId: user.id) == nil {
+            profileRepository.setProfile(UserProfile(
+                id: user.id,
+                displayName: user.displayName,
+                username: user.username,
+                avatarColorHex: user.avatarColorHex,
+                avatarImageData: user.avatarImageData,
+                bio: user.bio,
+                currentMoodEmoji: user.moodEmoji,
+                currentMoodText: user.moodText,
+                currentMoodColorHex: user.moodColorHex
+            ))
+        }
     }
 
     /// All posts, projected fresh from the shared repository on every call
@@ -104,8 +131,6 @@ final class DiscoverService: DiscoverServiceProtocol {
             results.append(SearchResult(
                 id: "sr_post_\(post.id)",
                 type: .post,
-                userName: post.userName,
-                username: post.username,
                 postQuote: post.quoteText,
                 postCaption: post.caption,
                 postGradientStartHex: post.gradientStartHex,

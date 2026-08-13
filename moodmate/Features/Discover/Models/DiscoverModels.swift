@@ -26,9 +26,6 @@ enum CardHeightClass: Int, CaseIterable, Codable {
 struct DiscoverPost: Identifiable, Equatable, Codable {
     let id: String
     let userId: String
-    let userName: String
-    let username: String
-    let avatarColorHex: String
     let moodEmoji: String
     let moodText: String
     let moodColorHex: String
@@ -45,16 +42,15 @@ struct DiscoverPost: Identifiable, Equatable, Codable {
     /// Projection from the canonical PostModel. heightClass isn't part of
     /// the domain model — it's masonry-grid layout metadata — so it's
     /// derived deterministically from the post id instead, keeping the
-    /// grid stable within a session without storing it anywhere.
+    /// grid stable within a session without storing it anywhere. Author
+    /// display fields (name/username/avatar) aren't carried here at all —
+    /// views resolve those from UserStore via userId at render time.
     init(from post: PostModel) {
         self.id = post.id
-        self.userId = post.author.id
-        self.userName = post.author.name
-        self.username = post.author.username
-        self.avatarColorHex = post.author.avatarColorHex
-        self.moodEmoji = post.moodEmoji ?? post.author.currentMoodEmoji ?? "😊"
-        self.moodText = post.mood ?? post.author.currentMoodText ?? ""
-        self.moodColorHex = post.moodColorHex ?? post.author.currentMoodColorHex ?? "38B2AC"
+        self.userId = post.authorId
+        self.moodEmoji = post.moodEmoji ?? "😊"
+        self.moodText = post.mood ?? ""
+        self.moodColorHex = post.moodColorHex ?? "38B2AC"
         self.quoteText = post.quoteText ?? ""
         self.caption = post.text ?? ""
         self.gradientStartHex = post.gradientStartHex ?? post.moodColorHex ?? "38B2AC"
@@ -68,16 +64,13 @@ struct DiscoverPost: Identifiable, Equatable, Codable {
     }
 
     init(
-        id: String, userId: String, userName: String, username: String, avatarColorHex: String,
+        id: String, userId: String,
         moodEmoji: String, moodText: String, moodColorHex: String, quoteText: String, caption: String,
         gradientStartHex: String, gradientEndHex: String, likesCount: Int, commentsCount: Int,
         isLiked: Bool, heightClass: CardHeightClass, createdAt: Date
     ) {
         self.id = id
         self.userId = userId
-        self.userName = userName
-        self.username = username
-        self.avatarColorHex = avatarColorHex
         self.moodEmoji = moodEmoji
         self.moodText = moodText
         self.moodColorHex = moodColorHex

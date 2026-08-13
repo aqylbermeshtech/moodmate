@@ -36,7 +36,7 @@ enum PostVisibility: String, Codable, CaseIterable, Identifiable {
 // MARK: - Post Model
 struct PostModel: Identifiable, Codable, Equatable {
     let id: String
-    var author: MoodUser
+    var authorId: String
     var mood: String?
     var moodEmoji: String?
     var moodColorHex: String?

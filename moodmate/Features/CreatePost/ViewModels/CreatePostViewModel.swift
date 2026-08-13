@@ -291,7 +291,7 @@ final class CreatePostViewModel: ObservableObject {
         
         let newPost = PostModel(
             id: "post_\(UUID().uuidString.prefix(8))",
-            author: currentUser,
+            authorId: currentUser.id,
             mood: selectedMoodText,
             moodEmoji: selectedMoodEmoji,
             moodColorHex: selectedMoodColorHex,

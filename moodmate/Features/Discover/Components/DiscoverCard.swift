@@ -10,7 +10,12 @@ import SwiftUI
 struct DiscoverCard: View {
     let post: DiscoverPost
     var onLike: () -> Void
-    
+    var userStore: UserStoreProtocol = UserStore.shared
+
+    private var author: MoodUser? {
+        userStore.moodUser(for: post.userId)
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             ZStack(alignment: .bottomLeading) {
@@ -57,13 +62,13 @@ struct DiscoverCard: View {
             VStack(alignment: .leading, spacing: 6) {
                 HStack(spacing: 6) {
                     AvatarView(
-                        name: post.userName,
-                        colorHex: post.avatarColorHex,
+                        name: author?.name ?? "",
+                        colorHex: author?.avatarColorHex ?? "38B2AC",
                         size: 20,
                         showBorder: false
                     )
-                    
-                    Text(post.userName)
+
+                    Text(author?.name ?? "")
                         .font(.system(size: 11, weight: .semibold, design: .rounded))
                         .foregroundStyle(Color.theme.primaryText)
                         .lineLimit(1)
@@ -104,8 +109,8 @@ struct DiscoverCard: View {
     HStack(alignment: .top, spacing: 12) {
         DiscoverCard(
             post: DiscoverPost(
-                id: "1", userId: "u1", userName: "Luna Park", username: "luna_glow",
-                avatarColorHex: "ED64A6", moodEmoji: "😊", moodText: "Happy",
+                id: "1", userId: "su1",
+                moodEmoji: "😊", moodText: "Happy",
                 moodColorHex: "38B2AC", quoteText: "Stars can't shine without darkness.",
                 caption: "Night thoughts.", gradientStartHex: "38B2AC", gradientEndHex: "805AD5",
                 likesCount: 42, commentsCount: 5, isLiked: false,
@@ -113,11 +118,11 @@ struct DiscoverCard: View {
             ),
             onLike: {}
         )
-        
+
         DiscoverCard(
             post: DiscoverPost(
-                id: "2", userId: "u2", userName: "River Stone", username: "river",
-                avatarColorHex: "38B2AC", moodEmoji: "😌", moodText: "Calm",
+                id: "2", userId: "su2",
+                moodEmoji: "😌", moodText: "Calm",
                 moodColorHex: "4A5568", quoteText: "Be here now.",
                 caption: "Flowing.", gradientStartHex: "667EEA", gradientEndHex: "764BA2",
                 likesCount: 18, commentsCount: 2, isLiked: true,

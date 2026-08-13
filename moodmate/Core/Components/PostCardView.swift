@@ -22,6 +22,13 @@ struct PostCardView: View {
     var onLike: () -> Void
     var onBookmark: () -> Void
     var onComment: () -> Void
+    var userStore: UserStoreProtocol = UserStore.shared
+
+    /// Resolved live from UserStore, not stored on the post — this is what
+    /// makes a display-name change show up here automatically with no sink.
+    private var author: MoodUser? {
+        userStore.moodUser(for: post.authorId)
+    }
 
     private var postAccentColor: Color {
         if let hex = post.moodColorHex {
@@ -80,27 +87,27 @@ struct PostCardView: View {
     private var headerUserInfo: some View {
         let content = HStack(spacing: 10) {
             AvatarView(
-                imageData: post.user.avatarImageData,
-                name: post.user.name,
-                colorHex: post.user.avatarColorHex,
+                imageData: author?.avatarImageData,
+                name: author?.name ?? "",
+                colorHex: author?.avatarColorHex ?? "38B2AC",
                 size: 38,
                 showBorder: true
             )
 
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 4) {
-                    Text(post.user.name)
+                    Text(author?.name ?? "")
                         .font(.system(size: 14, weight: .semibold, design: .rounded))
                         .foregroundStyle(Color.theme.primaryText)
 
-                    Text("@\(post.user.username)")
+                    Text("@\(author?.username ?? "")")
                         .font(.system(size: 11))
                         .foregroundStyle(Color.theme.secondaryText)
                 }
 
                 HStack(spacing: 6) {
-                    if let mood = post.moodEmoji ?? post.user.currentMoodEmoji,
-                       let text = post.moodText ?? post.user.currentMoodText {
+                    if let mood = post.moodEmoji ?? author?.currentMoodEmoji,
+                       let text = post.moodText ?? author?.currentMoodText {
                         HStack(spacing: 4) {
                             Text(mood)
                                 .font(.system(size: 10))
@@ -133,7 +140,7 @@ struct PostCardView: View {
 
         switch style {
         case .feed:
-            NavigationLink(destination: ProfileView(userId: post.user.id)) {
+            NavigationLink(destination: ProfileView(userId: post.authorId)) {
                 content
             }
         case .detail:
@@ -251,7 +258,7 @@ struct PostCardView: View {
         if !post.caption.isEmpty {
             VStack(alignment: .leading, spacing: 4) {
                 Group {
-                    Text("\(Text(post.user.username).bold()) \(Text(post.caption))")
+                    Text("\(Text(author?.username ?? "").bold()) \(Text(post.caption))")
                         .font(.system(size: 13))
                         .foregroundStyle(Color.theme.primaryText)
                         .multilineTextAlignment(.leading)
@@ -340,7 +347,7 @@ private extension View {
             PostCardView(
                 post: FeedPost(
                     id: "p1",
-                    user: MoodUser(id: "2", name: "Michele", username: "mj", avatarColorHex: "4DABF7", currentMoodEmoji: "😌", currentMoodText: "Calm", currentMoodColorHex: "4A5568"),
+                    authorId: "2",
                     timeAgo: "2h ago",
                     quoteText: "Breathe in experience, breathe out poetry.",
                     caption: "Taking a conscious pause today. 🌱"
@@ -352,7 +359,7 @@ private extension View {
             PostCardView(
                 post: FeedPost(
                     id: "p2",
-                    user: MoodUser(id: "3", name: "Alex", username: "alex", avatarColorHex: "FF6B6B", currentMoodEmoji: "🤩", currentMoodText: "Excited", currentMoodColorHex: "E53E3E"),
+                    authorId: "3",
                     timeAgo: "5h ago",
                     quoteText: "Grateful hearts see awesome things.",
                     caption: "Reflected on the beauty of nature."

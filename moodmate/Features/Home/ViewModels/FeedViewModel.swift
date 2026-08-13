@@ -22,18 +22,13 @@ final class FeedViewModel {
     // MARK: - Dependencies
 
     private let postRepository: PostRepositoryProtocol
-    private let profileRepository: ProfileRepositoryProtocol
     private var cancellables = Set<AnyCancellable>()
     private let logger = Logger(subsystem: "com.moodmate", category: "FeedViewModel")
 
     // MARK: - Init
 
-    init(
-        postRepository: PostRepositoryProtocol = PostRepository.shared,
-        profileRepository: ProfileRepositoryProtocol = ProfileRepository.shared
-    ) {
+    init(postRepository: PostRepositoryProtocol = PostRepository.shared) {
         self.postRepository = postRepository
-        self.profileRepository = profileRepository
     }
 
     // MARK: - Lifecycle
@@ -45,7 +40,6 @@ final class FeedViewModel {
         isObserving = true
 
         observePosts()
-        observeProfileUpdates()
 
         Task { [weak self] in
             guard let self else { return }
@@ -161,20 +155,6 @@ final class FeedViewModel {
                     "postsPublisher emitted \(merged.count) posts; merged with local interaction state"
                 )
                 posts = merged
-            }
-            .store(in: &cancellables)
-    }
-
-    private func observeProfileUpdates() {
-        profileRepository.profileUpdatesPublisher
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] updatedProfile in
-                guard let self else { return }
-                posts = posts.map { post in
-                    post.user.id == updatedProfile.id
-                        ? post.updatingAuthor(from: updatedProfile)
-                        : post
-                }
             }
             .store(in: &cancellables)
     }

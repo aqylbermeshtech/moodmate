@@ -94,6 +94,14 @@ private struct SearchResultRow: View {
     let result: SearchResult
     var onFollowUser: (String) -> Void
     var onLikePost: (String) -> Void
+    var userStore: UserStoreProtocol = UserStore.shared
+
+    /// Only meaningful for .post-type results — resolves the post's author
+    /// live from UserStore via postUserId rather than a stale copy.
+    private var postAuthor: MoodUser? {
+        guard let postUserId = result.postUserId else { return nil }
+        return userStore.moodUser(for: postUserId)
+    }
     
     var body: some View {
         HStack(spacing: 12) {
@@ -155,7 +163,7 @@ private struct SearchResultRow: View {
                         .foregroundStyle(Color.theme.primaryText)
                         .lineLimit(1)
                     
-                    Text("by \(result.userName ?? "User")")
+                    Text("by \(postAuthor?.name ?? "User")")
                         .font(.system(size: 12))
                         .foregroundStyle(Color.theme.secondaryText)
                 }

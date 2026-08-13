@@ -51,21 +51,12 @@ final class PostRepository: PostRepositoryProtocol {
                 // The first time a real Firebase user profile comes through,
                 // re-author whatever mock-seeded posts still belong to the
                 // pre-auth placeholder id — mirrors ProfileRepository's own
-                // mock-profile-to-authenticated-user migration.
+                // mock-profile-to-authenticated-user migration. Posts carry
+                // only authorId now, so there's nothing else to patch here —
+                // display fields are resolved live from UserStore.
                 if updatedProfile.id != AppSessionManager.mockUserId,
                    !self.posts(forAuthor: AppSessionManager.mockUserId).isEmpty {
                     self.migrateAuthor(from: AppSessionManager.mockUserId, to: updatedProfile.id)
-                }
-
-                for i in 0..<self.posts.count {
-                    if self.posts[i].author.id == updatedProfile.id {
-                        var updatedAuthor = self.posts[i].author
-                        updatedAuthor.name = updatedProfile.displayName
-                        updatedAuthor.username = updatedProfile.username
-                        updatedAuthor.avatarColorHex = updatedProfile.avatarColorHex
-                        updatedAuthor.avatarImageData = updatedProfile.avatarImageData
-                        self.posts[i].author = updatedAuthor
-                    }
                 }
             }
             .store(in: &cancellables)
@@ -79,7 +70,7 @@ final class PostRepository: PostRepositoryProtocol {
     }
 
     func posts(forAuthor authorId: String) -> [PostModel] {
-        posts.filter { $0.author.id == authorId }
+        posts.filter { $0.authorId == authorId }
     }
 
     // MARK: - Mutations
@@ -116,20 +107,8 @@ final class PostRepository: PostRepositoryProtocol {
     }
 
     func migrateAuthor(from oldAuthorId: String, to newAuthorId: String) {
-        for i in 0..<posts.count where posts[i].author.id == oldAuthorId {
-            var migratedAuthor = posts[i].author
-            migratedAuthor = MoodUser(
-                id: newAuthorId,
-                name: migratedAuthor.name,
-                username: migratedAuthor.username,
-                avatarImageName: migratedAuthor.avatarImageName,
-                avatarImageData: migratedAuthor.avatarImageData,
-                avatarColorHex: migratedAuthor.avatarColorHex,
-                currentMoodEmoji: migratedAuthor.currentMoodEmoji,
-                currentMoodText: migratedAuthor.currentMoodText,
-                currentMoodColorHex: migratedAuthor.currentMoodColorHex
-            )
-            posts[i].author = migratedAuthor
+        for i in 0..<posts.count where posts[i].authorId == oldAuthorId {
+            posts[i].authorId = newAuthorId
         }
     }
 
@@ -144,7 +123,7 @@ final class PostRepository: PostRepositoryProtocol {
         [
             PostModel(
                 id: "p1",
-                author: MoodUser(id: "2", name: "Michele", username: "mj", avatarImageName: nil, avatarColorHex: "4DABF7", currentMoodEmoji: "😌", currentMoodText: "Calm", currentMoodColorHex: "4A5568"),
+                authorId: "2",
                 mood: "Calm",
                 moodEmoji: "😌",
                 moodColorHex: "4A5568",
@@ -163,7 +142,7 @@ final class PostRepository: PostRepositoryProtocol {
             ),
             PostModel(
                 id: "p2",
-                author: MoodUser(id: "3", name: "Ned", username: "ceo", avatarImageName: nil, avatarColorHex: "BE4BDF", currentMoodEmoji: "😴", currentMoodText: "Sleepy", currentMoodColorHex: "667EEA"),
+                authorId: "3",
                 mood: "Sleepy",
                 moodEmoji: "😴",
                 moodColorHex: "667EEA",
@@ -182,7 +161,7 @@ final class PostRepository: PostRepositoryProtocol {
             ),
             PostModel(
                 id: "p3",
-                author: MoodUser(id: "1", name: "Pepper", username: "pepperoni", avatarImageName: nil, avatarColorHex: "FF6B6B", currentMoodEmoji: "😊", currentMoodText: "Happy", currentMoodColorHex: "38B2AC"),
+                authorId: "1",
                 mood: "Happy",
                 moodEmoji: "😊",
                 moodColorHex: "38B2AC",
@@ -201,7 +180,7 @@ final class PostRepository: PostRepositoryProtocol {
             ),
             PostModel(
                 id: "p4",
-                author: MoodUser(id: "4", name: "Happy", username: "happyaunt", avatarImageName: nil, avatarColorHex: "FAB005", currentMoodEmoji: "🤩", currentMoodText: "Excited", currentMoodColorHex: "ED64A6"),
+                authorId: "4",
                 mood: "Excited",
                 moodEmoji: "🤩",
                 moodColorHex: "ED64A6",
@@ -220,7 +199,7 @@ final class PostRepository: PostRepositoryProtocol {
             ),
             PostModel(
                 id: "p5",
-                author: MoodUser(id: "5", name: "Alex", username: "alexwang", avatarImageName: nil, avatarColorHex: "12B886", currentMoodEmoji: "🧠", currentMoodText: "Mindful", currentMoodColorHex: "805AD5"),
+                authorId: "5",
                 mood: "Mindful",
                 moodEmoji: "🧠",
                 moodColorHex: "805AD5",
@@ -246,11 +225,10 @@ final class PostRepository: PostRepositoryProtocol {
     /// `ProfileRepository.syncWithFirebaseUser` runs, mirroring how
     /// ProfileRepository migrates the mock profile itself.
     private var currentUserSeedPosts: [PostModel] {
-        let viewer = MoodUser(id: AppSessionManager.mockUserId, name: "John", username: "johndoe", avatarColorHex: "38B2AC")
         return [
             PostModel(
                 id: "up1",
-                author: viewer,
+                authorId: AppSessionManager.mockUserId,
                 mood: nil,
                 moodEmoji: nil,
                 moodColorHex: nil,
@@ -269,7 +247,7 @@ final class PostRepository: PostRepositoryProtocol {
             ),
             PostModel(
                 id: "up2",
-                author: viewer,
+                authorId: AppSessionManager.mockUserId,
                 mood: nil,
                 moodEmoji: nil,
                 moodColorHex: nil,
@@ -288,7 +266,7 @@ final class PostRepository: PostRepositoryProtocol {
             ),
             PostModel(
                 id: "up3",
-                author: viewer,
+                authorId: AppSessionManager.mockUserId,
                 mood: nil,
                 moodEmoji: nil,
                 moodColorHex: nil,
@@ -308,45 +286,13 @@ final class PostRepository: PostRepositoryProtocol {
         ]
     }
 
-    /// A compact identity table (id/name/username/color only) for authoring
-    /// the 100 generated Discover posts below. Intentionally not the same
-    /// type as DiscoverService.SuggestedUser — that carries Discover-catalog
-    /// fields (bio, isFollowing) this repository has no use for.
-    private struct SeedAuthorIdentity {
-        let id: String
-        let name: String
-        let username: String
-        let colorHex: String
-    }
-
-    private var discoverAuthorPool: [SeedAuthorIdentity] {
-        [
-            SeedAuthorIdentity(id: "su1", name: "Luna Park", username: "luna_glow", colorHex: "ED64A6"),
-            SeedAuthorIdentity(id: "su2", name: "River Stone", username: "river_flows", colorHex: "38B2AC"),
-            SeedAuthorIdentity(id: "su3", name: "Maya Chen", username: "maya_mindful", colorHex: "805AD5"),
-            SeedAuthorIdentity(id: "su4", name: "Kai Nakamura", username: "kai_runs", colorHex: "FF6B6B"),
-            SeedAuthorIdentity(id: "su5", name: "Sage Williams", username: "sage_reads", colorHex: "D69E2E"),
-            SeedAuthorIdentity(id: "su6", name: "Aurora James", username: "aurora_art", colorHex: "F093FB"),
-            SeedAuthorIdentity(id: "su7", name: "Jasper Cole", username: "jasper_hikes", colorHex: "12B886"),
-            SeedAuthorIdentity(id: "su8", name: "Nova Singh", username: "nova_codes", colorHex: "4DABF7"),
-            SeedAuthorIdentity(id: "su9", name: "Willow Reed", username: "willow_writes", colorHex: "A0AEC0"),
-            SeedAuthorIdentity(id: "su10", name: "Finn O'Brien", username: "finn_surfs", colorHex: "00B5D8"),
-            SeedAuthorIdentity(id: "su11", name: "Ivy Martinez", username: "ivy_grows", colorHex: "48BB78"),
-            SeedAuthorIdentity(id: "su12", name: "Atlas Kim", username: "atlas_travels", colorHex: "E53E3E"),
-            SeedAuthorIdentity(id: "su13", name: "Coral Davis", username: "coral_sings", colorHex: "D53F8C"),
-            SeedAuthorIdentity(id: "su14", name: "Zane Foster", username: "zane_lifts", colorHex: "C05621"),
-            SeedAuthorIdentity(id: "su15", name: "Pearl Wang", username: "pearl_cooks", colorHex: "FAB005"),
-            SeedAuthorIdentity(id: "su16", name: "Rowan Blake", username: "rowan_thinks", colorHex: "718096"),
-            SeedAuthorIdentity(id: "su17", name: "Sienna Lopez", username: "sienna_dances", colorHex: "F6AD55"),
-            SeedAuthorIdentity(id: "su18", name: "Orion Patel", username: "orion_games", colorHex: "9F7AEA"),
-            SeedAuthorIdentity(id: "su19", name: "Hazel Brown", username: "hazel_bakes", colorHex: "B7791F"),
-            SeedAuthorIdentity(id: "su20", name: "Reed Thompson", username: "reed_meditates", colorHex: "319795"),
-            SeedAuthorIdentity(id: "su21", name: "Ember Fox", username: "ember_captures", colorHex: "E53E3E"),
-            SeedAuthorIdentity(id: "su22", name: "Sky Tanaka", username: "sky_breathes", colorHex: "4299E1"),
-            SeedAuthorIdentity(id: "su23", name: "Clover Hayes", username: "clover_journals", colorHex: "48BB78"),
-            SeedAuthorIdentity(id: "su24", name: "Blaze Rivera", username: "blaze_climbs", colorHex: "DD6B20"),
-            SeedAuthorIdentity(id: "su25", name: "Iris Zhao", username: "iris_paints", colorHex: "9B2C2C")
-        ]
+    /// Just the ids for cycling through authors below — the actual display
+    /// identities (name/username/avatar) for su1–su25 live in
+    /// ProfileRepository, published once by DiscoverService from its
+    /// suggestedUsers roster (the one canonical copy of who these 25
+    /// people are), and resolved by UserStore at render time.
+    private var discoverAuthorIds: [String] {
+        (1...25).map { "su\($0)" }
     }
 
     /// The 100 generated Discover-feed posts, ported from what used to be
@@ -476,16 +422,16 @@ final class PostRepository: PostRepositoryProtocol {
             "Random act of kindness today. Bought coffee for a stranger. ☕💫"
         ]
 
-        let authors = discoverAuthorPool
+        let authorIds = discoverAuthorIds
 
         return (0..<100).map { i in
-            let author = authors[i % authors.count]
+            let authorId = authorIds[i % authorIds.count]
             let mood = moodSets[i % moodSets.count]
             let gradient = gradientPairs[i % gradientPairs.count]
 
             return PostModel(
                 id: "dp\(i + 1)",
-                author: MoodUser(id: author.id, name: author.name, username: author.username, avatarColorHex: author.colorHex),
+                authorId: authorId,
                 mood: mood.text,
                 moodEmoji: mood.emoji,
                 moodColorHex: mood.colorHex,

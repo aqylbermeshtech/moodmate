@@ -110,6 +110,11 @@ final class DiscoverViewModel: ObservableObject {
             .sink { [weak self] updatedProfile in
                 guard let self = self else { return }
 
+                // DiscoverPost no longer carries denormalized author display
+                // fields (name/username/avatar) — those are resolved live
+                // from UserStore at render time. suggestedUsers still needs
+                // patching here since SuggestedUser carries bio/isFollowing,
+                // which are Discover-catalog fields UserStore doesn't own.
                 if let index = self.suggestedUsers.firstIndex(where: { $0.id == updatedProfile.id }) {
                     self.suggestedUsers[index] = SuggestedUser(
                         id: updatedProfile.id,
@@ -123,31 +128,6 @@ final class DiscoverViewModel: ObservableObject {
                         moodColorHex: updatedProfile.currentMoodColorHex,
                         isFollowing: self.suggestedUsers[index].isFollowing
                     )
-                }
-
-                for i in 0..<self.discoverPosts.count {
-                    if self.discoverPosts[i].userId == updatedProfile.id {
-                        let oldPost = self.discoverPosts[i]
-                        self.discoverPosts[i] = DiscoverPost(
-                            id: oldPost.id,
-                            userId: oldPost.userId,
-                            userName: updatedProfile.displayName,
-                            username: updatedProfile.username,
-                            avatarColorHex: updatedProfile.avatarColorHex,
-                            moodEmoji: oldPost.moodEmoji,
-                            moodText: oldPost.moodText,
-                            moodColorHex: oldPost.moodColorHex,
-                            quoteText: oldPost.quoteText,
-                            caption: oldPost.caption,
-                            gradientStartHex: oldPost.gradientStartHex,
-                            gradientEndHex: oldPost.gradientEndHex,
-                            likesCount: oldPost.likesCount,
-                            commentsCount: oldPost.commentsCount,
-                            isLiked: oldPost.isLiked,
-                            heightClass: oldPost.heightClass,
-                            createdAt: oldPost.createdAt
-                        )
-                    }
                 }
             }
             .store(in: &cancellables)

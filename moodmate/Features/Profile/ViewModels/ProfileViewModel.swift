@@ -84,7 +84,7 @@ final class ProfileViewModel: ObservableObject {
             .sink { [weak self] allPosts in
                 guard let self else { return }
                 let targetId = self.userId ?? self.getCurrentUserId()
-                self.posts = allPosts.filter { $0.author.id == targetId }
+                self.posts = allPosts.filter { $0.authorId == targetId }
             }
             .store(in: &cancellables)
     }
@@ -236,17 +236,10 @@ final class ProfileViewModel: ObservableObject {
             }
 
             let authorId = self.userId ?? self.getCurrentUserId()
-            let author = MoodUser(
-                id: authorId,
-                name: self.profile?.displayName ?? "",
-                username: self.profile?.username ?? "",
-                avatarImageData: self.profile?.avatarImageData,
-                avatarColorHex: self.profile?.avatarColorHex ?? "38B2AC"
-            )
 
             let additionalPosts = [
                 PostModel(
-                    id: "lazy_p\(currentPostCount + 1)", author: author, mood: nil, moodEmoji: nil, moodColorHex: nil,
+                    id: "lazy_p\(currentPostCount + 1)", authorId: authorId, mood: nil, moodEmoji: nil, moodColorHex: nil,
                     text: nil, images: [], visibility: .publicVisibility,
                     createdAt: Date().addingTimeInterval(-86400 * 5), likesCount: 18, commentsCount: 3,
                     bookmarksCount: 0, isLiked: false, isBookmarked: false,
@@ -254,7 +247,7 @@ final class ProfileViewModel: ObservableObject {
                     gradientStartHex: "805AD5", gradientEndHex: "38B2AC"
                 ),
                 PostModel(
-                    id: "lazy_p\(currentPostCount + 2)", author: author, mood: nil, moodEmoji: nil, moodColorHex: nil,
+                    id: "lazy_p\(currentPostCount + 2)", authorId: authorId, mood: nil, moodEmoji: nil, moodColorHex: nil,
                     text: nil, images: [], visibility: .publicVisibility,
                     createdAt: Date().addingTimeInterval(-86400 * 6), likesCount: 22, commentsCount: 1,
                     bookmarksCount: 0, isLiked: true, isBookmarked: false,
@@ -262,7 +255,7 @@ final class ProfileViewModel: ObservableObject {
                     gradientStartHex: "4A5568", gradientEndHex: "1A202C"
                 ),
                 PostModel(
-                    id: "lazy_p\(currentPostCount + 3)", author: author, mood: nil, moodEmoji: nil, moodColorHex: nil,
+                    id: "lazy_p\(currentPostCount + 3)", authorId: authorId, mood: nil, moodEmoji: nil, moodColorHex: nil,
                     text: nil, images: [], visibility: .publicVisibility,
                     createdAt: Date().addingTimeInterval(-86400 * 7), likesCount: 35, commentsCount: 4,
                     bookmarksCount: 0, isLiked: false, isBookmarked: true,
