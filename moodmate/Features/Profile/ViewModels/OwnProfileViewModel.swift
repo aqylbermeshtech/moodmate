@@ -38,7 +38,7 @@ final class OwnProfileViewModel: ProfileViewModel {
                     self.loadProfile()
                 } else {
                     self.profile = nil
-                    self.posts = []
+                    self.resetPosts()
                     self.isLoading = false
                 }
             }

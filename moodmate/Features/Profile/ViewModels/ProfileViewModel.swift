@@ -22,6 +22,13 @@ class ProfileViewModel: ObservableObject {
     @Published var followers: [UserProfile] = []
     @Published var following: [UserProfile] = []
 
+    /// `posts` is `repositoryPosts + demoLoadedPosts` — split so the fake
+    /// posts `loadMorePosts` synthesizes (see below) can be merged in without
+    /// ever being written to `postRepository`, and without getting wiped out
+    /// the next time `postRepository.postsPublisher` emits.
+    private var repositoryPosts: [PostModel] = []
+    private var demoLoadedPosts: [PostModel] = []
+
     @Published var isLoading = true
     @Published var isLazyLoadingPosts = false
     @Published var hasMorePosts = true
@@ -57,9 +64,23 @@ class ProfileViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] allPosts in
                 guard let self else { return }
-                self.posts = allPosts.filter { $0.authorId == self.targetUserId }
+                self.repositoryPosts = allPosts.filter { $0.authorId == self.targetUserId }
+                self.recomputePosts()
             }
             .store(in: &cancellables)
+    }
+
+    private func recomputePosts() {
+        posts = repositoryPosts + demoLoadedPosts
+    }
+
+    /// Clears both the repository-backed and demo-loaded post state — used
+    /// on sign-out so a subsequent sign-in as a different user doesn't merge
+    /// stale demo posts from the previous session into the new one.
+    func resetPosts() {
+        repositoryPosts = []
+        demoLoadedPosts = []
+        posts = []
     }
 
     private func subscribeToProfileUpdates() {
@@ -154,9 +175,12 @@ class ProfileViewModel: ObservableObject {
 
             let authorId = self.targetUserId
 
+            // Synthesized demo content only — merged into `posts` via
+            // `recomputePosts()`, never written to `postRepository`, so it
+            // can't leak into Feed/Discover or collide with real post ids.
             let additionalPosts = [
                 PostModel(
-                    id: "lazy_p\(currentPostCount + 1)", authorId: authorId, mood: nil, moodEmoji: nil, moodColorHex: nil,
+                    id: "lazy_\(authorId)_\(currentPostCount + 1)", authorId: authorId, mood: nil, moodEmoji: nil, moodColorHex: nil,
                     text: nil, images: [], visibility: .publicVisibility,
                     createdAt: Date().addingTimeInterval(-86400 * 5), likesCount: 18, commentsCount: 3,
                     bookmarksCount: 0, isLiked: false, isBookmarked: false,
@@ -164,7 +188,7 @@ class ProfileViewModel: ObservableObject {
                     gradientStartHex: "805AD5", gradientEndHex: "38B2AC"
                 ),
                 PostModel(
-                    id: "lazy_p\(currentPostCount + 2)", authorId: authorId, mood: nil, moodEmoji: nil, moodColorHex: nil,
+                    id: "lazy_\(authorId)_\(currentPostCount + 2)", authorId: authorId, mood: nil, moodEmoji: nil, moodColorHex: nil,
                     text: nil, images: [], visibility: .publicVisibility,
                     createdAt: Date().addingTimeInterval(-86400 * 6), likesCount: 22, commentsCount: 1,
                     bookmarksCount: 0, isLiked: true, isBookmarked: false,
@@ -172,7 +196,7 @@ class ProfileViewModel: ObservableObject {
                     gradientStartHex: "4A5568", gradientEndHex: "1A202C"
                 ),
                 PostModel(
-                    id: "lazy_p\(currentPostCount + 3)", authorId: authorId, mood: nil, moodEmoji: nil, moodColorHex: nil,
+                    id: "lazy_\(authorId)_\(currentPostCount + 3)", authorId: authorId, mood: nil, moodEmoji: nil, moodColorHex: nil,
                     text: nil, images: [], visibility: .publicVisibility,
                     createdAt: Date().addingTimeInterval(-86400 * 7), likesCount: 35, commentsCount: 4,
                     bookmarksCount: 0, isLiked: false, isBookmarked: true,
@@ -181,9 +205,8 @@ class ProfileViewModel: ObservableObject {
                 )
             ]
 
-            for post in additionalPosts {
-                _ = try? await self.postRepository.createPost(post)
-            }
+            self.demoLoadedPosts.append(contentsOf: additionalPosts)
+            self.recomputePosts()
             self.isLazyLoadingPosts = false
         }
     }
