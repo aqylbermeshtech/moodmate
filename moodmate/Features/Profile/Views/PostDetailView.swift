@@ -27,6 +27,7 @@ struct PostDetailView: View {
     @State private var commentText = ""
     @State private var displayPost: FeedPost?
     @State private var cancellables = Set<AnyCancellable>()
+    @State private var errorMessage: String?
 
     private var currentPost: FeedPost {
         displayPost ?? post
@@ -104,6 +105,7 @@ struct PostDetailView: View {
         .onDisappear {
             updateNavigationVisibility(false)
         }
+        .errorAlert($errorMessage)
     }
 
     private func updateNavigationVisibility(_ isDetailPresented: Bool) {
@@ -213,21 +215,39 @@ struct PostDetailView: View {
 
     private func toggleLike() {
         let desiredLikeState = !currentPost.isLiked
+        let previousLiked = currentPost.isLiked
+        let previousCount = currentPost.likesCount
         withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
             displayPost?.isLiked = desiredLikeState
             displayPost?.likesCount += desiredLikeState ? 1 : -1
         }
         Task {
-            try? await postRepository.setLike(postId: currentPost.id, isLiked: desiredLikeState)
+            do {
+                try await postRepository.setLike(postId: currentPost.id, isLiked: desiredLikeState)
+            } catch {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                    displayPost?.isLiked = previousLiked
+                    displayPost?.likesCount = previousCount
+                }
+                errorMessage = "Could not update like. Please try again."
+            }
         }
     }
 
     private func toggleBookmark() {
+        let previousBookmarked = currentPost.isBookmarked
         withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
             displayPost?.isBookmarked.toggle()
         }
         Task {
-            try? await postRepository.toggleBookmark(postId: currentPost.id)
+            do {
+                try await postRepository.toggleBookmark(postId: currentPost.id)
+            } catch {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                    displayPost?.isBookmarked = previousBookmarked
+                }
+                errorMessage = "Could not update bookmark. Please try again."
+            }
         }
     }
 

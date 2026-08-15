@@ -6,28 +6,30 @@
 //
 
 import Foundation
+import OSLog
 
 final class DraftManager {
     static let shared = DraftManager()
     private let draftKey = "MoodMate_CreatePost_Draft"
-    
+    private let logger = Logger(subsystem: "com.moodmate", category: "DraftManager")
+
     private init() {}
-    
+
     func saveDraft(_ draft: PostDraft) {
         do {
             let data = try JSONEncoder().encode(draft)
             UserDefaults.standard.set(data, forKey: draftKey)
         } catch {
-            print("Failed to save draft: \(error.localizedDescription)")
+            logger.error("Failed to save draft: \(error.localizedDescription, privacy: .public)")
         }
     }
-    
+
     func loadDraft() -> PostDraft? {
         guard let data = UserDefaults.standard.data(forKey: draftKey) else { return nil }
         do {
             return try JSONDecoder().decode(PostDraft.self, from: data)
         } catch {
-            print("Failed to load draft: \(error.localizedDescription)")
+            logger.error("Failed to load draft: \(error.localizedDescription, privacy: .public)")
             return nil
         }
     }

@@ -39,8 +39,17 @@ struct SignInView: View {
                 viewModel.submit()
             }
         }
-        .alert(isPresented: $viewModel.showAlert) {
-            Alert(title: Text("MoodMate"), message: Text(viewModel.alertMessage), dismissButton: .default(Text("OK")))
+        .errorAlert($viewModel.errorMessage)
+        .alert(
+            "MoodMate",
+            isPresented: Binding(
+                get: { viewModel.successMessage != nil },
+                set: { if !$0 { viewModel.successMessage = nil } }
+            )
+        ) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(viewModel.successMessage ?? "")
         }
     }
 }

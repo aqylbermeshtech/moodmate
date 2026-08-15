@@ -68,11 +68,7 @@ final class FirebaseAuthService: AuthServiceProtocol {
 
     func sendEmailVerification() async throws {
         guard let user = Auth.auth().currentUser else {
-            throw NSError(
-                domain: "FirebaseAuthService",
-                code: 0,
-                userInfo: [NSLocalizedDescriptionKey: "No user signed in."]
-            )
+            throw AppError.notAuthenticated
         }
         try await user.sendEmailVerification()
     }

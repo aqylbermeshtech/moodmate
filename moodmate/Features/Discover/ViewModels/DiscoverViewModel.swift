@@ -357,6 +357,7 @@ final class DiscoverViewModel: ObservableObject {
                     self.discoverPosts[rollbackIndex].isLiked = previousLiked
                     self.discoverPosts[rollbackIndex].likesCount = previousCount
                 }
+                self.errorMessage = "Could not update like. Please try again."
             }
         }
     }

@@ -15,8 +15,6 @@ final class HomeViewModel: ObservableObject {
     @Published var selectedMood: SelectedMood?
     @Published var showMoodPickerSheet = false
 
-    @Published private(set) var errorMessage: String?
-
     // MARK: - Composed child ViewModel
 
     let feed: FeedViewModel
@@ -79,16 +77,6 @@ final class HomeViewModel: ObservableObject {
 
     func addNewlyCreatedPost(_ postModel: PostModel) {
         feed.addNewlyCreatedPost(postModel)
-    }
-
-    // MARK: - Authentication
-
-    func signOut() {
-        do {
-            try authService.signOut()
-        } catch {
-            errorMessage = "Sign out failed: \(error.localizedDescription)"
-        }
     }
 
     // MARK: - Presentation strings

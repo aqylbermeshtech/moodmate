@@ -11,9 +11,12 @@
 import UIKit
 import FirebaseAuth
 import Combine
+import OSLog
 
 final class ProfileRepository: ProfileRepositoryProtocol {
     static let shared = ProfileRepository()
+
+    private let logger = Logger(subsystem: "com.moodmate", category: "ProfileRepository")
 
     private var profiles: [String: UserProfile] = [:]
 
@@ -93,7 +96,7 @@ final class ProfileRepository: ProfileRepositoryProtocol {
 
         let actualId = id.isEmpty ? AppSessionManager.currentUserId() : id
         guard var profile = profiles[actualId] else {
-            throw NSError(domain: "ProfileRepository", code: 404, userInfo: [NSLocalizedDescriptionKey: "User profile not found."])
+            throw AppError.notFound("User profile")
         }
 
         profile.displayName = displayName
@@ -107,7 +110,7 @@ final class ProfileRepository: ProfileRepositoryProtocol {
         if clearAvatar {
             profile.avatarImageData = nil
             profile.avatarImageName = nil
-            try? await avatarRepository.deleteAvatar(userId: actualId)
+            try await avatarRepository.deleteAvatar(userId: actualId)
         } else if let newAvatarData = avatarImageData {
             let compressedData = try await avatarRepository.saveAvatar(data: newAvatarData, userId: actualId)
             profile.avatarImageData = compressedData
@@ -119,7 +122,7 @@ final class ProfileRepository: ProfileRepositoryProtocol {
 
     func uploadAvatar(image: UIImage, userId: String) async throws -> Data {
         guard let data = image.jpegData(compressionQuality: 0.8) else {
-            throw ProfileImageError.compressionFailed
+            throw AppError.imageProcessingFailed
         }
         let savedData = try await avatarRepository.saveAvatar(data: data, userId: userId)
 
@@ -220,19 +223,21 @@ final class ProfileRepository: ProfileRepositoryProtocol {
             let data = try encoder.encode(profiles)
             try data.write(to: storageFileURL, options: .atomic)
         } catch {
-            print("ProfileRepository: Failed to persist profiles - \(error)")
+            logger.error("Failed to persist profiles: \(error, privacy: .public)")
         }
     }
 
     private func loadPersistedProfiles() {
-        guard fileManager.fileExists(atPath: storageFileURL.path),
-              let data = try? Data(contentsOf: storageFileURL),
-              let decoded = try? JSONDecoder().decode([String: UserProfile].self, from: data) else {
-            return
-        }
+        guard fileManager.fileExists(atPath: storageFileURL.path) else { return }
 
-        for (id, profile) in decoded {
-            profiles[id] = profile
+        do {
+            let data = try Data(contentsOf: storageFileURL)
+            let decoded = try JSONDecoder().decode([String: UserProfile].self, from: data)
+            for (id, profile) in decoded {
+                profiles[id] = profile
+            }
+        } catch {
+            logger.error("Failed to load persisted profiles: \(error, privacy: .public)")
         }
     }
 

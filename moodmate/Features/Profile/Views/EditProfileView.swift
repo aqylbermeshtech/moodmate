@@ -120,7 +120,10 @@ struct EditProfileView: View {
             .sheet(item: $editViewModel.activePickerSource) { source in
                 switch source {
                 case .library:
-                    PhotosPickerWrapper(selectedImage: $editViewModel.selectedAvatarImage)
+                    PhotosPickerWrapper(
+                        selectedImage: $editViewModel.selectedAvatarImage,
+                        onError: { editViewModel.errorMessage = $0 }
+                    )
                 case .camera:
                     CameraPickerView(selectedImage: $editViewModel.selectedAvatarImage)
                         .ignoresSafeArea()
@@ -456,6 +459,7 @@ struct EditProfileView: View {
 // MARK: - Helper PhotosPicker wrapper
 struct PhotosPickerWrapper: View {
     @Binding var selectedImage: UIImage?
+    var onError: (String) -> Void = { _ in }
     @State private var selectedItem: PhotosPickerItem? = nil
     @Environment(\.dismiss) var dismiss
     
@@ -479,11 +483,17 @@ struct PhotosPickerWrapper: View {
             .onChange(of: selectedItem) { _, newItem in
                 guard let newItem else { return }
                 Task {
-                    if let data = try? await newItem.loadTransferable(type: Data.self),
-                       let uiImage = UIImage(data: data) {
+                    do {
+                        if let data = try await newItem.loadTransferable(type: Data.self),
+                           let uiImage = UIImage(data: data) {
+                            await MainActor.run {
+                                selectedImage = uiImage
+                                dismiss()
+                            }
+                        }
+                    } catch {
                         await MainActor.run {
-                            selectedImage = uiImage
-                            dismiss()
+                            onError("Couldn't load that photo. Please try another one.")
                         }
                     }
                 }

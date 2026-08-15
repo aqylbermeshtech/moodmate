@@ -16,8 +16,8 @@ final class SignUpViewModel: ObservableObject {
     @Published var password = ""
     @Published var confirmPassword = ""
     @Published var isLoading = false
-    @Published var alertMessage = ""
-    @Published var showAlert = false
+    @Published var errorMessage: String?
+    @Published var successMessage: String?
 
     private let authService: AuthServiceProtocol
 
@@ -39,12 +39,10 @@ final class SignUpViewModel: ObservableObject {
                 _ = try await authService.signUp(email: email, password: password)
                 self.isLoading = false
                 let displayName = self.name.trimmingCharacters(in: .whitespacesAndNewlines)
-                self.alertMessage = "Account created! Welcome to MoodMate\(displayName.isEmpty ? "" : ", " + displayName)."
-                self.showAlert = true
+                self.successMessage = "Account created! Welcome to MoodMate\(displayName.isEmpty ? "" : ", " + displayName)."
             } catch {
                 self.isLoading = false
-                self.alertMessage = error.localizedDescription
-                self.showAlert = true
+                self.errorMessage = error.localizedDescription
             }
         }
     }
@@ -53,20 +51,15 @@ final class SignUpViewModel: ObservableObject {
         guard !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
               !email.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
               !password.isEmpty else {
-            setAlert("Please fill in all fields.")
+            errorMessage = "Please fill in all fields."
             return false
         }
 
         guard password == confirmPassword else {
-            setAlert("Passwords do not match.")
+            errorMessage = "Passwords do not match."
             return false
         }
 
         return true
-    }
-
-    private func setAlert(_ message: String) {
-        alertMessage = message
-        showAlert = true
     }
 }

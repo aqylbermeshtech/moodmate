@@ -224,6 +224,7 @@ struct SettingsView: View {
             }
             Button("Cancel", role: .cancel) {}
         }
+        .errorAlert($viewModel.errorMessage)
     }
     
     // MARK: - Row builder
@@ -259,7 +260,7 @@ struct SettingsView: View {
             try viewModel.signOut()
             dismiss()
         } catch {
-            print("Failed to sign out: \(error.localizedDescription)")
+            viewModel.errorMessage = error.localizedDescription
         }
     }
 }

@@ -127,15 +127,22 @@ struct CreatePostView: View {
             .photosPicker(isPresented: $viewModel.showImagePicker, selection: $selectedPhotoItem, matching: .images)
             .onChange(of: selectedPhotoItem) { _, newItem in
                 Task {
-                    if let data = try? await newItem?.loadTransferable(type: Data.self),
-                       let uiImage = UIImage(data: data) {
+                    do {
+                        if let data = try await newItem?.loadTransferable(type: Data.self),
+                           let uiImage = UIImage(data: data) {
+                            await MainActor.run {
+                                viewModel.addImage(uiImage)
+                                selectedPhotoItem = nil
+                            }
+                        }
+                    } catch {
                         await MainActor.run {
-                            viewModel.addImage(uiImage)
-                            selectedPhotoItem = nil
+                            viewModel.errorMessage = "Couldn't load that photo. Please try another one."
                         }
                     }
                 }
             }
+            .errorAlert($viewModel.errorMessage)
             .confirmationDialog("Unsaved Post", isPresented: $viewModel.showDiscardDraftAlert, titleVisibility: .visible) {
                 Button("Save Draft") {
                     viewModel.saveDraft()

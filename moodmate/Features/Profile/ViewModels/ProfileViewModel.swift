@@ -32,6 +32,7 @@ class ProfileViewModel: ObservableObject {
     @Published var isLoading = true
     @Published var isLazyLoadingPosts = false
     @Published var hasMorePosts = true
+    @Published var errorMessage: String?
 
     var cancellables = Set<AnyCancellable>()
 
@@ -124,10 +125,18 @@ class ProfileViewModel: ObservableObject {
         self.following = followRepository.getFollowing(forId: profileId)
         self.hasMorePosts = true
 
-        if let freshProfile = try? await profileRepository.fetchProfile(forId: profileId) {
-            self.profile = freshProfile
-        } else {
+        do {
+            self.profile = try await profileRepository.fetchProfile(forId: profileId)
+        } catch {
+            self.profile = nil
+        }
+
+        if self.profile == nil {
             self.profile = profileRepository.getProfile(forId: profileId)
+        }
+
+        if self.profile == nil {
+            errorMessage = "Couldn't load this profile. Pull to refresh to try again."
         }
 
         self.isLoading = false

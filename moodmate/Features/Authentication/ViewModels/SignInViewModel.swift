@@ -14,8 +14,8 @@ final class SignInViewModel: ObservableObject {
     @Published var email = ""
     @Published var password = ""
     @Published var isLoading = false
-    @Published var alertMessage = ""
-    @Published var showAlert = false
+    @Published var errorMessage: String?
+    @Published var successMessage: String?
 
     private let authService: AuthServiceProtocol
 
@@ -36,26 +36,19 @@ final class SignInViewModel: ObservableObject {
             do {
                 _ = try await authService.signIn(email: email, password: password)
                 self.isLoading = false
-                self.alertMessage = "Welcome back to MoodMate!"
-                self.showAlert = true
+                self.successMessage = "Welcome back to MoodMate!"
             } catch {
                 self.isLoading = false
-                self.alertMessage = error.localizedDescription
-                self.showAlert = true
+                self.errorMessage = error.localizedDescription
             }
         }
     }
 
     private func validateInputs() -> Bool {
         guard !email.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, !password.isEmpty else {
-            setAlert("Please enter both email and password.")
+            errorMessage = "Please enter both email and password."
             return false
         }
         return true
-    }
-
-    private func setAlert(_ message: String) {
-        alertMessage = message
-        showAlert = true
     }
 }

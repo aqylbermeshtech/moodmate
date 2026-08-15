@@ -38,6 +38,7 @@ final class InsightsViewModel: ObservableObject {
     @Published var showCalendarDetailSheet: Bool = false
     
     @Published var isRefreshing: Bool = false
+    @Published var errorMessage: String?
     
     // MARK: - Dependencies
     private let service: InsightsServiceProtocol
@@ -87,7 +88,7 @@ final class InsightsViewModel: ObservableObject {
                 self.calendarEntries = entries
             }
         } catch {
-            print("Failed to fetch calendar entries: \(error)")
+            errorMessage = "Couldn't load your mood calendar. Please try again."
         }
     }
     
@@ -154,7 +155,7 @@ final class InsightsViewModel: ObservableObject {
                     }
                 }
             } catch {
-                print("Failed to toggle goal: \(error)")
+                errorMessage = "Couldn't update that goal. Please try again."
             }
         }
     }

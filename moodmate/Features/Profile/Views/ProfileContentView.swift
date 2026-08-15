@@ -112,6 +112,7 @@ struct ProfileContentView<PrimaryAction: View, ToolbarTrailing: View>: View {
                 Text("Profile link copied!")
             }
         }
+        .errorAlert($viewModel.errorMessage)
     }
 
     // MARK: - 1. Profile Header View

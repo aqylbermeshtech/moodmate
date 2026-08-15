@@ -42,17 +42,10 @@ struct HomeView: View {
         .task {
             viewModel.onAppear()
         }
-        .alert(
-            "Something went wrong",
-            isPresented: Binding(
-                get: { viewModel.feed.errorMessage != nil },
-                set: { if !$0 { viewModel.feed.clearError() } }
-            )
-        ) {
-            Button("OK") { viewModel.feed.clearError() }
-        } message: {
-            Text(viewModel.feed.errorMessage ?? "")
-        }
+        .errorAlert(Binding(
+            get: { viewModel.feed.errorMessage },
+            set: { if $0 == nil { viewModel.feed.clearError() } }
+        ))
         .sheet(isPresented: $viewModel.showMoodPickerSheet) {
             MoodPickerSheet(viewModel: viewModel)
                 .presentationDetents([.height(380)])

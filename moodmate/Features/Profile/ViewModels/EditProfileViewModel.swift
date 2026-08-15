@@ -83,8 +83,14 @@ final class EditProfileViewModel: ObservableObject {
             isLoadingProfile = false
         } else {
             Task {
-                if let fetched = try? await profileRepository.fetchProfile(forId: userId) {
-                    populateFields(from: fetched)
+                do {
+                    if let fetched = try await profileRepository.fetchProfile(forId: userId) {
+                        populateFields(from: fetched)
+                    } else {
+                        errorMessage = "Couldn't load your profile. Pull to refresh to try again."
+                    }
+                } catch {
+                    errorMessage = "Couldn't load your profile. Pull to refresh to try again."
                 }
                 isLoadingProfile = false
             }
@@ -285,10 +291,16 @@ final class EditProfileViewModel: ObservableObject {
     private func loadSelectedPhotosItem() {
         guard let item = photosPickerItem else { return }
         Task {
-            if let data = try? await item.loadTransferable(type: Data.self),
-               let uiImage = UIImage(data: data) {
+            do {
+                if let data = try await item.loadTransferable(type: Data.self),
+                   let uiImage = UIImage(data: data) {
+                    await MainActor.run {
+                        self.selectAvatarImage(uiImage)
+                    }
+                }
+            } catch {
                 await MainActor.run {
-                    self.selectAvatarImage(uiImage)
+                    self.errorMessage = "Couldn't load that photo. Please try another one."
                 }
             }
         }

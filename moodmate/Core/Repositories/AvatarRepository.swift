@@ -45,7 +45,7 @@ final class AvatarRepository: AvatarRepositoryProtocol {
     func saveAvatar(data: Data, userId: String) async throws -> Data {
         guard let image = UIImage(data: data),
               let compressedData = compressAvatar(image) else {
-            throw ProfileImageError.compressionFailed
+            throw AppError.imageProcessingFailed
         }
 
         let fileURL = avatarFileURL(for: userId)
@@ -101,20 +101,6 @@ final class AvatarRepository: AvatarRepositoryProtocol {
 
         return renderer.image { _ in
             image.draw(in: CGRect(origin: .zero, size: newSize))
-        }
-    }
-}
-
-enum ProfileImageError: LocalizedError {
-    case compressionFailed
-    case saveFailed
-
-    var errorDescription: String? {
-        switch self {
-        case .compressionFailed:
-            return "Failed to process the selected image."
-        case .saveFailed:
-            return "Failed to save the avatar image."
         }
     }
 }

@@ -104,7 +104,7 @@ final class MockInsightsService: InsightsServiceProtocol {
     func toggleGoalCompletion(goalId: String) async throws -> Goal {
         try await Task.sleep(nanoseconds: 150_000_000)
         guard let index = userGoals.firstIndex(where: { $0.id == goalId }) else {
-            throw NSError(domain: "MockInsightsService", code: 404, userInfo: [NSLocalizedDescriptionKey: "Goal not found"])
+            throw AppError.notFound("Goal")
         }
         
         userGoals[index].isCompleted.toggle()

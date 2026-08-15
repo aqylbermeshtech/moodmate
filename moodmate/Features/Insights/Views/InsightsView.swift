@@ -107,6 +107,7 @@ struct InsightsView: View {
                     DayDetailSheet(record: record)
                 }
             }
+            .errorAlert($viewModel.errorMessage)
         }
     }
     
