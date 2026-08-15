@@ -140,7 +140,7 @@ struct PostCardView: View {
 
         switch style {
         case .feed:
-            NavigationLink(destination: ProfileView(userId: post.authorId)) {
+            NavigationLink(destination: OtherProfileView(userId: post.authorId)) {
                 content
             }
         case .detail:

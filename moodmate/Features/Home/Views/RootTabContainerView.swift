@@ -71,7 +71,7 @@ struct RootTabContainerView: View {
             }
             .tag(HomeTab.insights)
             NavigationStack {
-                ProfileView(userId: nil)
+                MyProfileView()
                     .toolbar(.hidden, for: .tabBar)
             }
             .tag(HomeTab.profile)

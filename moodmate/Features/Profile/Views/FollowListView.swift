@@ -47,7 +47,7 @@ struct FollowListView: View {
                     ScrollView {
                         LazyVStack(spacing: 14) {
                             ForEach(filteredUsers) { user in
-                                NavigationLink(destination: ProfileView(userId: user.id)) {
+                                NavigationLink(destination: OtherProfileView(userId: user.id)) {
                                     userRow(user: user)
                                 }
                                 .buttonStyle(PlainButtonStyle())
@@ -186,6 +186,6 @@ struct FollowListView: View {
 
 #Preview {
     NavigationStack {
-        FollowListView(type: .followers, viewModel: ProfileViewModel())
+        FollowListView(type: .followers, viewModel: ProfileViewModel(userId: "preview_user"))
     }
 }

@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @ObservedObject var viewModel: ProfileViewModel
+    @ObservedObject var viewModel: OwnProfileViewModel
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var themeManager: ThemeManager
     
@@ -266,7 +266,7 @@ struct SettingsView: View {
 
 #Preview {
     NavigationStack {
-        SettingsView(viewModel: ProfileViewModel())
+        SettingsView(viewModel: OwnProfileViewModel())
     }
     .environmentObject(ThemeManager.shared)
 }

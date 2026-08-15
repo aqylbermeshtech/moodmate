@@ -10,13 +10,12 @@ import FirebaseAuth
 import Combine
 
 @MainActor
-final class ProfileViewModel: ObservableObject {
-    let userId: String?
-    private let profileRepository: ProfileRepositoryProtocol
-    private let followRepository: FollowRepositoryProtocol
-    private let sessionManager: AppSessionManager
-    private let authService: AuthServiceProtocol
-    private let postRepository: PostRepositoryProtocol
+class ProfileViewModel: ObservableObject {
+    let userId: String
+    let profileRepository: ProfileRepositoryProtocol
+    let followRepository: FollowRepositoryProtocol
+    let sessionManager: AppSessionManager
+    let postRepository: PostRepositoryProtocol
 
     @Published var profile: UserProfile?
     @Published var posts: [PostModel] = []
@@ -27,53 +26,28 @@ final class ProfileViewModel: ObservableObject {
     @Published var isLazyLoadingPosts = false
     @Published var hasMorePosts = true
 
-    private var cancellables = Set<AnyCancellable>()
+    var cancellables = Set<AnyCancellable>()
 
-    init(userId: String? = nil, profileRepository: ProfileRepositoryProtocol = ProfileRepository.shared,
+    init(userId: String,
+         profileRepository: ProfileRepositoryProtocol = ProfileRepository.shared,
          followRepository: FollowRepositoryProtocol = FollowRepository.shared,
          sessionManager: AppSessionManager = AppSessionManager.shared,
-         authService: AuthServiceProtocol = FirebaseAuthService.shared,
          postRepository: PostRepositoryProtocol = PostRepository.shared) {
         self.userId = userId
         self.profileRepository = profileRepository
         self.followRepository = followRepository
         self.sessionManager = sessionManager
-        self.authService = authService
         self.postRepository = postRepository
 
         observePostUpdates()
-
-        if userId == nil {
-            sessionManager.$currentUser
-                .receive(on: DispatchQueue.main)
-                .sink { [weak self] user in
-                    guard let self else { return }
-                    if let user {
-                        profileRepository.syncWithFirebaseUser(user: user)
-
-                        self.loadProfile()
-                    } else {
-                        self.profile = nil
-                        self.posts = []
-                        self.isLoading = false
-                    }
-                }
-                .store(in: &cancellables)
-        }
-
-        profileRepository.profileUpdatesPublisher
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] updatedProfile in
-                guard let self = self else { return }
-                let currentTargetId = self.userId ?? self.getCurrentUserId()
-                if updatedProfile.id == currentTargetId {
-                    withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-                        self.profile = updatedProfile
-                    }
-                }
-            }
-            .store(in: &cancellables)
+        subscribeToProfileUpdates()
     }
+
+    /// The id whose profile/posts/followers this VM loads. Defaults to the
+    /// stored `userId`, but `OwnProfileViewModel` overrides this to always
+    /// resolve the live authenticated user, since sign-in can complete after
+    /// the VM is constructed and `userId` alone would go stale.
+    var targetUserId: String { userId }
 
     /// Reconciles the displayed grid whenever any post changes anywhere in
     /// the app (like/bookmark from Feed or Discover, a new post published)
@@ -83,8 +57,21 @@ final class ProfileViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] allPosts in
                 guard let self else { return }
-                let targetId = self.userId ?? self.getCurrentUserId()
-                self.posts = allPosts.filter { $0.authorId == targetId }
+                self.posts = allPosts.filter { $0.authorId == self.targetUserId }
+            }
+            .store(in: &cancellables)
+    }
+
+    private func subscribeToProfileUpdates() {
+        profileRepository.profileUpdatesPublisher
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] updatedProfile in
+                guard let self else { return }
+                if updatedProfile.id == self.targetUserId {
+                    withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                        self.profile = updatedProfile
+                    }
+                }
             }
             .store(in: &cancellables)
     }
@@ -93,38 +80,24 @@ final class ProfileViewModel: ObservableObject {
         guard let profileId = profile?.id else { return false }
         return profileId == getCurrentUserId()
     }
-    
-    var isWaitingForAuthentication: Bool {
-        userId == nil && authenticatedUserId == nil
-    }
-    
+
     func getCurrentUserId() -> String {
-        authenticatedUserId ?? AppSessionManager.currentUserId()
+        sessionManager.currentUser?.uid ?? AppSessionManager.currentUserId()
     }
-    
+
     func loadProfile() {
         Task { await loadProfileAsync() }
     }
-    
+
     func refreshProfile() async {
         await loadProfileAsync()
     }
-    
+
     private func loadProfileAsync() async {
         isLoading = true
-        
-        let targetId = userId ?? getCurrentUserId()
-        if let currentFirebaseUser = sessionManager.currentUser, userId == nil {
-            profileRepository.syncWithFirebaseUser(user: currentFirebaseUser)
-        }
-        
-        await loadProfileData(for: targetId)
+        await loadProfileData(for: targetUserId)
     }
-    
-    private var authenticatedUserId: String? {
-        sessionManager.currentUser?.uid
-    }
-    
+
     private func loadProfileData(for profileId: String) async {
         self.followers = followRepository.getFollowers(forId: profileId)
         self.following = followRepository.getFollowing(forId: profileId)
@@ -137,10 +110,6 @@ final class ProfileViewModel: ObservableObject {
         }
 
         self.isLoading = false
-    }
-    
-    func signOut() throws {
-        try authService.signOut()
     }
 
     func toggleFollow() {
@@ -161,64 +130,12 @@ final class ProfileViewModel: ObservableObject {
         }
         return updated
     }
-    
-    func updateProfile(
-        displayName: String,
-        username: String,
-        bio: String,
-        location: String? = nil,
-        birthday: Date? = nil,
-        privacySetting: Visibility = .publicVisibility,
-        avatarColorHex: String,
-        avatarImageData: Data? = nil,
-        clearAvatar: Bool = false
-    ) async throws -> UserProfile {
-        let actualUserId = userId ?? getCurrentUserId()
-        let updated = try await profileRepository.updateProfile(
-            id: actualUserId,
-            displayName: displayName,
-            username: username,
-            bio: bio,
-            location: location,
-            birthday: birthday,
-            privacySetting: privacySetting,
-            avatarColorHex: avatarColorHex,
-            avatarImageData: avatarImageData,
-            clearAvatar: clearAvatar
-        )
-        withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-            self.profile = updated
-        }
-        return updated
-    }
-    
-    func uploadAvatar(_ image: UIImage) async throws -> Data {
-        let actualUserId = userId ?? getCurrentUserId()
-        let data = try await profileRepository.uploadAvatar(image: image, userId: actualUserId)
-        if let currentProfile = profileRepository.getProfile(forId: actualUserId) {
-            withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-                self.profile = currentProfile
-            }
-        }
-        return data
-    }
-    
-    func deleteAvatar() async throws {
-        let actualUserId = userId ?? getCurrentUserId()
-        try await profileRepository.deleteAvatar(userId: actualUserId)
-        if let currentProfile = profileRepository.getProfile(forId: actualUserId) {
-            withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-                self.profile = currentProfile
-            }
-        }
-    }
-    
+
     func loadFollowersAndFollowing() {
-        let actualUserId = userId ?? getCurrentUserId()
-        self.followers = followRepository.getFollowers(forId: actualUserId)
-        self.following = followRepository.getFollowing(forId: actualUserId)
+        self.followers = followRepository.getFollowers(forId: targetUserId)
+        self.following = followRepository.getFollowing(forId: targetUserId)
     }
-    
+
     func loadMorePosts() {
         guard !isLazyLoadingPosts && hasMorePosts else { return }
 
@@ -235,7 +152,7 @@ final class ProfileViewModel: ObservableObject {
                 return
             }
 
-            let authorId = self.userId ?? self.getCurrentUserId()
+            let authorId = self.targetUserId
 
             let additionalPosts = [
                 PostModel(
