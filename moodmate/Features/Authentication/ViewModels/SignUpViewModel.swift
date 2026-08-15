@@ -20,9 +20,11 @@ final class SignUpViewModel: ObservableObject {
     @Published var successMessage: String?
 
     private let authService: AuthServiceProtocol
+    private let profileRepository: ProfileRepositoryProtocol
 
-    init(authService: AuthServiceProtocol) {
+    init(authService: AuthServiceProtocol, profileRepository: ProfileRepositoryProtocol = ProfileRepository.shared) {
         self.authService = authService
+        self.profileRepository = profileRepository
     }
 
     convenience init() {
@@ -36,9 +38,25 @@ final class SignUpViewModel: ObservableObject {
 
         Task {
             do {
-                _ = try await authService.signUp(email: email, password: password)
-                self.isLoading = false
                 let displayName = self.name.trimmingCharacters(in: .whitespacesAndNewlines)
+                let user = try await authService.signUp(email: email, password: password, displayName: displayName)
+
+                // Don't round-trip through user.displayName here: Firebase's
+                // auth-state listener (which drives ProfileRepository's own
+                // sync) can fire before the profile change request above
+                // commits, so it may still see a nil displayName and fall
+                // back to an email-derived name. We already know the
+                // intended name locally, so apply it directly — safe to
+                // overwrite unconditionally since this account was just
+                // created (nothing else could have set a different name yet).
+                if !displayName.isEmpty {
+                    var profile = self.profileRepository.getProfile(forId: user.uid)
+                        ?? MockDataProvider.newAuthenticatedUserSeedProfile(id: user.uid, displayName: displayName)
+                    profile.displayName = displayName
+                    self.profileRepository.setProfile(profile)
+                }
+
+                self.isLoading = false
                 self.successMessage = "Account created! Welcome to MoodMate\(displayName.isEmpty ? "" : ", " + displayName)."
             } catch {
                 self.isLoading = false

@@ -188,9 +188,13 @@ final class ProfileRepository: ProfileRepositoryProtocol {
 
     func syncWithFirebaseUser(user: User) {
         let currentId = user.uid
-        migrateMockProfileToAuthenticatedUser(currentId: currentId)
-
+        // Checked before migration so a profile that only exists because it
+        // was just copied from the pre-auth mock placeholder still counts as
+        // "new" for naming purposes — otherwise the migrated placeholder's
+        // name (e.g. "John"/"johndoe") permanently shadows the real Firebase
+        // displayName or email-derived fallback below.
         let isNewProfile = profiles[currentId] == nil
+        migrateMockProfileToAuthenticatedUser(currentId: currentId)
 
         var profile = profiles[currentId] ?? MockDataProvider.newAuthenticatedUserSeedProfile(id: currentId, displayName: user.displayName)
 

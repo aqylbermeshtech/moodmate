@@ -10,7 +10,7 @@ import FirebaseAuth
 
 protocol AuthServiceProtocol {
     func signIn(email: String, password: String) async throws -> User
-    func signUp(email: String, password: String) async throws -> User
+    func signUp(email: String, password: String, displayName: String) async throws -> User
     func signOut() throws
     func addAuthStateListener(_ listener: @escaping (User?) -> Void)
     var currentUser: User? { get }
@@ -39,8 +39,16 @@ final class FirebaseAuthService: AuthServiceProtocol {
         return result.user
     }
 
-    func signUp(email: String, password: String) async throws -> User {
+    func signUp(email: String, password: String, displayName: String) async throws -> User {
         let result = try await Auth.auth().createUser(withEmail: email, password: password)
+
+        let trimmedName = displayName.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !trimmedName.isEmpty {
+            let changeRequest = result.user.createProfileChangeRequest()
+            changeRequest.displayName = trimmedName
+            try await changeRequest.commitChanges()
+        }
+
         return result.user
     }
 
