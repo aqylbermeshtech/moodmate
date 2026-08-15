@@ -35,5 +35,7 @@ extension MoodOption {
         MoodOption(emoji: "🤩", text: "Excited",   colorHex: "ED64A6"),
         MoodOption(emoji: "😔", text: "Sad",       colorHex: "A0AEC0"),
         MoodOption(emoji: "🧠", text: "Mindful",   colorHex: "805AD5"),
+        MoodOption(emoji: "🔥", text: "Motivated", colorHex: "DD6B20"),
+        MoodOption(emoji: "✨", text: "Inspired",  colorHex: "D69E2E"),
     ]
 }

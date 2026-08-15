@@ -134,23 +134,7 @@ final class CreatePostViewModel: ObservableObject {
         return Color.theme.accent
     }
  
-    struct MoodOption: Identifiable {
-        let id = UUID()
-        let emoji: String
-        let text: String
-        let colorHex: String
-    }
-    
-    let moodOptions = [
-        MoodOption(emoji: "😊", text: "Happy", colorHex: "38B2AC"),   // Teal
-        MoodOption(emoji: "😌", text: "Calm", colorHex: "4A5568"),    // Charcoal
-        MoodOption(emoji: "😴", text: "Sleepy", colorHex: "667EEA"),  // Indigo
-        MoodOption(emoji: "🤩", text: "Excited", colorHex: "ED64A6"), // Pink
-        MoodOption(emoji: "😔", text: "Sad", colorHex: "A0AEC0"),     // Slate
-        MoodOption(emoji: "🧠", text: "Mindful", colorHex: "805AD5"), // Purple
-        MoodOption(emoji: "🔥", text: "Motivated", colorHex: "DD6B20"),// Orange
-        MoodOption(emoji: "✨", text: "Inspired", colorHex: "D69E2E")  // Gold
-    ]
+    let moodOptions = MoodOption.catalog
     
     // MARK: - Form Actions
     func selectMood(emoji: String, text: String, colorHex: String) {
