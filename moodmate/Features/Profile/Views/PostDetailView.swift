@@ -18,9 +18,8 @@ struct MockComment: Identifiable {
 }
 
 struct PostDetailView: View {
-    let post: FeedPost
+    let postId: String
     var postRepository: PostRepositoryProtocol = PostRepository.shared
-    @EnvironmentObject private var navigationVisibility: NavigationVisibilityCoordinator
     @Environment(\.dismiss) private var dismiss
 
     @State private var comments: [MockComment] = []
@@ -28,61 +27,62 @@ struct PostDetailView: View {
     @State private var displayPost: FeedPost?
     @State private var cancellables = Set<AnyCancellable>()
     @State private var errorMessage: String?
+    @State private var didLoad = false
 
-    private var currentPost: FeedPost {
-        displayPost ?? post
-    }
-    
     var body: some View {
         ZStack(alignment: .bottom) {
             Color.theme.primaryBackground
                 .ignoresSafeArea()
-            
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    PostCardView(
-                        post: currentPost,
-                        style: .detail,
-                        onLike: toggleLike,
-                        onBookmark: toggleBookmark,
-                        onComment: {}
-                    )
-                    Text("Comments (\(comments.count))")
-                        .font(.system(size: 16, weight: .bold, design: .rounded))
-                        .foregroundStyle(Color.theme.primaryText)
-                        .padding(.horizontal, 20)
-                        .padding(.top, 4)
-                    
-                    if comments.isEmpty {
-                        VStack(spacing: 8) {
-                            Image(systemName: "bubble.left.and.bubble.right")
-                                .font(.system(size: 32))
-                                .foregroundStyle(Color.theme.secondaryText)
-                            Text("No comments yet")
-                                .font(.system(size: 14, weight: .semibold))
-                                .foregroundStyle(Color.theme.secondaryText)
-                            Text("Be the first to share your thoughts!")
-                                .font(.system(size: 12))
-                                .foregroundStyle(Color.theme.tertiaryText)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 24)
-                    } else {
-                        LazyVStack(spacing: 16) {
-                            ForEach(comments) { comment in
-                                commentRow(comment: comment)
-                            }
-                        }
-                        .padding(.horizontal, 20)
-                    }
-                    
-                    Spacer(minLength: 100)
-                }
-                .padding(.top, 12)
-            }
-            .scrollDismissesKeyboard(.interactively)
 
-            commentInputBar
+            if let currentPost = displayPost {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 20) {
+                        PostCardView(
+                            post: currentPost,
+                            style: .detail,
+                            onLike: toggleLike,
+                            onBookmark: toggleBookmark,
+                            onComment: {}
+                        )
+                        Text("Comments (\(comments.count))")
+                            .font(.system(size: 16, weight: .bold, design: .rounded))
+                            .foregroundStyle(Color.theme.primaryText)
+                            .padding(.horizontal, 20)
+                            .padding(.top, 4)
+
+                        if comments.isEmpty {
+                            VStack(spacing: 8) {
+                                Image(systemName: "bubble.left.and.bubble.right")
+                                    .font(.system(size: 32))
+                                    .foregroundStyle(Color.theme.secondaryText)
+                                Text("No comments yet")
+                                    .font(.system(size: 14, weight: .semibold))
+                                    .foregroundStyle(Color.theme.secondaryText)
+                                Text("Be the first to share your thoughts!")
+                                    .font(.system(size: 12))
+                                    .foregroundStyle(Color.theme.tertiaryText)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 24)
+                        } else {
+                            LazyVStack(spacing: 16) {
+                                ForEach(comments) { comment in
+                                    commentRow(comment: comment)
+                                }
+                            }
+                            .padding(.horizontal, 20)
+                        }
+
+                        Spacer(minLength: 100)
+                    }
+                    .padding(.top, 12)
+                }
+                .scrollDismissesKeyboard(.interactively)
+
+                commentInputBar
+            } else if didLoad {
+                notFoundView
+            }
         }
         .navigationTitle("Post")
         .navigationBarTitleDisplayMode(.inline)
@@ -90,7 +90,6 @@ struct PostDetailView: View {
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button {
-                    updateNavigationVisibility(false)
                     dismiss()
                 } label: {
                     Image(systemName: "chevron.left")
@@ -99,21 +98,26 @@ struct PostDetailView: View {
             }
         }
         .onAppear {
-            updateNavigationVisibility(true)
             initializePostState()
-        }
-        .onDisappear {
-            updateNavigationVisibility(false)
         }
         .errorAlert($errorMessage)
     }
 
-    private func updateNavigationVisibility(_ isDetailPresented: Bool) {
-        Task { @MainActor in
-            navigationVisibility.isPostDetailPresented = isDetailPresented
+    private var notFoundView: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "doc.text.magnifyingglass")
+                .font(.system(size: 40))
+                .foregroundStyle(Color.theme.secondaryText)
+            Text("Post Not Found")
+                .font(.system(size: 18, weight: .bold, design: .rounded))
+                .foregroundStyle(Color.theme.primaryText)
+            Text("This post may have been removed.")
+                .font(.system(size: 13))
+                .foregroundStyle(Color.theme.secondaryText)
         }
     }
-    
+
+
     // MARK: - Comment Row Component
     private func commentRow(comment: MockComment) -> some View {
         HStack(alignment: .top, spacing: 10) {
@@ -192,12 +196,16 @@ struct PostDetailView: View {
     
     // MARK: - Actions & Helpers
     private func initializePostState() {
-        self.displayPost = post
+        guard !didLoad else { return }
 
-        self.comments = [
-            MockComment(name: "Michele", username: "mj", avatarColorHex: "4DABF7", text: "Such a beautiful quote! Grateful for this reminder today. 🙏🧘‍♀️", timeAgo: "1h ago"),
-            MockComment(name: "Pepper", username: "pepperoni", avatarColorHex: "FF6B6B", text: "Love the positive energy, keep tracking! 💪✨", timeAgo: "45m ago")
-        ]
+        if let post = postRepository.post(id: postId) {
+            self.displayPost = FeedPost(from: post)
+            self.comments = [
+                MockComment(name: "Michele", username: "mj", avatarColorHex: "4DABF7", text: "Such a beautiful quote! Grateful for this reminder today. 🙏🧘‍♀️", timeAgo: "1h ago"),
+                MockComment(name: "Pepper", username: "pepperoni", avatarColorHex: "FF6B6B", text: "Love the positive energy, keep tracking! 💪✨", timeAgo: "45m ago")
+            ]
+        }
+        didLoad = true
 
         // Keep this post in sync with likes/bookmarks made anywhere else in
         // the app (Feed, Discover, another profile) instead of only ever
@@ -205,7 +213,7 @@ struct PostDetailView: View {
         postRepository.postsPublisher
             .receive(on: DispatchQueue.main)
             .sink { updatedPosts in
-                guard let matching = updatedPosts.first(where: { $0.id == post.id }) else { return }
+                guard let matching = updatedPosts.first(where: { $0.id == postId }) else { return }
                 var updated = FeedPost(from: matching)
                 updated.commentsCount = max(updated.commentsCount, comments.count)
                 displayPost = updated
@@ -214,6 +222,7 @@ struct PostDetailView: View {
     }
 
     private func toggleLike() {
+        guard let currentPost = displayPost else { return }
         let desiredLikeState = !currentPost.isLiked
         let previousLiked = currentPost.isLiked
         let previousCount = currentPost.likesCount
@@ -223,7 +232,7 @@ struct PostDetailView: View {
         }
         Task {
             do {
-                try await postRepository.setLike(postId: currentPost.id, isLiked: desiredLikeState)
+                try await postRepository.setLike(postId: postId, isLiked: desiredLikeState)
             } catch {
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
                     displayPost?.isLiked = previousLiked
@@ -235,13 +244,14 @@ struct PostDetailView: View {
     }
 
     private func toggleBookmark() {
+        guard let currentPost = displayPost else { return }
         let previousBookmarked = currentPost.isBookmarked
         withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
             displayPost?.isBookmarked.toggle()
         }
         Task {
             do {
-                try await postRepository.toggleBookmark(postId: currentPost.id)
+                try await postRepository.toggleBookmark(postId: postId)
             } catch {
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
                     displayPost?.isBookmarked = previousBookmarked
@@ -272,19 +282,6 @@ struct PostDetailView: View {
 
 #Preview {
     NavigationStack {
-        PostDetailView(
-            post: FeedPost(
-                id: "1",
-                authorId: "2",
-                timeAgo: "2h ago",
-                quoteText: "Grateful hearts see awesome things.",
-                caption: "Reflected on the beauty of nature. Grateful for the warm sun.",
-                likesCount: 12,
-                commentsCount: 2,
-                isLiked: false,
-                isBookmarked: false
-            )
-        )
-        .environmentObject(NavigationVisibilityCoordinator())
+        PostDetailView(postId: "p1")
     }
 }

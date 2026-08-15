@@ -161,6 +161,7 @@ struct SearchResult: Identifiable, Equatable {
     let id: String
     let type: SearchResultType
 
+    var userId: String?
     var userName: String?
     var username: String?
     var avatarColorHex: String?

@@ -35,8 +35,7 @@ final class InsightsViewModel: ObservableObject {
     @Published var selectedCalendarMonth: Date = Date()
     @Published var calendarEntries: [String: MoodRecord] = [:]
     @Published var selectedCalendarRecord: MoodRecord? = nil
-    @Published var showCalendarDetailSheet: Bool = false
-    
+
     @Published var isRefreshing: Bool = false
     @Published var errorMessage: String?
     
@@ -109,7 +108,6 @@ final class InsightsViewModel: ObservableObject {
         
         if let record = calendarEntries[key] {
             selectedCalendarRecord = record
-            showCalendarDetailSheet = true
         } else {
             selectedCalendarRecord = MoodRecord(
                 id: "empty-\(key)",
@@ -121,7 +119,6 @@ final class InsightsViewModel: ObservableObject {
                 note: "No mood post recorded on this day. Tap below to log your feelings!",
                 postId: nil
             )
-            showCalendarDetailSheet = true
         }
     }
     

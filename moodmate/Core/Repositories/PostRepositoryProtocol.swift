@@ -13,6 +13,7 @@ protocol PostRepositoryProtocol: AnyObject {
 
     func fetchPosts() async throws -> [PostModel]
     func posts(forAuthor authorId: String) -> [PostModel]
+    func post(id: String) -> PostModel?
     func createPost(_ post: PostModel) async throws -> PostModel
     func deletePost(id: String) async throws
     func setLike(postId: String, isLiked: Bool) async throws

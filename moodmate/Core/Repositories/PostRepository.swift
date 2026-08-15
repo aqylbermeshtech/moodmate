@@ -73,6 +73,10 @@ final class PostRepository: PostRepositoryProtocol {
         posts.filter { $0.authorId == authorId }
     }
 
+    func post(id: String) -> PostModel? {
+        posts.first { $0.id == id }
+    }
+
     // MARK: - Mutations
 
     func createPost(_ post: PostModel) async throws -> PostModel {

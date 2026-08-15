@@ -10,7 +10,8 @@ import SwiftUI
 struct RootView: View {
     @EnvironmentObject var sessionManager: AppSessionManager
     @EnvironmentObject var themeManager: ThemeManager
-    
+    @EnvironmentObject var router: AppRouter
+
     var body: some View {
         Group {
             if sessionManager.isResolvingSession {
@@ -26,6 +27,11 @@ struct RootView: View {
         .animation(.easeOut(duration: 0.2), value: sessionManager.isAuthenticated)
         .animation(.easeOut(duration: 0.25), value: sessionManager.isResolvingSession)
         .preferredColorScheme(themeManager.selectedAppearance.colorScheme)
+        .onChange(of: sessionManager.isAuthenticated) { _, isAuthenticated in
+            if isAuthenticated {
+                router.flushPendingURL()
+            }
+        }
     }
     
     private var splashView: some View {
@@ -48,4 +54,5 @@ struct RootView: View {
     RootView()
         .environmentObject(AppSessionManager.shared)
         .environmentObject(ThemeManager.shared)
+        .environmentObject(AppRouter.shared)
 }

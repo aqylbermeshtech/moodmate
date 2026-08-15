@@ -9,15 +9,15 @@ import SwiftUI
 
 struct InsightsView: View {
     @StateObject private var viewModel = InsightsViewModel()
-    var onAddPostTap: (() -> Void)? = nil
-    
+    @EnvironmentObject private var router: AppRouter
+
     var body: some View {
-        NavigationStack {
+        Group {
             ZStack {
 
                 Color.theme.primaryBackground
                     .ignoresSafeArea()
-                
+
                 VStack(spacing: 0) {
                     VStack(spacing: 12) {
                         headerBar
@@ -36,7 +36,7 @@ struct InsightsView: View {
                                 
                             case .empty:
                                 AnalyticsEmptyStateView {
-                                    onAddPostTap?()
+                                    router.present(.createPost)
                                 }
                                 
                             case .error(let message):
@@ -67,6 +67,9 @@ struct InsightsView: View {
                                     },
                                     onSelectDate: { date in
                                         viewModel.selectCalendarDate(date)
+                                        if let record = viewModel.selectedCalendarRecord {
+                                            router.present(.dayDetail(recordId: record.id))
+                                        }
                                     }
                                 )
 
@@ -102,9 +105,12 @@ struct InsightsView: View {
                     await viewModel.loadInitialData()
                 }
             }
-            .sheet(isPresented: $viewModel.showCalendarDetailSheet) {
-                if let record = viewModel.selectedCalendarRecord {
-                    DayDetailSheet(record: record)
+            .sheet(item: $router.presentedSheet) { sheet in
+                switch sheet {
+                case .dayDetail(let recordId):
+                    if let record = viewModel.calendarEntries[recordId] ?? viewModel.selectedCalendarRecord {
+                        DayDetailSheet(record: record)
+                    }
                 }
             }
             .errorAlert($viewModel.errorMessage)
@@ -157,5 +163,8 @@ struct InsightsView: View {
 }
 
 #Preview {
-    InsightsView()
+    NavigationStack {
+        InsightsView()
+    }
+    .environmentObject(AppRouter.shared)
 }

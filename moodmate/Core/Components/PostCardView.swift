@@ -23,6 +23,7 @@ struct PostCardView: View {
     var onBookmark: () -> Void
     var onComment: () -> Void
     var userStore: UserStoreProtocol = UserStore.shared
+    @EnvironmentObject private var router: AppRouter
 
     /// Resolved live from UserStore, not stored on the post — this is what
     /// makes a display-name change show up here automatically with no sink.
@@ -140,9 +141,12 @@ struct PostCardView: View {
 
         switch style {
         case .feed:
-            NavigationLink(destination: OtherProfileView(userId: post.authorId)) {
+            Button {
+                router.push(.otherProfile(userId: post.authorId))
+            } label: {
                 content
             }
+            .buttonStyle(PlainButtonStyle())
         case .detail:
             content
         }
@@ -369,4 +373,5 @@ private extension View {
             )
         }
     }
+    .environmentObject(AppRouter.shared)
 }

@@ -7,17 +7,23 @@
 
 import SwiftUI
 
-enum FollowType {
+enum FollowType: Hashable {
     case followers
     case following
 }
 
 struct FollowListView: View {
     let type: FollowType
-    @ObservedObject var viewModel: ProfileViewModel
-    
+    @StateObject private var viewModel: ProfileViewModel
+    @EnvironmentObject private var router: AppRouter
+
     @State private var searchText = ""
     @State private var users: [UserProfile] = []
+
+    init(type: FollowType, userId: String) {
+        self.type = type
+        self._viewModel = StateObject(wrappedValue: ProfileViewModel(userId: userId))
+    }
     
     var filteredUsers: [UserProfile] {
         if searchText.isEmpty {
@@ -47,7 +53,9 @@ struct FollowListView: View {
                     ScrollView {
                         LazyVStack(spacing: 14) {
                             ForEach(filteredUsers) { user in
-                                NavigationLink(destination: OtherProfileView(userId: user.id)) {
+                                Button {
+                                    router.push(.otherProfile(userId: user.id))
+                                } label: {
                                     userRow(user: user)
                                 }
                                 .buttonStyle(PlainButtonStyle())
@@ -186,6 +194,7 @@ struct FollowListView: View {
 
 #Preview {
     NavigationStack {
-        FollowListView(type: .followers, viewModel: ProfileViewModel(userId: "preview_user"))
+        FollowListView(type: .followers, userId: "preview_user")
     }
+    .environmentObject(AppRouter.shared)
 }

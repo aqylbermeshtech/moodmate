@@ -6,20 +6,11 @@
 //
 
 import SwiftUI
-import Combine
-
-@MainActor
-final class NavigationVisibilityCoordinator: ObservableObject {
-    @Published var isPostDetailPresented = false
-}
 
 struct RootTabContainerView: View {
-    // MARK: - Tab & Sheet State (owned here, nowhere else)
-    @State private var selectedTab: HomeTab = .home
-    @State private var showCreatePostSheet = false
+    @EnvironmentObject private var router: AppRouter
 
     @StateObject private var homeViewModel = HomeViewModel()
-    @StateObject private var navigationVisibility = NavigationVisibilityCoordinator()
 
     // MARK: - Body
     var body: some View {
@@ -28,17 +19,19 @@ struct RootTabContainerView: View {
                 .safeAreaInset(edge: .bottom) {
                     Color.clear.frame(height: 90)
                 }
-            if !navigationVisibility.isPostDetailPresented {
-                BottomNavigationBar(selectedTab: $selectedTab) {
-                    showCreatePostSheet = true
+            if !router.isShowingPostDetail {
+                BottomNavigationBar(selectedTab: $router.selectedTab) {
+                    router.present(.createPost)
                 }
                 .padding(.bottom, 8)
             }
         }
-        .environmentObject(navigationVisibility)
-        .fullScreenCover(isPresented: $showCreatePostSheet) {
-            CreatePostView { newPost in
-                homeViewModel.addNewlyCreatedPost(newPost)
+        .fullScreenCover(item: $router.presentedFullScreenCover) { cover in
+            switch cover {
+            case .createPost:
+                CreatePostView { newPost in
+                    homeViewModel.addNewlyCreatedPost(newPost)
+                }
             }
         }
         .ignoresSafeArea(.keyboard)
@@ -47,32 +40,32 @@ struct RootTabContainerView: View {
     // MARK: - Tab Content
     @ViewBuilder
     private var tabContent: some View {
-        TabView(selection: $selectedTab) {
-            NavigationStack {
-                HomeView(
-                    viewModel: homeViewModel,
-                    onCreatePost: { showCreatePostSheet = true },
-                    onNavigateToProfile: { selectedTab = .profile }
-                )
-                .toolbar(.hidden, for: .tabBar)
+        TabView(selection: $router.selectedTab) {
+            NavigationStack(path: $router.homePath) {
+                HomeView(viewModel: homeViewModel)
+                    .toolbar(.hidden, for: .tabBar)
+                    .navigationDestination(for: Route.self) { RouteDestinationView(route: $0) }
             }
             .tag(HomeTab.home)
-            NavigationStack {
+            NavigationStack(path: $router.discoverPath) {
                 DiscoverView()
                     .toolbar(.hidden, for: .tabBar)
+                    .navigationDestination(for: Route.self) { RouteDestinationView(route: $0) }
             }
             .tag(HomeTab.discover)
             Color.clear
                 .toolbar(.hidden, for: .tabBar)
                 .tag(HomeTab.add)
-            NavigationStack {
-                InsightsView(onAddPostTap: { showCreatePostSheet = true })
+            NavigationStack(path: $router.insightsPath) {
+                InsightsView()
                     .toolbar(.hidden, for: .tabBar)
+                    .navigationDestination(for: Route.self) { RouteDestinationView(route: $0) }
             }
             .tag(HomeTab.insights)
-            NavigationStack {
+            NavigationStack(path: $router.profilePath) {
                 MyProfileView()
                     .toolbar(.hidden, for: .tabBar)
+                    .navigationDestination(for: Route.self) { RouteDestinationView(route: $0) }
             }
             .tag(HomeTab.profile)
         }
@@ -84,4 +77,5 @@ struct RootTabContainerView: View {
 
 #Preview {
     RootTabContainerView()
+        .environmentObject(AppRouter.shared)
 }

@@ -14,6 +14,7 @@ import SwiftUI
 /// injected by the caller instead of being branched on internally.
 struct ProfileContentView<PrimaryAction: View, ToolbarTrailing: View>: View {
     @ObservedObject var viewModel: ProfileViewModel
+    @EnvironmentObject private var router: AppRouter
     private let primaryAction: () -> PrimaryAction
     private let toolbarTrailing: () -> ToolbarTrailing
 
@@ -201,7 +202,9 @@ struct ProfileContentView<PrimaryAction: View, ToolbarTrailing: View>: View {
                 .frame(height: 30)
                 .background(Color.theme.divider)
 
-            NavigationLink(destination: FollowListView(type: .followers, viewModel: viewModel)) {
+            Button {
+                router.push(.followList(type: .followers, userId: viewModel.targetUserId))
+            } label: {
                 statsItem(title: "Followers", count: profile.followersCount)
             }
             .buttonStyle(PlainButtonStyle())
@@ -210,7 +213,9 @@ struct ProfileContentView<PrimaryAction: View, ToolbarTrailing: View>: View {
                 .frame(height: 30)
                 .background(Color.theme.divider)
 
-            NavigationLink(destination: FollowListView(type: .following, viewModel: viewModel)) {
+            Button {
+                router.push(.followList(type: .following, userId: viewModel.targetUserId))
+            } label: {
                 statsItem(title: "Following", count: profile.followingCount)
             }
             .buttonStyle(PlainButtonStyle())
@@ -476,7 +481,9 @@ struct ProfileContentView<PrimaryAction: View, ToolbarTrailing: View>: View {
 
                 LazyVGrid(columns: columns, spacing: 3) {
                     ForEach(viewModel.posts) { post in
-                        NavigationLink(destination: PostDetailView(post: FeedPost(from: post))) {
+                        Button {
+                            router.push(.postDetail(postId: post.id))
+                        } label: {
                             postGridCell(post: post)
                         }
                         .buttonStyle(PlainButtonStyle())

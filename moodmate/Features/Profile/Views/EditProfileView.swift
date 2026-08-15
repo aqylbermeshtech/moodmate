@@ -22,11 +22,11 @@ struct EditProfileView: View {
     }
     
     var body: some View {
-        NavigationStack {
+        Group {
             ZStack {
                 Color.theme.primaryBackground
                     .ignoresSafeArea()
-                
+
                 ScrollView {
                     VStack(spacing: 24) {
                         if let error = editViewModel.errorMessage {
@@ -510,5 +510,7 @@ struct PhotosPickerWrapper: View {
 }
 
 #Preview {
-    EditProfileView(userId: "current_user_mock")
+    NavigationStack {
+        EditProfileView(userId: "current_user_mock")
+    }
 }

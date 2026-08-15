@@ -51,4 +51,5 @@ struct OtherProfileView: View {
     NavigationStack {
         OtherProfileView(userId: "preview_user")
     }
+    .environmentObject(AppRouter.shared)
 }

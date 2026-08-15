@@ -9,6 +9,7 @@ import SwiftUI
 
 struct MyProfileView: View {
     @StateObject private var viewModel = OwnProfileViewModel()
+    @EnvironmentObject private var router: AppRouter
 
     var body: some View {
         Group {
@@ -25,7 +26,9 @@ struct MyProfileView: View {
                 ProfileContentView(
                     viewModel: viewModel,
                     primaryAction: {
-                        NavigationLink(destination: EditProfileView(viewModel: viewModel)) {
+                        Button {
+                            router.push(.editProfile)
+                        } label: {
                             HStack {
                                 Image(systemName: "pencil")
                                     .font(.system(size: 14, weight: .bold))
@@ -42,7 +45,9 @@ struct MyProfileView: View {
                         .buttonStyle(ScaleButtonStyle())
                     },
                     toolbarTrailing: {
-                        NavigationLink(destination: SettingsView(viewModel: viewModel)) {
+                        Button {
+                            router.push(.settings)
+                        } label: {
                             Image(systemName: "gearshape.fill")
                                 .font(.system(size: 18))
                                 .foregroundStyle(Color.theme.primaryText)
@@ -58,4 +63,5 @@ struct MyProfileView: View {
     NavigationStack {
         MyProfileView()
     }
+    .environmentObject(AppRouter.shared)
 }

@@ -119,6 +119,7 @@ final class DiscoverService: DiscoverServiceProtocol {
             results.append(SearchResult(
                 id: "sr_user_\(user.id)",
                 type: .user,
+                userId: user.id,
                 userName: user.displayName,
                 username: user.username,
                 avatarColorHex: user.avatarColorHex,

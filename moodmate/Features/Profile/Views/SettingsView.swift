@@ -11,6 +11,7 @@ struct SettingsView: View {
     @ObservedObject var viewModel: OwnProfileViewModel
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var themeManager: ThemeManager
+    @EnvironmentObject private var router: AppRouter
     
     @State private var notificationsEnabled = true
     @State private var weeklyDigestEnabled = true
@@ -34,7 +35,9 @@ struct SettingsView: View {
                             .padding(.bottom, 8)
                         
                         VStack(spacing: 0) {
-                            NavigationLink(destination: EditProfileView(viewModel: viewModel)) {
+                            Button {
+                                router.push(.editProfile)
+                            } label: {
                                 settingRow(icon: "person.circle", title: "Edit Profile", subtitle: "Update bio, name, or color")
                             }
                             
@@ -270,4 +273,5 @@ struct SettingsView: View {
         SettingsView(viewModel: OwnProfileViewModel())
     }
     .environmentObject(ThemeManager.shared)
+    .environmentObject(AppRouter.shared)
 }

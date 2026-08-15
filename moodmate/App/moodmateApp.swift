@@ -24,6 +24,10 @@ struct moodmateApp: App {
             RootView()
                 .environmentObject(AppSessionManager.shared)
                 .environmentObject(ThemeManager.shared)
+                .environmentObject(AppRouter.shared)
+                .onOpenURL { url in
+                    AppRouter.shared.handle(url: url)
+                }
         }
     }
 }

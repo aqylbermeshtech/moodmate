@@ -9,10 +9,10 @@ import SwiftUI
 
 struct DiscoverView: View {
     @StateObject private var viewModel = DiscoverViewModel()
-    @State private var selectedPostForDetail: DiscoverPost? = nil
-    
+    @EnvironmentObject private var router: AppRouter
+
     var body: some View {
-        NavigationStack {
+        Group {
             ZStack {
                 Color.theme.primaryBackground
                     .ignoresSafeArea()
@@ -88,6 +88,9 @@ struct DiscoverView: View {
                                 onSelectResult: { result in
                                     if result.type == .user {
                                         viewModel.addRecentSearch(result.userName ?? viewModel.searchText)
+                                        if let userId = result.userId {
+                                            router.push(.otherProfile(userId: userId))
+                                        }
                                     }
                                 },
                                 onFollowUser: { userId in
@@ -239,7 +242,7 @@ struct DiscoverView: View {
                                                 viewModel.toggleLike(post: post)
                                             },
                                             onSelectPost: { post in
-                                                selectedPostForDetail = post
+                                                router.push(.postDetail(postId: post.id))
                                             }
                                         )
                                         .padding(.horizontal, 20)
@@ -367,5 +370,8 @@ private struct MasonryGrid: View {
 }
 
 #Preview {
-    DiscoverView()
+    NavigationStack {
+        DiscoverView()
+    }
+    .environmentObject(AppRouter.shared)
 }

@@ -5,18 +5,14 @@ struct HomeView: View {
     // MARK: - Dependencies
 
     @ObservedObject var viewModel: HomeViewModel
-    @State private var selectedPostForComments: FeedPost?
-    @State private var isShowingComments = false
-
-    var onCreatePost: () -> Void
-    var onNavigateToProfile: () -> Void
+    @EnvironmentObject private var router: AppRouter
 
     // MARK: - Body
 
     var body: some View {
         ScrollView {
             LazyVStack(spacing: 24) {
-                GreetingHeader(viewModel: viewModel, onProfileTap: onNavigateToProfile)
+                GreetingHeader(viewModel: viewModel, onProfileTap: { router.switchTab(.profile) })
                     .padding(.horizontal, 20)
                     .padding(.top, 16)
 
@@ -34,11 +30,6 @@ struct HomeView: View {
             Color.theme.primaryBackground.ignoresSafeArea()
         }
         .navigationBarHidden(true)
-        .navigationDestination(isPresented: $isShowingComments) {
-            if let post = selectedPostForComments {
-                PostDetailView(post: post)
-            }
-        }
         .task {
             viewModel.onAppear()
         }
@@ -100,8 +91,7 @@ struct HomeView: View {
                         onLike:     { viewModel.feed.toggleLike(for: post) },
                         onBookmark: { viewModel.feed.toggleBookmark(for: post) },
                         onComment: {
-                            selectedPostForComments = post
-                            isShowingComments = true
+                            router.push(.postDetail(postId: post.id))
                         }
                     )
                 }
@@ -114,10 +104,7 @@ struct HomeView: View {
 
 #Preview {
     NavigationStack {
-        HomeView(
-            viewModel: HomeViewModel(),
-            onCreatePost: {},
-            onNavigateToProfile: {}
-        )
+        HomeView(viewModel: HomeViewModel())
     }
+    .environmentObject(AppRouter.shared)
 }
