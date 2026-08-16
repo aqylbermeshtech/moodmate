@@ -10,34 +10,33 @@ struct GreetingHeader: View {
     var onProfileTap: () -> Void
 
     var body: some View {
-        HStack(alignment: .center) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(viewModel.greetingText)
-                    .font(.system(size: 16, weight: .regular))
-                    .foregroundStyle(Color.theme.secondaryText)
+        ZStack {
+            appMark
+                .frame(maxWidth: .infinity)
 
-                Text(viewModel.currentUserDisplayName)
-                    .font(.system(size: 28, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color.theme.primaryText)
+            HStack {
+                Button(action: onProfileTap) {
+                    AvatarView(
+                        imageData: viewModel.currentUserAvatarData,
+                        name: viewModel.currentUserDisplayName,
+                        colorHex: viewModel.currentUserAvatarColorHex,
+                        size: 44,
+                        showBorder: true
+                    )
+                }
+                .buttonStyle(ScaleButtonStyle())
+                .padding(.leading, -8)
 
-                Text(viewModel.formattedDate)
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(Color.theme.tertiaryText)
+                Spacer()
             }
-
-            Spacer()
-
-            Button(action: onProfileTap) {
-                AvatarView(
-                    imageData: viewModel.currentUserAvatarData,
-                    name: viewModel.currentUserDisplayName,
-                    colorHex: viewModel.currentUserAvatarColorHex,
-                    size: 50,
-                    showBorder: true
-                )
-            }
-            .buttonStyle(ScaleButtonStyle())
         }
+    }
+
+    private var appMark: some View {
+        Image(systemName: "leaf.circle.fill")
+            .font(.system(size: 32, weight: .regular))
+            .foregroundStyle(Color.theme.accent)
+            .accessibilityLabel("MoodMate")
     }
 }
 

@@ -78,23 +78,6 @@ final class HomeViewModel: ObservableObject {
     func addNewlyCreatedPost(_ postModel: PostModel) {
         feed.addNewlyCreatedPost(postModel)
     }
-
-    // MARK: - Presentation strings
-
-    var greetingText: String {
-        let hour = Calendar.current.component(.hour, from: Date())
-        switch hour {
-        case 0..<12: return "Good Morning,"
-        case 12..<17: return "Good Afternoon,"
-        default:      return "Good Evening,"
-        }
-    }
-
-    var formattedDate: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "EEEE, MMMM d"
-        return formatter.string(from: Date())
-    }
 }
 
 // MARK: - Private helpers
