@@ -12,27 +12,27 @@ enum HomeTab: Int, CaseIterable, Identifiable {
     case home
     case discover
     case add
-    case insights
+    case chat
     case profile
-    
+
     var id: Int { rawValue }
-    
+
     var iconName: String {
         switch self {
         case .home: return "house.fill"
         case .discover: return "magnifyingglass"
         case .add: return "plus"
-        case .insights: return "chart.bar.fill"
+        case .chat: return "bubble.left.and.bubble.right.fill"
         case .profile: return "person.fill"
         }
     }
-    
+
     var label: String {
         switch self {
         case .home: return "Home"
         case .discover: return "Discover"
         case .add: return "Add"
-        case .insights: return "Insights"
+        case .chat: return "Chat"
         case .profile: return "Profile"
         }
     }

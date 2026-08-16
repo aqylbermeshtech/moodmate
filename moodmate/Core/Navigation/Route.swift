@@ -15,16 +15,11 @@ enum Route: Hashable {
     case settings
     case followList(type: FollowType, userId: String)
     case postDetail(postId: String)
+    case chatThread(userId: String)
 }
 
 /// A screen-shaped full-screen modal, addressable by the router.
 enum FullScreenRoute: Identifiable, Hashable {
     case createPost
-    var id: Self { self }
-}
-
-/// A screen-shaped sheet, addressable by the router.
-enum SheetRoute: Identifiable, Hashable {
-    case dayDetail(recordId: String)
     var id: Self { self }
 }

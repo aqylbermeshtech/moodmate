@@ -19,11 +19,10 @@ final class AppRouter: ObservableObject {
 
     @Published var homePath: [Route] = []
     @Published var discoverPath: [Route] = []
-    @Published var insightsPath: [Route] = []
+    @Published var chatPath: [Route] = []
     @Published var profilePath: [Route] = []
 
     @Published var presentedFullScreenCover: FullScreenRoute?
-    @Published var presentedSheet: SheetRoute?
 
     private var pendingURL: URL?
 
@@ -35,7 +34,7 @@ final class AppRouter: ObservableObject {
         switch tab ?? selectedTab {
         case .home: homePath.append(route)
         case .discover: discoverPath.append(route)
-        case .insights: insightsPath.append(route)
+        case .chat: chatPath.append(route)
         case .profile: profilePath.append(route)
         case .add: break
         }
@@ -45,7 +44,7 @@ final class AppRouter: ObservableObject {
         switch tab ?? selectedTab {
         case .home: if !homePath.isEmpty { homePath.removeLast() }
         case .discover: if !discoverPath.isEmpty { discoverPath.removeLast() }
-        case .insights: if !insightsPath.isEmpty { insightsPath.removeLast() }
+        case .chat: if !chatPath.isEmpty { chatPath.removeLast() }
         case .profile: if !profilePath.isEmpty { profilePath.removeLast() }
         case .add: break
         }
@@ -55,7 +54,7 @@ final class AppRouter: ObservableObject {
         switch tab ?? selectedTab {
         case .home: homePath.removeAll()
         case .discover: discoverPath.removeAll()
-        case .insights: insightsPath.removeAll()
+        case .chat: chatPath.removeAll()
         case .profile: profilePath.removeAll()
         case .add: break
         }
@@ -75,21 +74,13 @@ final class AppRouter: ObservableObject {
         presentedFullScreenCover = nil
     }
 
-    func present(_ sheet: SheetRoute) {
-        presentedSheet = sheet
-    }
-
-    func dismissSheet() {
-        presentedSheet = nil
-    }
-
     // MARK: - Tab-bar chrome
 
     var currentPath: [Route] {
         switch selectedTab {
         case .home: return homePath
         case .discover: return discoverPath
-        case .insights: return insightsPath
+        case .chat: return chatPath
         case .profile: return profilePath
         case .add: return []
         }
@@ -97,9 +88,13 @@ final class AppRouter: ObservableObject {
 
     /// Drives whether `RootTabContainerView` hides the custom bottom bar —
     /// replaces the old `NavigationVisibilityCoordinator` environment object.
-    var isShowingPostDetail: Bool {
-        if case .postDetail = currentPath.last { return true }
-        return false
+    /// True for screens that want the full height for their own bottom
+    /// chrome (a post's comment bar, a chat thread's message bar).
+    var hidesBottomBar: Bool {
+        switch currentPath.last {
+        case .postDetail, .chatThread: return true
+        default: return false
+        }
     }
 
     // MARK: - Deep links

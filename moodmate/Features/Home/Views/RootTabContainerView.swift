@@ -19,7 +19,7 @@ struct RootTabContainerView: View {
                 .safeAreaInset(edge: .bottom) {
                     Color.clear.frame(height: 90)
                 }
-            if !router.isShowingPostDetail {
+            if !router.hidesBottomBar {
                 BottomNavigationBar(selectedTab: $router.selectedTab) {
                     router.present(.createPost)
                 }
@@ -56,12 +56,12 @@ struct RootTabContainerView: View {
             Color.clear
                 .toolbar(.hidden, for: .tabBar)
                 .tag(HomeTab.add)
-            NavigationStack(path: $router.insightsPath) {
-                InsightsView()
+            NavigationStack(path: $router.chatPath) {
+                ChatListView()
                     .toolbar(.hidden, for: .tabBar)
                     .navigationDestination(for: Route.self) { RouteDestinationView(route: $0) }
             }
-            .tag(HomeTab.insights)
+            .tag(HomeTab.chat)
             NavigationStack(path: $router.profilePath) {
                 MyProfileView()
                     .toolbar(.hidden, for: .tabBar)

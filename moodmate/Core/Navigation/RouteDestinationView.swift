@@ -23,6 +23,8 @@ struct RouteDestinationView: View {
             FollowListView(type: type, userId: userId)
         case .postDetail(let postId):
             PostDetailView(postId: postId)
+        case .chatThread(let userId):
+            ChatThreadView(userId: userId)
         }
     }
 }
