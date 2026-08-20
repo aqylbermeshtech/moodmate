@@ -11,19 +11,19 @@ struct TrendingMoodChip: View {
     let mood: TrendingMood
     let isSelected: Bool
     var onTap: () -> Void
-    
+
     var body: some View {
         Button(action: onTap) {
             HStack(spacing: 6) {
                 Text(mood.emoji)
                     .font(.system(size: 18))
-                
+
                 VStack(alignment: .leading, spacing: 1) {
                     Text(mood.name)
-                        .font(.system(size: 13, weight: .bold, design: .rounded))
-                    
+                        .font(.xTrendingTopic)
+
                     Text(formattedCount(mood.postCount))
-                        .font(.system(size: 10, weight: .medium))
+                        .font(.xTrendingMeta)
                         .foregroundStyle(isSelected ? .white.opacity(0.85) : Color.theme.secondaryText)
                 }
             }
@@ -32,24 +32,24 @@ struct TrendingMoodChip: View {
             .background {
                 if isSelected {
                     Capsule()
-                        .fill(Color.adaptiveMoodColor(hex: mood.colorHex))
+                        .fill(Color.theme.accent)
                 } else {
                     Capsule()
-                        .fill(Color.adaptiveMoodColor(hex: mood.colorHex).opacity(0.18))
+                        .fill(Color.theme.secondaryBackground)
                 }
             }
-            .foregroundStyle(isSelected ? .white : Color.adaptiveMoodColor(hex: mood.colorHex))
+            .foregroundStyle(isSelected ? .white : Color.theme.primaryText)
             .overlay(
                 Capsule()
                     .stroke(
-                        isSelected ? Color.clear : Color.adaptiveMoodColor(hex: mood.colorHex).opacity(0.3),
+                        isSelected ? Color.clear : Color.theme.divider,
                         lineWidth: 1
                     )
             )
         }
-        .buttonStyle(ScaleButtonStyle())
+        .buttonStyle(XPressableStyle())
     }
-    
+
     private func formattedCount(_ count: Int) -> String {
         if count >= 1000 {
             return String(format: "%.1fk posts", Double(count) / 1000.0)
@@ -72,4 +72,5 @@ struct TrendingMoodChip: View {
         )
     }
     .padding()
+    .background(Color.theme.primaryBackground)
 }

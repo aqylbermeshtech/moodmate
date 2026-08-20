@@ -11,34 +11,34 @@ struct EmptyDiscoverView: View {
     let hasActiveFilter: Bool
     var onClearFilters: () -> Void
     var onExplore: () -> Void
-    
+
     var body: some View {
         VStack(spacing: 20) {
             ZStack {
                 Circle()
-                    .fill(Color.teal.opacity(0.06))
+                    .fill(Color.theme.accent.opacity(0.06))
                     .frame(width: 120, height: 120)
-                
+
                 Circle()
-                    .fill(Color.purple.opacity(0.06))
+                    .fill(Color.theme.secondaryBackground)
                     .frame(width: 90, height: 90)
                     .offset(x: 15, y: -10)
-                
+
                 Image(systemName: hasActiveFilter ? "line.3.horizontal.decrease.circle" : "sparkle.magnifyingglass")
                     .font(.system(size: 44))
-                    .foregroundStyle(.teal.gradient)
+                    .foregroundStyle(Color.theme.accent)
             }
             .padding(.bottom, 4)
-            
+
             VStack(spacing: 8) {
                 Text(hasActiveFilter ? "No results found" : "Nothing to discover yet")
-                    .font(.system(size: 20, weight: .bold, design: .rounded))
+                    .font(.xScreenTitle)
                     .foregroundStyle(Color.theme.primaryText)
-                
+
                 Text(hasActiveFilter
                      ? "Try a different filter or clear your current selection to explore more content."
                      : "Start exploring moods, people, and moments. The community is waiting for you!")
-                    .font(.system(size: 14))
+                    .font(.xPostBody)
                     .foregroundStyle(Color.theme.secondaryText)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 32)
@@ -50,31 +50,31 @@ struct EmptyDiscoverView: View {
                             Image(systemName: "xmark.circle")
                                 .font(.system(size: 14, weight: .medium))
                             Text("Clear Filters")
-                                .font(.system(size: 14, weight: .bold))
+                                .font(.xButton)
                         }
                         .foregroundStyle(.white)
                         .padding(.horizontal, 24)
                         .padding(.vertical, 12)
-                        .background(Color.teal)
+                        .background(Color.theme.accent)
                         .clipShape(Capsule())
                     }
-                    .buttonStyle(ScaleButtonStyle())
+                    .buttonStyle(XPressableStyle())
                 }
-                
+
                 Button(action: onExplore) {
                     HStack(spacing: 6) {
                         Image(systemName: "safari")
                             .font(.system(size: 14, weight: .medium))
                         Text("Explore Trending")
-                            .font(.system(size: 14, weight: .bold))
+                            .font(.xButton)
                     }
-                    .foregroundStyle(.teal)
+                    .foregroundStyle(Color.theme.accent)
                     .padding(.horizontal, 24)
                     .padding(.vertical, 12)
-                    .background(Color.teal.opacity(0.1))
+                    .background(Color.theme.accent.opacity(0.1))
                     .clipShape(Capsule())
                 }
-                .buttonStyle(ScaleButtonStyle())
+                .buttonStyle(XPressableStyle())
             }
             .padding(.top, 4)
         }
@@ -88,4 +88,5 @@ struct EmptyDiscoverView: View {
         Divider()
         EmptyDiscoverView(hasActiveFilter: true, onClearFilters: {}, onExplore: {})
     }
+    .background(Color.theme.primaryBackground)
 }

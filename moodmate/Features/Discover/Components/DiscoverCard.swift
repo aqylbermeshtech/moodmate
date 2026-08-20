@@ -31,14 +31,16 @@ struct DiscoverCard: View {
                         )
                     )
                     .frame(height: post.heightClass.heightValue)
+
                 GeometryReader { geo in
                     Circle()
-                        .fill(Color.white.opacity(0.1))
+                        .fill(Color.white.opacity(0.08))
                         .frame(width: geo.size.width * 0.5, height: geo.size.width * 0.5)
                         .blur(radius: 18)
                         .offset(x: geo.size.width * 0.2, y: -geo.size.height * 0.1)
                 }
                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+
                 VStack(alignment: .leading, spacing: 6) {
                     HStack(spacing: 4) {
                         Text(post.moodEmoji)
@@ -48,9 +50,10 @@ struct DiscoverCard: View {
                     }
                     .padding(.horizontal, 7)
                     .padding(.vertical, 3)
-                    .background(Color.theme.surface)
+                    .background(Color.theme.primaryBackground.opacity(0.8))
+                    .foregroundStyle(Color.theme.primaryText)
                     .clipShape(Capsule())
-                    
+
                     Text(post.quoteText)
                         .font(.system(size: 14, weight: .bold, design: .serif))
                         .foregroundStyle(.white)
@@ -59,6 +62,7 @@ struct DiscoverCard: View {
                 }
                 .padding(12)
             }
+
             VStack(alignment: .leading, spacing: 6) {
                 HStack(spacing: 6) {
                     AvatarView(
@@ -69,40 +73,39 @@ struct DiscoverCard: View {
                     )
 
                     Text(author?.name ?? "")
-                        .font(.system(size: 11, weight: .semibold, design: .rounded))
+                        .font(.system(size: 11, weight: .semibold))
                         .foregroundStyle(Color.theme.primaryText)
                         .lineLimit(1)
-                    
+
                     Spacer()
                 }
-                
+
                 HStack(spacing: 4) {
                     Button(action: onLike) {
                         HStack(spacing: 3) {
                             Image(systemName: post.isLiked ? "heart.fill" : "heart")
                                 .font(.system(size: 11, weight: .medium))
-                                .foregroundStyle(post.isLiked ? .red : Color.theme.secondaryText)
-                            
+                                .foregroundStyle(post.isLiked ? Color.theme.likePink : Color.theme.secondaryText)
+
                             Text("\(post.likesCount)")
-                                .font(.system(size: 10, weight: .semibold, design: .rounded))
+                                .font(.xTrendingMeta)
                                 .foregroundStyle(Color.theme.secondaryText)
                         }
                     }
-                    .buttonStyle(ScaleButtonStyle())
+                    .buttonStyle(XPressableStyle())
                 }
             }
             .padding(.horizontal, 10)
             .padding(.vertical, 8)
         }
-        .background(Color.theme.cardBackground)
+        .background(Color.theme.secondaryBackground)
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(Color.theme.border, lineWidth: 1)
+                .stroke(Color.theme.divider, lineWidth: 1)
         )
-        .shadow(color: Color.theme.shadow, radius: 8, x: 0, y: 4)
     }
-    
+
 }
 
 #Preview {
@@ -132,4 +135,5 @@ struct DiscoverCard: View {
         )
     }
     .padding()
+    .background(Color.theme.primaryBackground)
 }

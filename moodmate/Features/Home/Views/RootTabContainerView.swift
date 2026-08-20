@@ -16,14 +16,22 @@ struct RootTabContainerView: View {
     var body: some View {
         ZStack(alignment: .bottom) {
             tabContent
-                .safeAreaInset(edge: .bottom) {
-                    Color.clear.frame(height: 90)
-                }
+
             if !router.hidesBottomBar {
+                // X-style tab bar (anchored at bottom)
                 BottomNavigationBar(selectedTab: $router.selectedTab) {
                     router.present(.createPost)
                 }
-                .padding(.bottom, 8)
+
+                // Floating compose button (X FAB)
+                HStack {
+                    Spacer()
+                    XPostFAB {
+                        router.present(.createPost)
+                    }
+                    .padding(.trailing, 16)
+                    .padding(.bottom, 72) // Above tab bar
+                }
             }
         }
         .fullScreenCover(item: $router.presentedFullScreenCover) { cover in

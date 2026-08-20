@@ -11,7 +11,7 @@ struct CategoryCard: View {
     let category: DiscoverCategory
     let isSelected: Bool
     var onTap: () -> Void
-    
+
     var body: some View {
         Button(action: onTap) {
             VStack(spacing: 8) {
@@ -30,30 +30,22 @@ struct CategoryCard: View {
                         .frame(width: 56, height: 56)
                         .overlay(
                             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                .stroke(isSelected ? Color.white.opacity(0.5) : Color.clear, lineWidth: 2)
+                                .stroke(isSelected ? Color.theme.accent : Color.clear, lineWidth: 2)
                         )
-                        .shadow(
-                            color: isSelected
-                                ? Color(hex: category.gradientStartHex).opacity(0.4)
-                                : Color.theme.shadow,
-                            radius: isSelected ? 10 : 6,
-                            x: 0,
-                            y: 4
-                        )
-                    
+
                     Image(systemName: category.iconName)
                         .font(.system(size: 22, weight: .medium))
                         .foregroundStyle(.white)
                 }
-                
+
                 Text(category.name)
-                    .font(.system(size: 11, weight: isSelected ? .bold : .semibold, design: .rounded))
+                    .font(.system(size: 11, weight: isSelected ? .bold : .semibold))
                     .foregroundStyle(isSelected ? Color.theme.primaryText : Color.theme.secondaryText)
                     .lineLimit(1)
             }
             .frame(width: 76)
         }
-        .buttonStyle(ScaleButtonStyle())
+        .buttonStyle(XPressableStyle())
     }
 }
 
@@ -77,4 +69,5 @@ struct CategoryCard: View {
         )
     }
     .padding()
+    .background(Color.theme.primaryBackground)
 }

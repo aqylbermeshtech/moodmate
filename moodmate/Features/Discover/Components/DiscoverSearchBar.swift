@@ -14,26 +14,27 @@ struct DiscoverSearchBar: View {
     var onRecentSearchTap: (String) -> Void
     var onClearHistory: () -> Void
     var onSubmit: (String) -> Void
-    
+
     @FocusState private var isFocused: Bool
-    
+
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 10) {
                 HStack(spacing: 10) {
                     Image(systemName: "magnifyingglass")
                         .font(.system(size: 15, weight: .medium))
-                        .foregroundStyle(.secondary)
-                    
-                    TextField("Search users, moods, hashtags…", text: $searchText)
-                        .font(.system(size: 15))
+                        .foregroundStyle(Color.theme.secondaryText)
+
+                    TextField("Search", text: $searchText)
+                        .font(.xPostBody)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
                         .focused($isFocused)
+                        .foregroundStyle(Color.theme.primaryText)
                         .onSubmit {
                             onSubmit(searchText)
                         }
-                    
+
                     if !searchText.isEmpty {
                         Button {
                             withAnimation(.easeOut(duration: 0.2)) {
@@ -42,7 +43,7 @@ struct DiscoverSearchBar: View {
                         } label: {
                             Image(systemName: "xmark.circle.fill")
                                 .font(.system(size: 15))
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Color.theme.secondaryText)
                         }
                         .buttonStyle(.plain)
                         .transition(.scale.combined(with: .opacity))
@@ -50,13 +51,9 @@ struct DiscoverSearchBar: View {
                 }
                 .padding(.horizontal, 12)
                 .padding(.vertical, 10)
-                .background(Color.theme.surface)
-                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .stroke(isFocused ? Color.theme.accent.opacity(0.4) : Color.theme.border, lineWidth: 0.5)
-                )
-                
+                .background(Color.theme.secondaryBackground)
+                .clipShape(Capsule())
+
                 if isSearchActive {
                     Button("Cancel") {
                         withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
@@ -65,8 +62,8 @@ struct DiscoverSearchBar: View {
                             isFocused = false
                         }
                     }
-                    .font(.system(size: 15, weight: .medium))
-                    .foregroundStyle(.teal)
+                    .font(.xButton)
+                    .foregroundStyle(Color.theme.primaryText)
                     .transition(.move(edge: .trailing).combined(with: .opacity))
                 }
             }
@@ -81,45 +78,45 @@ struct DiscoverSearchBar: View {
             if isSearchActive && searchText.isEmpty && !recentSearches.isEmpty {
                 VStack(alignment: .leading, spacing: 0) {
                     HStack {
-                        Text("Recent Searches")
-                            .font(.system(size: 13, weight: .bold, design: .rounded))
-                            .foregroundStyle(Color.theme.secondaryText)
-                        
+                        Text("Recent")
+                            .font(.xSectionHeader)
+                            .foregroundStyle(Color.theme.primaryText)
+
                         Spacer()
-                        
-                        Button("Clear") {
+
+                        Button("Clear all") {
                             withAnimation(.easeOut(duration: 0.2)) {
                                 onClearHistory()
                             }
                         }
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundStyle(.teal)
+                        .font(.xTrendingMeta)
+                        .foregroundStyle(Color.theme.accent)
                     }
                     .padding(.horizontal, 4)
                     .padding(.top, 14)
                     .padding(.bottom, 8)
-                    
+
                     ForEach(recentSearches, id: \.self) { search in
                         Button {
                             searchText = search
                             onRecentSearchTap(search)
                         } label: {
                             HStack(spacing: 10) {
-                                Image(systemName: "clock.arrow.circlepath")
+                                Image(systemName: "magnifyingglass")
                                     .font(.system(size: 13))
                                     .foregroundStyle(Color.theme.secondaryText)
-                                
+
                                 Text(search)
-                                    .font(.system(size: 14))
+                                    .font(.xPostBody)
                                     .foregroundStyle(Color.theme.primaryText)
-                                
+
                                 Spacer()
-                                
-                                Image(systemName: "arrow.up.left")
+
+                                Image(systemName: "xmark")
                                     .font(.system(size: 11))
-                                    .foregroundStyle(Color.theme.tertiaryText)
+                                    .foregroundStyle(Color.theme.secondaryText)
                             }
-                            .padding(.vertical, 8)
+                            .padding(.vertical, 10)
                             .padding(.horizontal, 4)
                         }
                         .buttonStyle(.plain)
@@ -133,13 +130,9 @@ struct DiscoverSearchBar: View {
 
 #Preview {
     ZStack {
-        LinearGradient(
-            colors: [.teal.opacity(0.18), .purple.opacity(0.12)],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-        .ignoresSafeArea()
-        
+        Color.theme.primaryBackground
+            .ignoresSafeArea()
+
         VStack {
             DiscoverSearchBar(
                 searchText: .constant(""),
@@ -149,8 +142,8 @@ struct DiscoverSearchBar: View {
                 onClearHistory: {},
                 onSubmit: { _ in }
             )
-            .padding(.horizontal, 20)
-            
+            .padding(.horizontal, 16)
+
             Spacer()
         }
     }

@@ -2,7 +2,7 @@
 //  PostCardView.swift
 //  moodmate
 //
-//  Unified post card component — replaces FeedCard and PostDetailView.postCard.
+//  X-style post row — replaces card-based FeedCard.
 //
 
 import SwiftUI
@@ -25,8 +25,10 @@ struct PostCardView: View {
     var userStore: UserStoreProtocol = UserStore.shared
     @EnvironmentObject private var router: AppRouter
 
-    /// Resolved live from UserStore, not stored on the post — this is what
-    /// makes a display-name change show up here automatically with no sink.
+    @State private var isLikedLocal: Bool = false
+    @State private var isRepostedLocal: Bool = false
+    @State private var repostRotation: Double = 0
+
     private var author: MoodUser? {
         userStore.moodUser(for: post.authorId)
     }
@@ -39,283 +41,297 @@ struct PostCardView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            headerSection
-            contentSection
-            captionSection
-            actionsSection
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(alignment: .top, spacing: 12) {
+                // Avatar
+                avatarButton
 
-            if style == .feed {
-                Divider()
-                    .padding(.top, 10)
-                    .background(Color.theme.divider)
+                VStack(alignment: .leading, spacing: 4) {
+                    // Header row: name + verified + handle + time + overflow
+                    headerRow
+
+                    // Mood badge (if present)
+                    moodBadge
+
+                    // Body content
+                    bodyContent
+
+                    // Action row
+                    actionRow
+                        .padding(.top, 8)
+                }
             }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+
+            Divider().background(Color.theme.divider)
         }
-        .padding(.top, 8)
-        .if(style == .detail) { view in
-            view
-                .padding(.vertical, 8)
-                .background(Color.theme.cardBackground)
-                .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 20, style: .continuous)
-                        .stroke(Color.theme.border, lineWidth: 1)
-                )
-                .padding(.horizontal, 16)
+        .background(Color.theme.primaryBackground)
+        .onAppear {
+            isLikedLocal = post.isLiked
+        }
+        .onChange(of: post.isLiked) { _, newValue in
+            isLikedLocal = newValue
         }
     }
 
-    // MARK: - Header
-
-    private var headerSection: some View {
-        HStack(spacing: 10) {
-            headerUserInfo
-                .buttonStyle(PlainButtonStyle())
-
-            Spacer()
-
-            Button(action: {}) {
-                Image(systemName: "ellipsis")
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(Color.theme.secondaryText)
-            }
-            .buttonStyle(PlainButtonStyle())
-        }
-        .padding(.horizontal, 16)
-    }
+    // MARK: - Avatar
 
     @ViewBuilder
-    private var headerUserInfo: some View {
-        let content = HStack(spacing: 10) {
-            AvatarView(
-                imageData: author?.avatarImageData,
-                name: author?.name ?? "",
-                colorHex: author?.avatarColorHex ?? "38B2AC",
-                size: 38,
-                showBorder: true
-            )
-
-            VStack(alignment: .leading, spacing: 2) {
-                HStack(spacing: 4) {
-                    Text(author?.name ?? "")
-                        .font(.system(size: 14, weight: .semibold, design: .rounded))
-                        .foregroundStyle(Color.theme.primaryText)
-
-                    Text("@\(author?.username ?? "")")
-                        .font(.system(size: 11))
-                        .foregroundStyle(Color.theme.secondaryText)
-                }
-
-                HStack(spacing: 6) {
-                    if let mood = post.moodEmoji ?? author?.currentMoodEmoji,
-                       let text = post.moodText ?? author?.currentMoodText {
-                        HStack(spacing: 4) {
-                            Text(mood)
-                                .font(.system(size: 10))
-                            Text(text)
-                                .font(.system(size: 10, weight: .bold))
-                        }
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2.5)
-                        .background(postAccentColor.opacity(0.15))
-                        .foregroundStyle(postAccentColor)
-                        .clipShape(Capsule())
-                    }
-
-                    Text("•")
-                        .font(.system(size: 10))
-                        .foregroundStyle(Color.theme.tertiaryText)
-
-                    Text(post.timeAgo)
-                        .font(.system(size: 11))
-                        .foregroundStyle(Color.theme.secondaryText)
-
-                    if post.visibility != .publicVisibility {
-                        Image(systemName: post.visibility.iconName)
-                            .font(.system(size: 10))
-                            .foregroundStyle(Color.theme.tertiaryText)
-                    }
-                }
-            }
-        }
+    private var avatarButton: some View {
+        let avatar = AvatarView(
+            imageData: author?.avatarImageData,
+            name: author?.name ?? "",
+            colorHex: author?.avatarColorHex ?? "38B2AC",
+            size: 40,
+            showBorder: false
+        )
 
         switch style {
         case .feed:
             Button {
                 router.push(.otherProfile(userId: post.authorId))
             } label: {
-                content
+                avatar
             }
             .buttonStyle(PlainButtonStyle())
         case .detail:
-            content
+            avatar
         }
     }
 
-    // MARK: - Content
+    // MARK: - Header Row
+
+    private var headerRow: some View {
+        HStack(spacing: 4) {
+            Text(author?.name ?? "")
+                .font(.xDisplayName)
+                .foregroundStyle(Color.theme.primaryText)
+                .lineLimit(1)
+
+            Text("@\(author?.username ?? "")")
+                .font(.xHandle)
+                .foregroundStyle(Color.theme.secondaryText)
+                .lineLimit(1)
+
+            Text("·")
+                .foregroundStyle(Color.theme.secondaryText)
+
+            Text(post.timeAgo)
+                .font(.xHandle)
+                .foregroundStyle(Color.theme.secondaryText)
+
+            Spacer()
+
+            Button { /* overflow menu */ } label: {
+                Image(systemName: "ellipsis")
+                    .font(.system(size: 18))
+                    .foregroundStyle(Color.theme.secondaryText)
+            }
+        }
+    }
+
+    // MARK: - Mood Badge
 
     @ViewBuilder
-    private var contentSection: some View {
+    private var moodBadge: some View {
+        if let mood = post.moodEmoji ?? author?.currentMoodEmoji,
+           let text = post.moodText ?? author?.currentMoodText {
+            HStack(spacing: 4) {
+                Text(mood)
+                    .font(.system(size: 12))
+                Text(text)
+                    .font(.system(size: 12, weight: .semibold))
+            }
+            .padding(.horizontal, 8)
+            .padding(.vertical, 3)
+            .background(postAccentColor.opacity(0.15))
+            .foregroundStyle(postAccentColor)
+            .clipShape(Capsule())
+        }
+    }
+
+    // MARK: - Body Content
+
+    @ViewBuilder
+    private var bodyContent: some View {
+        // Caption / Text
+        if !post.caption.isEmpty {
+            Text(post.caption)
+                .font(.xPostBody)
+                .foregroundStyle(Color.theme.primaryText)
+                .lineSpacing(4)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+
+        // Photo content
         if !post.images.isEmpty {
-            photoContentSection
-        } else if !post.quoteText.isEmpty {
-            quoteContentSection
-        } else if post.caption.isEmpty, let moodEmoji = post.moodEmoji, let moodText = post.moodText {
-            moodOnlyContentSection(moodEmoji: moodEmoji, moodText: moodText)
+            photoContent
+        }
+
+        // Quote content
+        if !post.quoteText.isEmpty {
+            quoteContent
+        }
+
+        // Mood-only (no caption, no images, no quote)
+        if post.caption.isEmpty && post.images.isEmpty && post.quoteText.isEmpty,
+           let moodEmoji = post.moodEmoji, let moodText = post.moodText {
+            moodOnlyContent(moodEmoji: moodEmoji, moodText: moodText)
         }
     }
 
     // MARK: - Photo Content
 
-    private var photoContentSection: some View {
-        VStack(spacing: 8) {
+    private var photoContent: some View {
+        VStack(spacing: 4) {
             ForEach(post.images, id: \.self) { imageString in
                 if let uiImage = imageFromBase64(imageString) {
                     Image(uiImage: uiImage)
                         .resizable()
                         .scaledToFill()
                         .frame(maxWidth: .infinity)
-                        .frame(height: 250)
-                        .clipShape(RoundedRectangle(cornerRadius: AppRadius.image, style: .continuous))
+                        .frame(height: 220)
+                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                .stroke(Color.theme.divider, lineWidth: 1)
+                        )
                 } else {
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .fill(postAccentColor.opacity(0.2))
-                            .frame(height: 220)
-
-                        Image(systemName: "photo")
-                            .font(.system(size: 40))
-                            .foregroundStyle(postAccentColor)
-                    }
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .fill(Color.theme.secondaryBackground)
+                        .frame(height: 200)
+                        .overlay {
+                            Image(systemName: "photo")
+                                .font(.system(size: 36))
+                                .foregroundStyle(Color.theme.secondaryText)
+                        }
                 }
             }
         }
-        .padding(.horizontal, 16)
+        .padding(.top, 4)
     }
 
     // MARK: - Quote Content
 
-    private var quoteContentSection: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: AppRadius.image, style: .continuous)
-                .fill(postAccentColor.opacity(0.22))
-                .frame(height: 220)
-
-            VStack {
-                Image(systemName: "quote.opening")
-                    .font(.system(size: 24))
-                    .foregroundStyle(postAccentColor)
-                    .padding(.bottom, 4)
+    private var quoteContent: some View {
+        VStack(spacing: 8) {
+            HStack {
+                Rectangle()
+                    .fill(Color.theme.accent)
+                    .frame(width: 3)
 
                 Text(post.quoteText)
-                    .font(.title3.weight(.regular))
+                    .font(.xQuotedBody)
                     .foregroundStyle(Color.theme.primaryText)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 28)
-                    .minimumScaleFactor(0.85)
-
-                Image(systemName: "quote.closing")
-                    .font(.system(size: 24))
-                    .foregroundStyle(postAccentColor)
-                    .padding(.top, 4)
+                    .lineSpacing(3)
+                    .fixedSize(horizontal: false, vertical: true)
             }
+            .padding(.vertical, 8)
         }
-        .padding(.horizontal, 16)
+        .padding(.top, 4)
     }
 
     // MARK: - Mood-Only Content
 
-    private func moodOnlyContentSection(moodEmoji: String, moodText: String) -> some View {
-        HStack(spacing: 16) {
+    private func moodOnlyContent(moodEmoji: String, moodText: String) -> some View {
+        HStack(spacing: 12) {
             Text(moodEmoji)
-                .font(.system(size: 44))
+                .font(.system(size: 32))
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Current Mood")
-                    .font(.system(size: 11, weight: .bold, design: .rounded))
-                    .foregroundStyle(postAccentColor)
-                    .textCase(.uppercase)
-
+            VStack(alignment: .leading, spacing: 2) {
                 Text("Feeling \(moodText)")
-                    .font(.system(size: 20, weight: .bold, design: .rounded))
+                    .font(.xDisplayName)
                     .foregroundStyle(Color.theme.primaryText)
             }
 
             Spacer()
         }
-        .padding(20)
+        .padding(14)
         .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(postAccentColor.opacity(0.12))
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color.theme.secondaryBackground)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(postAccentColor.opacity(0.3), lineWidth: 1.5)
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(Color.theme.divider, lineWidth: 1)
         )
-        .padding(.horizontal, 16)
+        .padding(.top, 4)
     }
 
-    // MARK: - Caption
+    // MARK: - Action Row
 
-    @ViewBuilder
-    private var captionSection: some View {
-        if !post.caption.isEmpty {
-            VStack(alignment: .leading, spacing: 4) {
-                Group {
-                    Text("\(Text(author?.username ?? "").bold()) \(Text(post.caption))")
-                        .font(.system(size: 13))
-                        .foregroundStyle(Color.theme.primaryText)
-                        .multilineTextAlignment(.leading)
-                }
-                .multilineTextAlignment(.leading)
-            }
-            .padding(.horizontal, 16)
-        }
-    }
-
-    // MARK: - Actions
-
-    private var actionsSection: some View {
-        HStack(spacing: 20) {
-            Button(action: onLike) {
-                HStack(spacing: 6) {
-                    Image(systemName: post.isLiked ? "heart.fill" : "heart")
-                        .font(.system(size: 18, weight: .medium))
-                        .foregroundStyle(post.isLiked ? Color.red : Color.theme.primaryText.opacity(0.8))
-
-                    Text("\(post.likesCount)")
-                        .font(.system(size: 13, weight: .semibold, design: .rounded))
-                        .foregroundStyle(Color.theme.secondaryText)
-                }
-            }
-            .buttonStyle(ScaleButtonStyle())
-
-            Button(action: onComment) {
-                HStack(spacing: 6) {
-                    Image(systemName: "bubble.right")
-                        .font(.system(size: 18, weight: .medium))
-                        .foregroundStyle(Color.theme.primaryText.opacity(0.8))
-
-                    Text("\(post.commentsCount)")
-                        .font(.system(size: 13, weight: .semibold, design: .rounded))
-                        .foregroundStyle(Color.theme.secondaryText)
-                }
-            }
-            .buttonStyle(PlainButtonStyle())
+    private var actionRow: some View {
+        HStack(spacing: 0) {
+            // Reply
+            XActionIcon(
+                systemName: "bubble.left",
+                count: post.commentsCount,
+                color: Color.theme.secondaryText,
+                active: false
+            )
+            .onTapGesture { onComment() }
 
             Spacer()
 
-            Button(action: onBookmark) {
-                Image(systemName: post.isBookmarked ? "bookmark.fill" : "bookmark")
-                    .font(.system(size: 18, weight: .medium))
-                    .foregroundStyle(post.isBookmarked ? Color(hex: "FAB005") : Color.theme.primaryText.opacity(0.8))
+            // Repost
+            Image(systemName: "arrow.2.squarepath")
+                .font(.system(size: 18.75))
+                .foregroundStyle(isRepostedLocal ? Color.theme.repostGreen : Color.theme.secondaryText)
+                .rotationEffect(.degrees(repostRotation))
+                .frame(minWidth: 44, minHeight: 44)
+                .onTapGesture {
+                    isRepostedLocal.toggle()
+                    withAnimation(.easeOut(duration: 0.4)) { repostRotation += 360 }
+                }
+
+            Spacer()
+
+            // Like
+            HStack(spacing: 4) {
+                Image(systemName: isLikedLocal ? "heart.fill" : "heart")
+                    .font(.system(size: 18.75, weight: isLikedLocal ? .semibold : .regular))
+                    .foregroundStyle(isLikedLocal ? Color.theme.likePink : Color.theme.secondaryText)
+                    .scaleEffect(isLikedLocal ? 1.0 : 1.0)
+                    .animation(.spring(response: 0.35, dampingFraction: 0.55), value: isLikedLocal)
+
+                if post.likesCount > 0 {
+                    Text(formattedCount(post.likesCount))
+                        .font(.xActionCount)
+                        .foregroundStyle(isLikedLocal ? Color.theme.likePink : Color.theme.secondaryText)
+                }
             }
-            .buttonStyle(ScaleButtonStyle())
+            .frame(minWidth: 44, minHeight: 44, alignment: .leading)
+            .onTapGesture {
+                onLike()
+            }
+            .sensoryFeedback(.impact(flexibility: .soft), trigger: isLikedLocal)
+
+            Spacer()
+
+            // Bookmark
+            Image(systemName: post.isBookmarked ? "bookmark.fill" : "bookmark")
+                .font(.system(size: 18))
+                .foregroundStyle(post.isBookmarked ? Color.theme.accent : Color.theme.secondaryText)
+                .frame(minWidth: 44, minHeight: 44)
+                .onTapGesture { onBookmark() }
+
+            // Share
+            Image(systemName: "square.and.arrow.up")
+                .font(.system(size: 18))
+                .foregroundStyle(Color.theme.secondaryText)
         }
-        .padding(.horizontal, 16)
     }
 
     // MARK: - Helpers
+
+    private func formattedCount(_ n: Int) -> String {
+        switch n {
+        case 1_000_000...: return String(format: "%.1fM", Double(n)/1_000_000)
+        case 1_000...:     return String(format: "%.1fK", Double(n)/1_000)
+        default:           return "\(n)"
+        }
+    }
 
     private func imageFromBase64(_ string: String) -> UIImage? {
         var base64 = string
@@ -347,12 +363,12 @@ private extension View {
 
 #Preview {
     ScrollView {
-        VStack(spacing: 20) {
+        VStack(spacing: 0) {
             PostCardView(
                 post: FeedPost(
                     id: "p1",
                     authorId: "2",
-                    timeAgo: "2h ago",
+                    timeAgo: "2h",
                     quoteText: "Breathe in experience, breathe out poetry.",
                     caption: "Taking a conscious pause today. 🌱"
                 ),
@@ -364,14 +380,15 @@ private extension View {
                 post: FeedPost(
                     id: "p2",
                     authorId: "3",
-                    timeAgo: "5h ago",
-                    quoteText: "Grateful hearts see awesome things.",
-                    caption: "Reflected on the beauty of nature."
+                    timeAgo: "5h",
+                    quoteText: "",
+                    caption: "Just had an incredible morning walk through the park. The fresh air is exactly what I needed after a long week."
                 ),
-                style: .detail,
+                style: .feed,
                 onLike: {}, onBookmark: {}, onComment: {}
             )
         }
     }
+    .background(Color.theme.primaryBackground)
     .environmentObject(AppRouter.shared)
 }

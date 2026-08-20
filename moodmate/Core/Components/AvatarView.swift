@@ -17,7 +17,7 @@ struct AvatarView: View {
     let moodEmoji: String?
     let overlayAction: (() -> Void)?
     let overlayIcon: String?
-    
+
     init(
         imageData: Data? = nil,
         image: UIImage? = nil,
@@ -39,7 +39,7 @@ struct AvatarView: View {
         self.overlayAction = overlayAction
         self.overlayIcon = overlayIcon
     }
-    
+
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
             // Main Avatar Base
@@ -57,13 +57,13 @@ struct AvatarView: View {
                         .frame(width: size, height: size)
                         .clipShape(Circle())
                 } else {
-                    // Initials fallback uses one quiet, opaque color.
+                    // Initials fallback — X-style neutral surface
                     ZStack {
                         Circle()
                             .fill(Color.theme.secondaryBackground)
-                        
+
                         Text(getInitials(name))
-                            .font(.system(size: size * 0.38, weight: .medium))
+                            .font(.system(size: size * 0.38, weight: .semibold))
                             .foregroundStyle(Color.theme.primaryText)
                     }
                     .frame(width: size, height: size)
@@ -71,23 +71,22 @@ struct AvatarView: View {
             }
             .overlay(
                 Circle()
-                    .stroke(Color.theme.border, lineWidth: showBorder ? max(2, size * 0.035) : 0)
+                    .stroke(Color.theme.divider, lineWidth: showBorder ? max(1.5, size * 0.03) : 0)
             )
-            
+
             // Mood Emoji Badge Overlay
             if let moodEmoji {
                 ZStack {
                     Circle()
-                        .fill(Color.theme.surface)
+                        .fill(Color.theme.primaryBackground)
                         .frame(width: size * 0.33, height: size * 0.33)
-                        .shadow(color: Color.theme.shadow, radius: 4, x: 0, y: 2)
-                    
+
                     Text(moodEmoji)
                         .font(.system(size: size * 0.2))
                 }
                 .offset(x: size * 0.04, y: size * 0.04)
             }
-            
+
             // Action Icon Overlay (Camera edit button)
             if let overlayAction, let overlayIcon {
                 Button(action: overlayAction) {
@@ -95,10 +94,10 @@ struct AvatarView: View {
                         Circle()
                             .fill(Color.theme.accent)
                             .frame(width: size * 0.32, height: size * 0.32)
-                        
+
                         Image(systemName: overlayIcon)
                             .font(.system(size: size * 0.16, weight: .bold))
-                            .foregroundStyle(Color.theme.primaryBackground)
+                            .foregroundStyle(.white)
                     }
                 }
                 .buttonStyle(PlainButtonStyle())

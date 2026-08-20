@@ -11,7 +11,7 @@ import SwiftUI
 enum HomeTab: Int, CaseIterable, Identifiable {
     case home
     case discover
-    case add
+    case add        // Kept for routing — intercepted by FAB
     case chat
     case profile
 
@@ -19,10 +19,20 @@ enum HomeTab: Int, CaseIterable, Identifiable {
 
     var iconName: String {
         switch self {
+        case .home: return "house"
+        case .discover: return "magnifyingglass"
+        case .add: return "plus"
+        case .chat: return "envelope"
+        case .profile: return "person"
+        }
+    }
+
+    var selectedIconName: String {
+        switch self {
         case .home: return "house.fill"
         case .discover: return "magnifyingglass"
         case .add: return "plus"
-        case .chat: return "bubble.left.and.bubble.right.fill"
+        case .chat: return "envelope.fill"
         case .profile: return "person.fill"
         }
     }
@@ -30,79 +40,74 @@ enum HomeTab: Int, CaseIterable, Identifiable {
     var label: String {
         switch self {
         case .home: return "Home"
-        case .discover: return "Discover"
+        case .discover: return "Search"
         case .add: return "Add"
-        case .chat: return "Chat"
+        case .chat: return "Messages"
         case .profile: return "Profile"
         }
     }
 }
 
-// MARK: - Integrated Bottom Navigation Bar
+// MARK: - X-Style Tab Bar (icon-only, blur background)
 struct BottomNavigationBar: View {
     @Binding var selectedTab: HomeTab
     var onAddTap: () -> Void
-    
+
+    /// Tabs displayed in the bar — excludes .add (handled by FAB)
+    private var visibleTabs: [HomeTab] {
+        HomeTab.allCases.filter { $0 != .add }
+    }
+
     var body: some View {
         HStack(spacing: 0) {
-            ForEach(HomeTab.allCases) { tab in
-                if tab == .add {
-                    Button(action: onAddTap) {
-                        ZStack {
-                            Circle()
-                                .fill(
-                                    Color.theme.accent
-                                )
-                                .frame(width: 52, height: 52)
-                            
-                            Image(systemName: tab.iconName)
-                                .font(.system(size: 20, weight: .bold))
-                                .foregroundStyle(.white)
-                        }
+            ForEach(visibleTabs) { tab in
+                Button {
+                    withAnimation(.easeOut(duration: 0.15)) {
+                        selectedTab = tab
                     }
-                    .buttonStyle(ScaleButtonStyle())
-                    .offset(y: -12)
-                    .frame(maxWidth: .infinity)
-                } else {
-                    Button {
-                        withAnimation(.easeOut(duration: 0.18)) {
-                            selectedTab = tab
-                        }
-                    } label: {
-                        VStack(spacing: 4) {
-                            Image(systemName: tab.iconName)
-                                .font(.system(size: 18, weight: selectedTab == tab ? .bold : .medium))
-
-                            if selectedTab == tab {
-                                    Text(tab.label)
-                                    .font(.caption2.weight(.medium))
-                                    .transition(.scale.combined(with: .opacity))
-                            }
-                        }
-                        .foregroundStyle(selectedTab == tab ? Color.theme.accent : Color.theme.secondaryText)
+                } label: {
+                    Image(systemName: selectedTab == tab ? tab.selectedIconName : tab.iconName)
+                        .font(.system(size: 24, weight: selectedTab == tab ? .bold : .regular))
+                        .foregroundStyle(selectedTab == tab ? Color.theme.primaryText : Color.theme.secondaryText)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 8)
-                        .background {
-                            if selectedTab == tab {
-                                    Capsule().fill(Color.theme.accent.opacity(0.12))
-                            }
-                        }
-                    }
-                    .buttonStyle(.plain)
+                        .frame(height: 48)
+                        .contentShape(Rectangle())
                 }
+                .buttonStyle(.plain)
             }
         }
         .padding(.horizontal, 8)
-        .padding(.vertical, 6)
-        .background {
-            Capsule()
-                .fill(Color.theme.surface)
-                .overlay(
-                    Capsule().stroke(Color.theme.border, lineWidth: 0.5)
-                )
+        .padding(.top, 4)
+        .background(
+            ZStack {
+                // Blur effect background
+                Rectangle()
+                    .fill(.ultraThinMaterial)
+
+                // Tinted overlay for true dark feel
+                Color.theme.primaryBackground.opacity(0.85)
+            }
+        )
+        .overlay(alignment: .top) {
+            Rectangle().fill(Color.theme.divider).frame(height: 0.5)
         }
-        .shadow(color: Color.theme.shadow, radius: AppShadow.radius, y: AppShadow.y)
-        .padding(.horizontal, 20)
+    }
+}
+
+// MARK: - Floating Post Button (X FAB)
+struct XPostFAB: View {
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: "pencil.and.outline")
+                .font(.system(size: 22, weight: .semibold))
+                .foregroundStyle(.black)
+                .frame(width: 56, height: 56)
+                .background(Circle().fill(Color.white))
+                .shadow(color: .black.opacity(0.35), radius: 12, y: 4)
+        }
+        .buttonStyle(XPressableStyle(pressedScale: 0.95))
     }
 }
 
@@ -112,7 +117,7 @@ struct BottomNavigationBar: View {
     ZStack {
         Color.theme.primaryBackground
         .ignoresSafeArea()
-        
+
         VStack {
             Spacer()
             BottomNavigationBar(selectedTab: .constant(.home), onAddTap: {})

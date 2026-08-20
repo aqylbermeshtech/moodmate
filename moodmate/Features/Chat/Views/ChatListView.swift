@@ -15,16 +15,23 @@ struct ChatListView: View {
                 .ignoresSafeArea()
 
             VStack(spacing: 0) {
+                // X-style header
                 HStack {
                     Text("Messages")
-                        .font(.title.weight(.medium))
+                        .font(.xScreenTitle)
                         .foregroundStyle(Color.theme.primaryText)
 
                     Spacer()
+
+                    Image(systemName: "gearshape")
+                        .font(.system(size: 20))
+                        .foregroundStyle(Color.theme.primaryText)
                 }
-                .padding(.horizontal, 20)
+                .padding(.horizontal, 16)
                 .padding(.top, 8)
                 .padding(.bottom, 12)
+
+                Rectangle().fill(Color.theme.divider).frame(height: 0.5)
 
                 if viewModel.conversations.isEmpty {
                     emptyState
@@ -38,11 +45,10 @@ struct ChatListView: View {
                                     ConversationRow(conversation: conversation)
                                 }
                                 .buttonStyle(.plain)
-                                .padding(.horizontal, 20)
+                                .padding(.horizontal, 16)
 
-                                Divider()
-                                    .overlay(Color.theme.divider)
-                                    .padding(.leading, 84)
+                                Rectangle().fill(Color.theme.divider).frame(height: 0.5)
+                                    .padding(.leading, 76)
                             }
                         }
                         .padding(.bottom, 110)
@@ -53,16 +59,28 @@ struct ChatListView: View {
     }
 
     private var emptyState: some View {
-        VStack(spacing: 8) {
-            Image(systemName: "bubble.left.and.bubble.right")
-                .font(.system(size: 32))
+        VStack(spacing: 12) {
+            Spacer()
+            Text("Welcome to your inbox!")
+                .font(.xScreenTitle)
+                .foregroundStyle(Color.theme.primaryText)
+            Text("Drop a line, share posts and more with private conversations between you and others.")
+                .font(.xPostBody)
                 .foregroundStyle(Color.theme.secondaryText)
-            Text("No conversations yet")
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(Color.theme.secondaryText)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 40)
+
+            Button("Write a message") {}
+                .font(.xButton)
+                .foregroundStyle(.black)
+                .padding(.horizontal, 24)
+                .padding(.vertical, 14)
+                .background(Capsule().fill(Color.theme.primaryText))
+                .padding(.top, 8)
+
+            Spacer()
         }
         .frame(maxWidth: .infinity)
-        .padding(.top, 60)
     }
 }
 

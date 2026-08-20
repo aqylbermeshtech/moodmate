@@ -10,46 +10,29 @@ import SwiftUI
 struct FriendAvatar: View {
     let user: MoodUser
     var onTap: () -> Void
-    
+
     var body: some View {
         Button(action: onTap) {
-            VStack(spacing: 8) {
-                ZStack(alignment: .bottomTrailing) {
-                    ZStack {
-                        Circle()
-                            .stroke(
-                                LinearGradient(
-                                    colors: [
-                                        Color(hex: user.currentMoodColorHex ?? "38B2AC"),
-                                        Color(hex: user.avatarColorHex)
-                                    ],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                ),
-                                lineWidth: 2.5
-                            )
-                            .frame(width: 68, height: 68)
-                        
-                        AvatarView(
-                            imageData: user.avatarImageData,
-                            name: user.name,
-                            colorHex: user.avatarColorHex,
-                            size: 58,
-                            showBorder: false,
-                            moodEmoji: user.currentMoodEmoji
-                        )
-                    }
-                }
+            VStack(spacing: 6) {
+                AvatarView(
+                    imageData: user.avatarImageData,
+                    name: user.name,
+                    colorHex: user.avatarColorHex,
+                    size: 48,
+                    showBorder: false,
+                    moodEmoji: user.currentMoodEmoji
+                )
+
                 Text(user.name)
-                    .font(.system(size: 12, weight: .semibold, design: .rounded))
-                    .foregroundStyle(Color.theme.primaryText.opacity(0.85))
+                    .font(.system(size: 11, weight: .regular))
+                    .foregroundStyle(Color.theme.secondaryText)
                     .lineLimit(1)
-                    .frame(maxWidth: 72)
+                    .frame(maxWidth: 56)
             }
         }
-        .buttonStyle(ScaleButtonStyle())
+        .buttonStyle(XPressableStyle(pressedScale: 0.95))
     }
-    
+
 }
 
 #Preview {
@@ -58,12 +41,12 @@ struct FriendAvatar: View {
             id: "1", name: "Pepper", username: "pepperoni", avatarImageName: nil,
             avatarColorHex: "FF6B6B", currentMoodEmoji: "😊", currentMoodText: "Happy", currentMoodColorHex: "38B2AC"
         ), onTap: {})
-        
+
         FriendAvatar(user: MoodUser(
             id: "2", name: "Michele", username: "mj", avatarImageName: nil,
             avatarColorHex: "4DABF7", currentMoodEmoji: "😌", currentMoodText: "Calm", currentMoodColorHex: "4A5568"
         ), onTap: {})
     }
     .padding()
-    .background(Color.teal.opacity(0.1))
+    .background(Color.theme.primaryBackground)
 }

@@ -11,31 +11,21 @@ import PhotosUI
 struct CreatePostView: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel = CreatePostViewModel()
-    
+
     var onPostPublished: ((PostModel) -> Void)? = nil
-    
+
     @State private var selectedPhotoItem: PhotosPickerItem? = nil
-    
+
     var body: some View {
         NavigationStack {
             ZStack {
                 Color.theme.primaryBackground
                     .ignoresSafeArea()
-                RadialGradient(
-                    colors: [
-                        viewModel.accentColor.opacity(0.18),
-                        Color.clear
-                    ],
-                    center: .top,
-                    startRadius: 20,
-                    endRadius: 400
-                )
-                .ignoresSafeArea()
-                .animation(.spring(response: 0.5, dampingFraction: 0.8), value: viewModel.selectedMoodColorHex)
 
                 ScrollView {
-                    VStack(spacing: 20) {
+                    VStack(spacing: 16) {
                         userHeaderView
+
                         MoodPickerCard(
                             selectedMoodEmoji: viewModel.selectedMoodEmoji,
                             selectedMoodText: viewModel.selectedMoodText,
@@ -44,6 +34,7 @@ struct CreatePostView: View {
                                 viewModel.showMoodPickerSheet = true
                             }
                         )
+
                         PostTextEditor(
                             text: $viewModel.text,
                             placeholder: placeholderText,
@@ -52,7 +43,7 @@ struct CreatePostView: View {
                                 viewModel.appendEmoji(emoji)
                             }
                         )
-                        
+
                         PhotoAttachmentView(
                             images: $viewModel.selectedImages,
                             onAddPhotoTap: {
@@ -65,12 +56,13 @@ struct CreatePostView: View {
                                 viewModel.showPhotoOptionsActionSheet = true
                             }
                         )
+
                         VisibilitySelector(selectedVisibility: $viewModel.visibility)
                             .padding(.top, 4)
-                        
+
                         Spacer(minLength: 40)
                     }
-                    .padding(.horizontal, 20)
+                    .padding(.horizontal, 16)
                     .padding(.top, 16)
                 }
                 .scrollIndicators(.hidden)
@@ -79,7 +71,6 @@ struct CreatePostView: View {
                     successOverlay
                 }
             }
-            .navigationTitle("New Post")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -89,23 +80,33 @@ struct CreatePostView: View {
                         }
                     }) {
                         Text("Cancel")
-                            .font(.system(size: 15, weight: .regular))
-                            .foregroundStyle(Color.theme.secondaryText)
+                            .font(.xHandle)
+                            .foregroundStyle(Color.theme.primaryText)
                     }
                 }
-                
+
                 ToolbarItem(placement: .confirmationAction) {
-                    PublishButton(
-                        isValid: viewModel.isValid,
-                        isPublishing: viewModel.isPublishing,
-                        accentColor: viewModel.accentColor,
-                        action: {
-                            viewModel.publishPost { publishedPost in
-                                onPostPublished?(publishedPost)
-                                dismiss()
-                            }
+                    Button {
+                        viewModel.publishPost { publishedPost in
+                            onPostPublished?(publishedPost)
+                            dismiss()
                         }
-                    )
+                    } label: {
+                        Text("Post")
+                            .font(.xButton)
+                            .foregroundStyle(viewModel.isValid ? .black : Color.theme.secondaryText)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(
+                                Capsule().fill(
+                                    viewModel.isValid
+                                        ? Color.theme.primaryText
+                                        : Color.theme.secondaryBackground
+                                )
+                            )
+                    }
+                    .disabled(!viewModel.isValid || viewModel.isPublishing)
+                    .buttonStyle(XPressableStyle())
                 }
             }
             .sheet(isPresented: $viewModel.showMoodPickerSheet) {
@@ -117,11 +118,11 @@ struct CreatePostView: View {
                 Button("Photo Preset / Sample Photo") {
                     viewModel.addSamplePhoto()
                 }
-                
+
                 Button("Photo Library") {
                     viewModel.showImagePicker = true
                 }
-                
+
                 Button("Cancel", role: .cancel) {}
             }
             .photosPicker(isPresented: $viewModel.showImagePicker, selection: $selectedPhotoItem, matching: .images)
@@ -157,8 +158,9 @@ struct CreatePostView: View {
                 Text("What would you like to do with your changes?")
             }
         }
+        .presentationDragIndicator(.hidden)
     }
-    
+
     // MARK: - User Header View
     private var userHeaderView: some View {
         HStack(spacing: 12) {
@@ -166,30 +168,30 @@ struct CreatePostView: View {
                 imageData: viewModel.currentUser.avatarImageData,
                 name: viewModel.currentUser.name,
                 colorHex: viewModel.currentUser.avatarColorHex,
-                size: 44,
-                showBorder: true
+                size: 40,
+                showBorder: false
             )
-            
+
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 6) {
                     Text(viewModel.currentUser.name)
-                        .font(.system(size: 16, weight: .bold, design: .rounded))
+                        .font(.xDisplayName)
                         .foregroundStyle(Color.theme.primaryText)
-                    
+
                     Text("@\(viewModel.currentUser.username)")
-                        .font(.system(size: 13))
+                        .font(.xHandle)
                         .foregroundStyle(Color.theme.secondaryText)
                 }
-                
+
                 HStack(spacing: 4) {
                     Image(systemName: viewModel.visibility.iconName)
-                        .font(.system(size: 10))
+                        .font(.system(size: 11))
                     Text(viewModel.visibility.rawValue)
-                        .font(.system(size: 11, weight: .semibold))
+                        .font(.xTrendingMeta)
                 }
-                .foregroundStyle(Color.theme.tertiaryText)
+                .foregroundStyle(Color.theme.secondaryText)
             }
-            
+
             Spacer()
         }
     }
@@ -198,26 +200,26 @@ struct CreatePostView: View {
         if let text = viewModel.selectedMoodText {
             return "Describe why you're feeling \(text.lowercased()) today..."
         }
-        return "What's on your mind today? Share a thought, quote, or photo..."
+        return "What's happening?"
     }
-    
+
     // MARK: - Mood Picker Sheet View
     private var moodPickerSheet: some View {
         VStack(spacing: 20) {
             VStack(spacing: 4) {
                 Text("Select your mood")
-                    .font(.system(size: 20, weight: .bold, design: .rounded))
+                    .font(.xScreenTitle)
                     .foregroundStyle(Color.theme.primaryText)
                 Text("This will highlight your post on MoodMate")
-                    .font(.system(size: 13))
+                    .font(.xTrendingMeta)
                     .foregroundStyle(Color.theme.secondaryText)
             }
             .padding(.top, 16)
-            
+
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 95, maximum: 110), spacing: 14)], spacing: 14) {
                 ForEach(viewModel.moodOptions) { option in
                     let isSelected = viewModel.selectedMoodEmoji == option.emoji
-                    
+
                     Button {
                         viewModel.selectMood(emoji: option.emoji, text: option.text, colorHex: option.colorHex)
                         viewModel.showMoodPickerSheet = false
@@ -225,62 +227,61 @@ struct CreatePostView: View {
                         VStack(spacing: 10) {
                             Text(option.emoji)
                                 .font(.system(size: 36))
-                            
+
                             Text(option.text)
-                                .font(.system(size: 13, weight: .bold, design: .rounded))
+                                .font(.xDisplayName)
                                 .foregroundStyle(Color.theme.primaryText)
                         }
                         .frame(width: 95, height: 95)
                         .background(
-                            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                                .fill(isSelected ? Color.adaptiveMoodColor(hex: option.colorHex).opacity(0.2) : Color.theme.surface)
+                            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                .fill(isSelected ? Color.theme.accent.opacity(0.15) : Color.theme.secondaryBackground)
                         )
                         .overlay(
-                            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                            RoundedRectangle(cornerRadius: 16, style: .continuous)
                                 .stroke(
-                                    isSelected ? Color(hex: option.colorHex) : Color.theme.border,
+                                    isSelected ? Color.theme.accent : Color.theme.divider,
                                     lineWidth: isSelected ? 2 : 1
                                 )
                         )
                     }
-                    .buttonStyle(ScaleButtonStyle())
+                    .buttonStyle(XPressableStyle())
                 }
             }
             .padding(.horizontal, 20)
-            
+
             Spacer()
         }
         .background(Color.theme.primaryBackground)
     }
-    
+
     // MARK: - Success Overlay
     private var successOverlay: some View {
         ZStack {
-            Color.black.opacity(0.4)
+            Color.black.opacity(0.5)
                 .ignoresSafeArea()
-            
+
             VStack(spacing: 16) {
                 ZStack {
                     Circle()
-                        .fill(Color.theme.success)
+                        .fill(Color.theme.accent)
                         .frame(width: 72, height: 72)
-                    
+
                     Image(systemName: "checkmark")
                         .font(.system(size: 34, weight: .bold))
                         .foregroundStyle(.white)
                 }
                 .scaleEffect(viewModel.showSuccessAnimation ? 1.0 : 0.4)
                 .animation(.spring(response: 0.4, dampingFraction: 0.6), value: viewModel.showSuccessAnimation)
-                
+
                 Text("Post Published!")
-                    .font(.system(size: 20, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
+                    .font(.xScreenTitle)
+                    .foregroundStyle(Color.theme.primaryText)
             }
             .padding(32)
             .background(
-                RoundedRectangle(cornerRadius: 24, style: .continuous)
-                    .fill(Color.theme.surface)
-                    .shadow(radius: 20)
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .fill(Color.theme.secondaryBackground)
             )
         }
         .transition(.opacity)

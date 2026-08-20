@@ -7,25 +7,56 @@ struct HomeView: View {
     @ObservedObject var viewModel: HomeViewModel
     @EnvironmentObject private var router: AppRouter
 
+    @State private var feedFilter: Int = 0
+
     // MARK: - Body
 
     var body: some View {
-        ScrollView {
-            LazyVStack(spacing: 24) {
-                GreetingHeader(viewModel: viewModel, onProfileTap: { router.switchTab(.profile) })
-                    .padding(.horizontal, 20)
-                    .padding(.top, 16)
+        VStack(spacing: 0) {
+            // X-style top bar
+            GreetingHeader(viewModel: viewModel, onProfileTap: { router.switchTab(.profile) })
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
 
-                MoodCard(viewModel: viewModel)
-                    .padding(.horizontal, 20)
+            // Divider below header
+            Rectangle().fill(Color.theme.divider).frame(height: 0.5)
 
-                friendsStoriesSection
+            // Feed filter tabs
+            XFeedFilter(selection: $feedFilter)
 
-                feedSection
+            // Timeline
+            ScrollView {
+                LazyVStack(spacing: 0) {
+                    // Mood check-in row (compact)
+                    MoodCard(viewModel: viewModel)
+
+                    Divider().background(Color.theme.divider)
+
+                    // Friends row
+                    if !viewModel.friends.isEmpty {
+                        friendsStoriesSection
+                        Divider().background(Color.theme.divider)
+                    }
+
+                    // Feed posts
+                    ForEach(viewModel.feed.posts) { post in
+                        PostCardView(
+                            post: post,
+                            style: .feed,
+                            onLike:     { viewModel.feed.toggleLike(for: post) },
+                            onBookmark: { viewModel.feed.toggleBookmark(for: post) },
+                            onComment: {
+                                router.push(.postDetail(postId: post.id))
+                            }
+                        )
+                    }
+                }
             }
-            .padding(.bottom, 32)
+            .scrollIndicators(.hidden)
+            .refreshable {
+                // Pull to refresh
+            }
         }
-        .scrollIndicators(.hidden)
         .background {
             Color.theme.primaryBackground.ignoresSafeArea()
         }
@@ -47,55 +78,24 @@ struct HomeView: View {
     // MARK: - Friends Stories Section
 
     private var friendsStoriesSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Friends Today")
-                .font(.system(size: 16, weight: .bold, design: .rounded))
-                .foregroundStyle(Color.theme.primaryText)
-                .padding(.horizontal, 20)
-
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 16) {
-                    ForEach(viewModel.friends) { friend in
-                        FriendAvatar(user: friend) {
-                            if let emoji = friend.currentMoodEmoji,
-                               let text  = friend.currentMoodText {
-                                viewModel.selectMood(
-                                    emoji: emoji,
-                                    text: "\(friend.name) is \(text)",
-                                    colorHex: friend.currentMoodColorHex ?? "38B2AC"
-                                )
-                            }
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 16) {
+                ForEach(viewModel.friends) { friend in
+                    FriendAvatar(user: friend) {
+                        if let emoji = friend.currentMoodEmoji,
+                           let text  = friend.currentMoodText {
+                            viewModel.selectMood(
+                                emoji: emoji,
+                                text: "\(friend.name) is \(text)",
+                                colorHex: friend.currentMoodColorHex ?? "38B2AC"
+                            )
                         }
-                        .padding(.vertical, 4)
                     }
-                }
-                .padding(.horizontal, 20)
-            }
-        }
-    }
-
-    // MARK: - Feed Section
-
-    private var feedSection: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            Text("Today's Feed")
-                .font(.system(size: 16, weight: .bold, design: .rounded))
-                .foregroundStyle(Color.theme.primaryText)
-                .padding(.horizontal, 20)
-
-            LazyVStack(spacing: 24) {
-                ForEach(viewModel.feed.posts) { post in
-                    PostCardView(
-                        post: post,
-                        style: .feed,
-                        onLike:     { viewModel.feed.toggleLike(for: post) },
-                        onBookmark: { viewModel.feed.toggleBookmark(for: post) },
-                        onComment: {
-                            router.push(.postDetail(postId: post.id))
-                        }
-                    )
+                    .padding(.vertical, 4)
                 }
             }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
         }
     }
 }

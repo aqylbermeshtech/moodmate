@@ -25,20 +25,25 @@ struct OtherProfileView: View {
                 Button(action: {
                     viewModel.toggleFollow()
                 }) {
-                    HStack {
-                        Image(systemName: isFollowing ? "checkmark" : "person.badge.plus.fill")
-                            .font(.system(size: 14, weight: .bold))
-                        Text(isFollowing ? "Following" : "Follow")
-                            .font(.system(size: 14, weight: .bold, design: .rounded))
-                    }
-                    .foregroundStyle(isFollowing ? Color.theme.primaryText : Color.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
-                    .background(isFollowing ? Color.theme.groupedBackground : Color.theme.accent)
-                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                    .shadow(color: isFollowing ? Color.clear : Color.teal.opacity(0.2), radius: 6, x: 0, y: 3)
+                    Text(isFollowing ? "Following" : "Follow")
+                        .font(.xButton)
+                        .foregroundStyle(isFollowing ? Color.theme.primaryText : .black)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                        .background(
+                            isFollowing
+                                ? Color.clear
+                                : Color.theme.primaryText
+                        )
+                        .clipShape(Capsule())
+                        .overlay(
+                            Capsule().strokeBorder(
+                                isFollowing ? Color.theme.divider : Color.clear,
+                                lineWidth: 1
+                            )
+                        )
                 }
-                .buttonStyle(ScaleButtonStyle())
+                .buttonStyle(XPressableStyle())
             },
             toolbarTrailing: {
                 EmptyView()

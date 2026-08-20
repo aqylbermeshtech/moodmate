@@ -28,7 +28,7 @@ struct ChatThreadView: View {
                     }
                     .padding(.horizontal, 16)
                     .padding(.top, 12)
-                    .padding(.bottom, 24)
+                    .padding(.bottom, 80)
                 }
                 .scrollDismissesKeyboard(.interactively)
 
@@ -45,6 +45,7 @@ struct ChatThreadView: View {
                     dismiss()
                 } label: {
                     Image(systemName: "chevron.left")
+                        .foregroundStyle(Color.theme.primaryText)
                 }
                 .accessibilityLabel("Back")
             }
@@ -59,7 +60,7 @@ struct ChatThreadView: View {
                             showBorder: false
                         )
                         Text(participant.name)
-                            .font(.system(size: 15, weight: .semibold, design: .rounded))
+                            .font(.xDisplayName)
                             .foregroundStyle(Color.theme.primaryText)
                     }
                 }
@@ -73,29 +74,30 @@ struct ChatThreadView: View {
                 .font(.system(size: 40))
                 .foregroundStyle(Color.theme.secondaryText)
             Text("Conversation Not Found")
-                .font(.system(size: 18, weight: .bold, design: .rounded))
+                .font(.xSectionHeader)
                 .foregroundStyle(Color.theme.primaryText)
         }
     }
 
     private var messageInputBar: some View {
         HStack(spacing: 12) {
-            TextField("Message...", text: $draftText)
+            TextField("Start a new message", text: $draftText)
+                .font(.xDMBody)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
-                .background(Color.theme.surface)
+                .background(Color.theme.secondaryBackground)
                 .clipShape(Capsule())
                 .overlay(
                     Capsule()
-                        .stroke(Color.theme.border, lineWidth: 1)
+                        .stroke(Color.theme.divider, lineWidth: 1)
                 )
                 .foregroundStyle(Color.theme.primaryText)
 
             Button {} label: {
                 ZStack {
                     Circle()
-                        .fill(draftText.isEmpty ? Color.theme.accent.opacity(0.5) : Color.theme.accent)
-                        .frame(width: 38, height: 38)
+                        .fill(draftText.isEmpty ? Color.theme.accent.opacity(0.4) : Color.theme.accent)
+                        .frame(width: 36, height: 36)
 
                     Image(systemName: "paperplane.fill")
                         .font(.system(size: 14))
@@ -103,11 +105,16 @@ struct ChatThreadView: View {
                 }
             }
             .disabled(draftText.isEmpty)
-            .buttonStyle(ScaleButtonStyle())
+            .buttonStyle(XPressableStyle())
         }
         .padding(.horizontal, 16)
-        .padding(.vertical, 12)
-        .background(Color.theme.cardBackground)
+        .padding(.vertical, 10)
+        .background(
+            Color.theme.primaryBackground
+                .overlay(alignment: .top) {
+                    Rectangle().fill(Color.theme.divider).frame(height: 0.5)
+                }
+        )
     }
 }
 

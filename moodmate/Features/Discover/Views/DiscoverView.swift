@@ -16,19 +16,10 @@ struct DiscoverView: View {
             ZStack {
                 Color.theme.primaryBackground
                     .ignoresSafeArea()
-                
+
                 VStack(spacing: 0) {
-                    VStack(spacing: 12) {
-                        HStack {
-                            Text("Discover")
-                                .font(.title.weight(.medium))
-                                .foregroundStyle(Color.theme.primaryText)
-                            
-                            Spacer()
-                        }
-                        .padding(.horizontal, 20)
-                        .padding(.top, 8)
-                        
+                    // Search bar header
+                    VStack(spacing: 0) {
                         DiscoverSearchBar(
                             searchText: $viewModel.searchText,
                             isSearchActive: $viewModel.isSearchActive,
@@ -44,41 +35,44 @@ struct DiscoverView: View {
                                 viewModel.addRecentSearch(query)
                             }
                         )
-                        .padding(.horizontal, 20)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+
+                        Rectangle().fill(Color.theme.divider).frame(height: 0.5)
 
                         if viewModel.hasActiveFilter {
                             HStack {
                                 HStack(spacing: 6) {
-                                    Text("Filtered by:")
-                                        .font(.system(size: 12, weight: .medium))
-                                        .foregroundStyle(.secondary)
-                                    
+                                    Text("Filtered:")
+                                        .font(.xTrendingMeta)
+                                        .foregroundStyle(Color.theme.secondaryText)
+
                                     Text(viewModel.activeFilterLabel)
-                                        .font(.system(size: 12, weight: .bold, design: .rounded))
-                                        .foregroundStyle(.teal)
-                                    
+                                        .font(.system(size: 13, weight: .bold))
+                                        .foregroundStyle(Color.theme.accent)
+
                                     Button {
                                         viewModel.clearFilters()
                                     } label: {
                                         Image(systemName: "xmark.circle.fill")
-                                            .font(.system(size: 13))
-                                            .foregroundStyle(.secondary)
+                                            .font(.system(size: 14))
+                                            .foregroundStyle(Color.theme.secondaryText)
                                     }
                                 }
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 6)
-                                .background(Color.theme.accent.opacity(0.12))
+                                .background(Color.theme.accent.opacity(0.1))
                                 .clipShape(Capsule())
-                                
+
                                 Spacer()
                             }
-                            .padding(.horizontal, 20)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
                             .transition(.move(edge: .top).combined(with: .opacity))
                         }
                     }
-                    .padding(.bottom, 10)
                     .background(Color.theme.primaryBackground)
-                    
+
                     ZStack {
                         if viewModel.isSearchActive && !viewModel.searchText.isEmpty {
                             SearchResultsView(
@@ -120,7 +114,7 @@ struct DiscoverView: View {
                             )
                         } else {
                             ScrollView {
-                                LazyVStack(spacing: 24) {
+                                LazyVStack(spacing: 0) {
                                     if let error = viewModel.errorMessage {
                                         DiscoverErrorView(
                                             message: error,
@@ -130,10 +124,15 @@ struct DiscoverView: View {
                                             }
                                         )
                                     }
+
+                                    // Trending Moods
                                     if !viewModel.trendingMoods.isEmpty {
                                         VStack(alignment: .leading, spacing: 10) {
-                                            SectionHeader(title: "Trending Moods", subtitle: "What the world is feeling")
-                                            
+                                            Text("Trending")
+                                                .font(.xScreenTitle)
+                                                .foregroundStyle(Color.theme.primaryText)
+                                                .padding(.horizontal, 16)
+
                                             ScrollView(.horizontal, showsIndicators: false) {
                                                 HStack(spacing: 10) {
                                                     ForEach(viewModel.trendingMoods) { mood in
@@ -146,15 +145,22 @@ struct DiscoverView: View {
                                                         )
                                                     }
                                                 }
-                                                .padding(.horizontal, 20)
+                                                .padding(.horizontal, 16)
                                             }
                                         }
+                                        .padding(.vertical, 16)
+
+                                        Rectangle().fill(Color.theme.divider).frame(height: 0.5)
                                     }
 
+                                    // Categories
                                     if !viewModel.categories.isEmpty {
                                         VStack(alignment: .leading, spacing: 10) {
-                                            SectionHeader(title: "Categories", subtitle: "Explore by topic")
-                                            
+                                            Text("Topics")
+                                                .font(.xSectionHeader)
+                                                .foregroundStyle(Color.theme.primaryText)
+                                                .padding(.horizontal, 16)
+
                                             ScrollView(.horizontal, showsIndicators: false) {
                                                 HStack(spacing: 12) {
                                                     ForEach(viewModel.categories) { category in
@@ -167,14 +173,22 @@ struct DiscoverView: View {
                                                         )
                                                     }
                                                 }
-                                                .padding(.horizontal, 20)
+                                                .padding(.horizontal, 16)
                                             }
                                         }
+                                        .padding(.vertical, 12)
+
+                                        Rectangle().fill(Color.theme.divider).frame(height: 0.5)
                                     }
+
+                                    // Suggested Users
                                     if !viewModel.suggestedUsers.isEmpty {
                                         VStack(alignment: .leading, spacing: 10) {
-                                            SectionHeader(title: "People to Follow", subtitle: "Connect with like minds")
-                                            
+                                            Text("Who to follow")
+                                                .font(.xSectionHeader)
+                                                .foregroundStyle(Color.theme.primaryText)
+                                                .padding(.horizontal, 16)
+
                                             ScrollView(.horizontal, showsIndicators: false) {
                                                 HStack(spacing: 12) {
                                                     ForEach(viewModel.suggestedUsers) { user in
@@ -186,14 +200,22 @@ struct DiscoverView: View {
                                                         )
                                                     }
                                                 }
-                                                .padding(.horizontal, 20)
+                                                .padding(.horizontal, 16)
                                             }
                                         }
+                                        .padding(.vertical, 12)
+
+                                        Rectangle().fill(Color.theme.divider).frame(height: 0.5)
                                     }
+
+                                    // Hashtags
                                     if !viewModel.trendingHashtags.isEmpty {
                                         VStack(alignment: .leading, spacing: 10) {
-                                            SectionHeader(title: "Popular Hashtags", subtitle: "Trending topics")
-                                            
+                                            Text("Popular Hashtags")
+                                                .font(.xSectionHeader)
+                                                .foregroundStyle(Color.theme.primaryText)
+                                                .padding(.horizontal, 16)
+
                                             ScrollView(.horizontal, showsIndicators: false) {
                                                 HStack(spacing: 8) {
                                                     ForEach(viewModel.trendingHashtags) { hashtag in
@@ -206,29 +228,15 @@ struct DiscoverView: View {
                                                         )
                                                     }
                                                 }
-                                                .padding(.horizontal, 20)
+                                                .padding(.horizontal, 16)
                                             }
                                         }
+                                        .padding(.vertical, 12)
+
+                                        Rectangle().fill(Color.theme.divider).frame(height: 0.5)
                                     }
 
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        HStack {
-                                            Text(viewModel.hasActiveFilter ? "Filtered Feed" : "Community Discover Feed")
-                                                .font(.system(size: 18, weight: .bold, design: .rounded))
-                                                .foregroundStyle(.primary)
-                                            
-                                            Spacer()
-                                            
-                                            if viewModel.hasActiveFilter {
-                                                Button("Clear Filter") {
-                                                    viewModel.clearFilters()
-                                                }
-                                                .font(.system(size: 12, weight: .medium))
-                                                .foregroundStyle(.teal)
-                                            }
-                                        }
-                                        .padding(.horizontal, 20)
-                                    }
+                                    // Feed section
                                     if viewModel.discoverPosts.isEmpty {
                                         EmptyDiscoverView(
                                             hasActiveFilter: viewModel.hasActiveFilter,
@@ -245,10 +253,12 @@ struct DiscoverView: View {
                                                 router.push(.postDetail(postId: post.id))
                                             }
                                         )
-                                        .padding(.horizontal, 20)
+                                        .padding(.horizontal, 16)
+                                        .padding(.top, 16)
 
                                         if viewModel.hasMorePages {
                                             ProgressView()
+                                                .tint(Color.theme.accent)
                                                 .padding(.vertical, 20)
                                                 .onAppear {
                                                     Task {
@@ -258,7 +268,6 @@ struct DiscoverView: View {
                                         }
                                     }
                                 }
-                                .padding(.top, 12)
                                 .padding(.bottom, 100)
                             }
                             .refreshable {
@@ -277,25 +286,6 @@ struct DiscoverView: View {
     }
 }
 
-// MARK: - Section Header Component
-private struct SectionHeader: View {
-    let title: String
-    let subtitle: String
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(title)
-                .font(.system(size: 18, weight: .bold, design: .rounded))
-                .foregroundStyle(Color.theme.primaryText)
-            
-            Text(subtitle)
-                .font(.system(size: 12, weight: .medium))
-                .foregroundStyle(Color.theme.secondaryText)
-        }
-        .padding(.horizontal, 20)
-    }
-}
-
 // MARK: - Two-Column Masonry Grid
 private struct MasonryGrid: View {
     let posts: [DiscoverPost]
@@ -307,7 +297,7 @@ private struct MasonryGrid: View {
         var right: [DiscoverPost] = []
         var leftHeight: CGFloat = 0
         var rightHeight: CGFloat = 0
-        
+
         for post in posts {
             let h = post.heightClass.heightValue
             if leftHeight <= rightHeight {
@@ -320,13 +310,13 @@ private struct MasonryGrid: View {
         }
         return left
     }
-    
+
     private var rightColumnPosts: [DiscoverPost] {
         var left: [DiscoverPost] = []
         var right: [DiscoverPost] = []
         var leftHeight: CGFloat = 0
         var rightHeight: CGFloat = 0
-        
+
         for post in posts {
             let h = post.heightClass.heightValue
             if leftHeight <= rightHeight {
@@ -339,7 +329,7 @@ private struct MasonryGrid: View {
         }
         return right
     }
-    
+
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
             LazyVStack(spacing: 12) {
@@ -353,7 +343,7 @@ private struct MasonryGrid: View {
                     }
                 }
             }
-            
+
             LazyVStack(spacing: 12) {
                 ForEach(rightColumnPosts) { post in
                     DiscoverCard(

@@ -20,10 +20,10 @@ struct SuccessToastView: View {
         HStack(spacing: 10) {
             Image(systemName: iconName)
                 .font(.system(size: 16, weight: .bold))
-                .foregroundStyle(.teal)
+                .foregroundStyle(Color.theme.accent)
             
             Text(message)
-                .font(.system(size: 14, weight: .semibold, design: .rounded))
+                .font(.xDisplayName)
                 .foregroundStyle(Color.theme.primaryText)
         }
         .padding(.horizontal, 16)

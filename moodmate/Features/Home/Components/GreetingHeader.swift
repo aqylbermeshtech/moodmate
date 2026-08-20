@@ -20,22 +20,25 @@ struct GreetingHeader: View {
                         imageData: viewModel.currentUserAvatarData,
                         name: viewModel.currentUserDisplayName,
                         colorHex: viewModel.currentUserAvatarColorHex,
-                        size: 44,
-                        showBorder: true
+                        size: 32,
+                        showBorder: false
                     )
                 }
-                .buttonStyle(ScaleButtonStyle())
-                .padding(.leading, -8)
+                .buttonStyle(XPressableStyle(pressedScale: 0.95))
 
                 Spacer()
+
+                Image(systemName: "gearshape")
+                    .font(.system(size: 20))
+                    .foregroundStyle(Color.theme.primaryText)
             }
         }
     }
 
     private var appMark: some View {
         Image(systemName: "leaf.circle.fill")
-            .font(.system(size: 32, weight: .regular))
-            .foregroundStyle(Color.theme.accent)
+            .font(.system(size: 28, weight: .regular))
+            .foregroundStyle(Color.theme.primaryText)
             .accessibilityLabel("MoodMate")
     }
 }
@@ -45,7 +48,7 @@ struct GreetingHeader: View {
 struct ScaleButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .scaleEffect(configuration.isPressed ? 0.94 : 1.0)
+            .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
             .animation(.spring(response: 0.25, dampingFraction: 0.7), value: configuration.isPressed)
     }
 }
@@ -54,6 +57,6 @@ struct ScaleButtonStyle: ButtonStyle {
     ZStack {
         Color.theme.primaryBackground.ignoresSafeArea()
         GreetingHeader(viewModel: HomeViewModel(), onProfileTap: {})
-            .padding()
+            .padding(.horizontal, 16)
     }
 }

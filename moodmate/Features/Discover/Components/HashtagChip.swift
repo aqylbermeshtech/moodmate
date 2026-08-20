@@ -11,38 +11,38 @@ struct HashtagChip: View {
     let hashtag: DiscoverHashtag
     let isSelected: Bool
     var onTap: () -> Void
-    
+
     var body: some View {
         Button(action: onTap) {
             HStack(spacing: 4) {
                 Text("#\(hashtag.name)")
-                    .font(.system(size: 13, weight: .bold, design: .rounded))
-                
+                    .font(.xTrendingTopic)
+
                 Text(formattedCount(hashtag.postCount))
-                    .font(.system(size: 10, weight: .medium))
+                    .font(.xTrendingMeta)
                     .foregroundStyle(isSelected ? .white.opacity(0.8) : Color.theme.secondaryText)
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
             .background {
                 if isSelected {
-                    Capsule().fill(Color.teal)
+                    Capsule().fill(Color.theme.accent)
                 } else {
-                    Capsule().fill(Color.theme.surface)
+                    Capsule().fill(Color.theme.secondaryBackground)
                 }
             }
-            .foregroundStyle(isSelected ? .white : Color.teal)
+            .foregroundStyle(isSelected ? .white : Color.theme.primaryText)
             .overlay(
                 Capsule()
                     .stroke(
-                        isSelected ? Color.clear : Color.teal.opacity(0.3),
+                        isSelected ? Color.clear : Color.theme.divider,
                         lineWidth: 1
                     )
             )
         }
-        .buttonStyle(ScaleButtonStyle())
+        .buttonStyle(XPressableStyle())
     }
-    
+
     private func formattedCount(_ count: Int) -> String {
         if count >= 1000 {
             return String(format: "%.1fk", Double(count) / 1000.0)
@@ -65,4 +65,5 @@ struct HashtagChip: View {
         )
     }
     .padding()
+    .background(Color.theme.primaryBackground)
 }

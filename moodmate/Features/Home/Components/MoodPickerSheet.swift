@@ -11,16 +11,16 @@ struct MoodPickerSheet: View {
     var body: some View {
         VStack(spacing: 24) {
             RoundedRectangle(cornerRadius: 3)
-                .fill(Color.secondary.opacity(0.3))
+                .fill(Color.theme.secondaryText.opacity(0.4))
                 .frame(width: 36, height: 5)
                 .padding(.top, 12)
 
             VStack(spacing: 6) {
                 Text("How are you feeling today?")
-                    .font(.system(size: 22, weight: .bold, design: .rounded))
+                    .font(.xScreenTitle)
                     .foregroundStyle(Color.theme.primaryText)
                 Text("Select a mood to update your daily check-in")
-                    .font(.system(size: 14))
+                    .font(.xTrendingMeta)
                     .foregroundStyle(Color.theme.secondaryText)
             }
             .padding(.top, 6)
@@ -43,33 +43,30 @@ struct MoodPickerSheet: View {
                         VStack(spacing: 12) {
                             Text(option.emoji).font(.system(size: 40))
                             Text(option.text)
-                                .font(.system(size: 14, weight: .semibold, design: .rounded))
+                                .font(.xDisplayName)
                                 .foregroundStyle(Color.theme.primaryText)
                         }
                         .frame(width: 100, height: 100)
                         .background(
                             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                .fill(
-                                    isSelected
-                                        ? Color.adaptiveMoodColor(hex: option.colorHex).opacity(0.2)
-                                        : Color.theme.surface
-                                )
+                                .fill(isSelected ? Color.theme.accent.opacity(0.15) : Color.theme.secondaryBackground)
                         )
                         .overlay(
                             RoundedRectangle(cornerRadius: 16, style: .continuous)
                                 .stroke(
-                                    isSelected ? Color(hex: option.colorHex) : Color.theme.border,
-                                    lineWidth: 2
+                                    isSelected ? Color.theme.accent : Color.theme.divider,
+                                    lineWidth: isSelected ? 2 : 1
                                 )
                         )
                     }
-                    .buttonStyle(ScaleButtonStyle())
+                    .buttonStyle(XPressableStyle())
                 }
             }
             .padding(.horizontal, 24)
 
             Spacer()
         }
+        .background(Color.theme.primaryBackground)
     }
 }
 

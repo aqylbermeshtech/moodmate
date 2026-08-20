@@ -10,57 +10,40 @@ import SwiftUI
 struct SuggestedUserCard: View {
     let user: SuggestedUser
     var onFollow: () -> Void
-    
+
     var body: some View {
         VStack(spacing: 12) {
-            ZStack(alignment: .bottomTrailing) {
-                ZStack {
-                    Circle()
-                        .stroke(
-                            LinearGradient(
-                                colors: [
-                                    Color(hex: user.moodColorHex ?? "38B2AC"),
-                                    Color(hex: user.avatarColorHex)
-                                ],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            ),
-                            lineWidth: 2.5
-                        )
-                        .frame(width: 62, height: 62)
-                    
-                    AvatarView(
-                        imageData: user.avatarImageData,
-                        name: user.displayName,
-                        colorHex: user.avatarColorHex,
-                        size: 52,
-                        showBorder: false,
-                        moodEmoji: user.moodEmoji
-                    )
-                }
-            }
+            AvatarView(
+                imageData: user.avatarImageData,
+                name: user.displayName,
+                colorHex: user.avatarColorHex,
+                size: 48,
+                showBorder: false,
+                moodEmoji: user.moodEmoji
+            )
+
             VStack(spacing: 2) {
                 Text(user.displayName)
-                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .font(.xDisplayName)
                     .foregroundStyle(Color.theme.primaryText)
                     .lineLimit(1)
-                
+
                 Text("@\(user.username)")
-                    .font(.system(size: 11))
+                    .font(.xTrendingMeta)
                     .foregroundStyle(Color.theme.secondaryText)
                     .lineLimit(1)
-                
+
                 if let moodText = user.moodText, let emoji = user.moodEmoji {
                     HStack(spacing: 3) {
                         Text(emoji)
-                            .font(.system(size: 9))
+                            .font(.system(size: 10))
                         Text(moodText)
-                            .font(.system(size: 9, weight: .bold))
+                            .font(.system(size: 10, weight: .semibold))
                     }
                     .padding(.horizontal, 6)
                     .padding(.vertical, 2)
-                    .background(Color.adaptiveMoodColor(hex: user.moodColorHex ?? "38B2AC").opacity(0.15))
-                    .foregroundStyle(Color.adaptiveMoodColor(hex: user.moodColorHex ?? "38B2AC"))
+                    .background(Color.theme.accent.opacity(0.12))
+                    .foregroundStyle(Color.theme.accent)
                     .clipShape(Capsule())
                     .padding(.top, 2)
                 }
@@ -68,34 +51,33 @@ struct SuggestedUserCard: View {
 
             Button(action: onFollow) {
                 Text(user.isFollowing ? "Following" : "Follow")
-                    .font(.system(size: 12, weight: .bold, design: .rounded))
-                    .foregroundStyle(user.isFollowing ? Color.theme.secondaryText : Color.white)
+                    .font(.xButton)
+                    .foregroundStyle(user.isFollowing ? Color.theme.primaryText : .black)
                     .padding(.horizontal, 18)
-                    .padding(.vertical, 7)
+                    .padding(.vertical, 8)
                     .background {
                         if user.isFollowing {
                             Capsule()
-                                .fill(Color.theme.groupedBackground)
+                                .strokeBorder(Color.theme.secondaryText, lineWidth: 1)
                         } else {
                             Capsule()
-                                .fill(Color.teal)
+                                .fill(Color.theme.primaryText)
                         }
                     }
             }
-            .buttonStyle(ScaleButtonStyle())
+            .buttonStyle(XPressableStyle())
         }
         .frame(width: 130)
         .padding(.vertical, 16)
         .padding(.horizontal, 8)
-        .background(Color.theme.cardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .background(Color.theme.secondaryBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(Color.theme.border, lineWidth: 1)
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(Color.theme.divider, lineWidth: 1)
         )
-        .shadow(color: Color.theme.shadow, radius: 8, x: 0, y: 4)
     }
-    
+
 }
 
 #Preview {
@@ -118,5 +100,5 @@ struct SuggestedUserCard: View {
         )
     }
     .padding()
-    .background(Color.teal.opacity(0.1))
+    .background(Color.theme.primaryBackground)
 }

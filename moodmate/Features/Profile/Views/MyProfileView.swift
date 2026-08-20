@@ -18,9 +18,9 @@ struct MyProfileView: View {
                     Color.theme.primaryBackground
                         .ignoresSafeArea()
                     ProgressView("Loading Profile...")
-                        .font(.system(.body, design: .rounded))
+                        .font(.xPostBody)
                         .foregroundStyle(Color.theme.secondaryText)
-                        .tint(.teal)
+                        .tint(Color.theme.accent)
                 }
             } else {
                 ProfileContentView(
@@ -29,27 +29,24 @@ struct MyProfileView: View {
                         Button {
                             router.push(.editProfile)
                         } label: {
-                            HStack {
-                                Image(systemName: "pencil")
-                                    .font(.system(size: 14, weight: .bold))
-                                Text("Edit Profile")
-                                    .font(.system(size: 14, weight: .bold, design: .rounded))
-                            }
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 12)
-                            .background(Color.theme.accent)
-                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                            .shadow(color: Color.teal.opacity(0.2), radius: 6, x: 0, y: 3)
+                            Text("Edit profile")
+                                .font(.xButton)
+                                .foregroundStyle(Color.theme.primaryText)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 10)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 9999, style: .continuous)
+                                        .strokeBorder(Color.theme.divider, lineWidth: 1)
+                                )
                         }
-                        .buttonStyle(ScaleButtonStyle())
+                        .buttonStyle(XPressableStyle())
                     },
                     toolbarTrailing: {
                         Button {
                             router.push(.settings)
                         } label: {
-                            Image(systemName: "gearshape.fill")
-                                .font(.system(size: 18))
+                            Image(systemName: "gearshape")
+                                .font(.system(size: 20))
                                 .foregroundStyle(Color.theme.primaryText)
                         }
                     }

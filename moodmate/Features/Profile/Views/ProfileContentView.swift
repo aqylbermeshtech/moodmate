@@ -36,31 +36,63 @@ struct ProfileContentView<PrimaryAction: View, ToolbarTrailing: View>: View {
 
             if viewModel.isLoading {
                 ProgressView("Loading Profile...")
-                    .font(.system(.body, design: .rounded))
+                    .font(.xPostBody)
                     .foregroundStyle(Color.theme.secondaryText)
-                    .tint(.teal)
+                    .tint(Color.theme.accent)
             } else if let profile = viewModel.profile {
                 ScrollView {
-                    VStack(spacing: 24) {
+                    VStack(spacing: 0) {
                         profileHeaderView(profile: profile)
-                            .padding(.horizontal, 20)
-                            .padding(.top, 10)
 
+                        // Stats inline
                         statsView(profile: profile)
-                            .padding(.horizontal, 20)
+                            .padding(.horizontal, 16)
+                            .padding(.top, 12)
 
+                        // Bio
+                        if !profile.bio.isEmpty {
+                            Text(profile.bio)
+                                .font(.xPostBody)
+                                .foregroundStyle(Color.theme.primaryText)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.horizontal, 16)
+                                .padding(.top, 12)
+                        }
+
+                        // Action buttons
                         actionsView(profile: profile)
-                            .padding(.horizontal, 20)
+                            .padding(.horizontal, 16)
+                            .padding(.top, 16)
 
+                        Rectangle().fill(Color.theme.divider).frame(height: 0.5)
+                            .padding(.top, 16)
+
+                        // Mood history
                         moodHistoryView(profile: profile)
-                            .padding(.horizontal, 20)
+                            .padding(.horizontal, 16)
+                            .padding(.top, 16)
 
+                        Rectangle().fill(Color.theme.divider).frame(height: 0.5)
+                            .padding(.top, 16)
+
+                        // Analytics
                         analyticsSection(profile: profile)
-                            .padding(.horizontal, 20)
+                            .padding(.horizontal, 16)
+                            .padding(.top, 16)
 
+                        Rectangle().fill(Color.theme.divider).frame(height: 0.5)
+                            .padding(.top, 16)
+
+                        // Achievements
                         achievementsSection(profile: profile)
+                            .padding(.top, 16)
 
+                        Rectangle().fill(Color.theme.divider).frame(height: 0.5)
+                            .padding(.top, 16)
+
+                        // Posts
                         postsSection(profile: profile)
+                            .padding(.top, 16)
 
                         Spacer(minLength: 100)
                     }
@@ -75,22 +107,21 @@ struct ProfileContentView<PrimaryAction: View, ToolbarTrailing: View>: View {
                         .font(.system(size: 64))
                         .foregroundStyle(Color.theme.secondaryText)
                     Text("Profile Not Found")
-                        .font(.system(size: 20, weight: .bold, design: .rounded))
+                        .font(.xScreenTitle)
                         .foregroundStyle(Color.theme.primaryText)
                     Text("Could not load user profile details. Please try again.")
-                        .font(.system(size: 14))
+                        .font(.xPostBody)
                         .foregroundStyle(Color.theme.secondaryText)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 40)
                     Button("Retry") {
                         viewModel.loadProfile()
                     }
-                    .font(.system(size: 15, weight: .bold))
-                    .foregroundStyle(.white)
+                    .font(.xButton)
+                    .foregroundStyle(.black)
                     .padding(.horizontal, 24)
                     .padding(.vertical, 12)
-                    .background(Color.theme.accent)
-                    .clipShape(Capsule())
+                    .background(Capsule().fill(Color.theme.primaryText))
                 }
             }
         }
@@ -118,30 +149,48 @@ struct ProfileContentView<PrimaryAction: View, ToolbarTrailing: View>: View {
 
     // MARK: - 1. Profile Header View
     private func profileHeaderView(profile: UserProfile) -> some View {
-        VStack(spacing: 16) {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .top) {
+                AvatarView(
+                    imageData: profile.avatarImageData,
+                    name: profile.displayName,
+                    colorHex: profile.avatarColorHex,
+                    size: 80,
+                    showBorder: false,
+                    moodEmoji: profile.currentMoodEmoji
+                )
 
-            AvatarView(
-                imageData: profile.avatarImageData,
-                name: profile.displayName,
-                colorHex: profile.avatarColorHex,
-                size: 96,
-                showBorder: true,
-                moodEmoji: profile.currentMoodEmoji
-            )
+                Spacer()
 
-            VStack(spacing: 6) {
+                if profile.moodStreak > 0 {
+                    HStack(spacing: 4) {
+                        Image(systemName: "flame.fill")
+                            .font(.system(size: 12))
+                            .foregroundStyle(.orange)
+                        Text("\(profile.moodStreak)")
+                            .font(.system(size: 13, weight: .bold))
+                            .foregroundStyle(.orange)
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(Color.theme.secondaryBackground)
+                    .clipShape(Capsule())
+                }
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
                 Text(profile.displayName)
-                    .font(.system(size: 24, weight: .bold, design: .rounded))
+                    .font(.xScreenTitle)
                     .foregroundStyle(Color.theme.primaryText)
 
                 HStack(spacing: 6) {
                     Text("@\(profile.username)")
-                        .font(.system(size: 14))
+                        .font(.xHandle)
                         .foregroundStyle(Color.theme.secondaryText)
 
                     if profile.privacySetting != .publicVisibility {
                         Image(systemName: profile.privacySetting.iconName)
-                            .font(.system(size: 11))
+                            .font(.system(size: 12))
                             .foregroundStyle(Color.theme.secondaryText)
                     }
                 }
@@ -149,103 +198,51 @@ struct ProfileContentView<PrimaryAction: View, ToolbarTrailing: View>: View {
                 if let location = profile.location, !location.isEmpty {
                     HStack(spacing: 4) {
                         Image(systemName: "mappin.and.ellipse")
-                            .font(.system(size: 11))
-                            .foregroundStyle(.teal)
+                            .font(.system(size: 12))
+                            .foregroundStyle(Color.theme.secondaryText)
                         Text(location)
-                            .font(.system(size: 12, weight: .medium))
+                            .font(.xTrendingMeta)
                             .foregroundStyle(Color.theme.secondaryText)
                     }
-                    .padding(.top, 2)
                 }
-
-                if !profile.bio.isEmpty {
-                    Text(profile.bio)
-                        .font(.system(size: 14))
-                        .foregroundStyle(Color.theme.primaryText.opacity(0.85))
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 24)
-                        .padding(.top, 4)
-                }
-            }
-
-            if profile.moodStreak > 0 {
-                HStack(spacing: 6) {
-                    Image(systemName: "flame.fill")
-                        .font(.system(size: 12))
-                        .foregroundStyle(.orange)
-                    Text("\(profile.moodStreak) Days Streak")
-                        .font(.system(size: 12, weight: .bold, design: .rounded))
-                        .foregroundStyle(.orange)
-                }
-                .padding(.horizontal, 10)
-                .padding(.vertical, 5)
-                .background(Color.theme.warning.opacity(0.12))
-                .clipShape(Capsule())
             }
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 16)
-        .background(Color.theme.cardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .stroke(Color.theme.border, lineWidth: 1)
-        )
+        .padding(.horizontal, 16)
+        .padding(.top, 16)
     }
 
-    // MARK: - 2. Statistics Row
+    // MARK: - 2. Statistics Row (inline text, X-style)
     private func statsView(profile: UserProfile) -> some View {
-        HStack {
-            statsItem(title: "Posts", count: profile.postsCount)
-
-            Divider()
-                .frame(height: 30)
-                .background(Color.theme.divider)
+        HStack(spacing: 16) {
+            statsItem(count: profile.postsCount, label: "Posts")
 
             Button {
                 router.push(.followList(type: .followers, userId: viewModel.targetUserId))
             } label: {
-                statsItem(title: "Followers", count: profile.followersCount)
+                statsItem(count: profile.followersCount, label: "Followers")
             }
             .buttonStyle(PlainButtonStyle())
-
-            Divider()
-                .frame(height: 30)
-                .background(Color.theme.divider)
 
             Button {
                 router.push(.followList(type: .following, userId: viewModel.targetUserId))
             } label: {
-                statsItem(title: "Following", count: profile.followingCount)
+                statsItem(count: profile.followingCount, label: "Following")
             }
             .buttonStyle(PlainButtonStyle())
 
-            Divider()
-                .frame(height: 30)
-                .background(Color.theme.divider)
-
-            statsItem(title: "Streak", count: profile.moodStreak)
+            Spacer()
         }
-        .padding(.vertical, 14)
-        .frame(maxWidth: .infinity)
-        .background(Color.theme.cardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(Color.theme.border, lineWidth: 1)
-        )
     }
 
-    private func statsItem(title: String, count: Int) -> some View {
-        VStack(spacing: 4) {
+    private func statsItem(count: Int, label: String) -> some View {
+        HStack(spacing: 4) {
             Text("\(count)")
-                .font(.system(size: 17, weight: .bold, design: .rounded))
+                .font(.xDisplayName)
                 .foregroundStyle(Color.theme.primaryText)
-            Text(title)
-                .font(.system(size: 11, weight: .medium))
+            Text(label)
+                .font(.xHandle)
                 .foregroundStyle(Color.theme.secondaryText)
         }
-        .frame(maxWidth: .infinity)
     }
 
     // MARK: - 3. Action Buttons Row
@@ -256,31 +253,23 @@ struct ProfileContentView<PrimaryAction: View, ToolbarTrailing: View>: View {
             Button(action: {
                 showShareAlert = true
             }) {
-                HStack {
-                    Image(systemName: "square.and.arrow.up")
-                        .font(.system(size: 14, weight: .bold))
-                    Text("Share")
-                        .font(.system(size: 14, weight: .bold, design: .rounded))
-                }
-                .foregroundStyle(Color.theme.primaryText)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 12)
-                .background(Color.theme.cardBackground)
-                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .stroke(Color.theme.border, lineWidth: 1)
-                )
+                Image(systemName: "square.and.arrow.up")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(Color.theme.primaryText)
+                    .frame(width: 36, height: 36)
+                    .overlay(
+                        Circle().strokeBorder(Color.theme.divider, lineWidth: 1)
+                    )
             }
-            .buttonStyle(ScaleButtonStyle())
+            .buttonStyle(XPressableStyle())
         }
     }
 
-    // MARK: - 4. Mood History Row (Calendar / Timeline)
+    // MARK: - 4. Mood History Row
     private func moodHistoryView(profile: UserProfile) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Mood History")
-                .font(.system(size: 15, weight: .bold, design: .rounded))
+                .font(.xSectionHeader)
                 .foregroundStyle(Color.theme.primaryText)
 
             HStack(spacing: 8) {
@@ -292,13 +281,7 @@ struct ProfileContentView<PrimaryAction: View, ToolbarTrailing: View>: View {
 
                         ZStack {
                             Circle()
-                                .fill(
-                                    LinearGradient(
-                                        colors: [Color.adaptiveMoodColor(hex: entry.colorHex).opacity(0.8), Color.adaptiveMoodColor(hex: entry.colorHex)],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    )
-                                )
+                                .fill(Color.theme.secondaryBackground)
                                 .frame(width: 36, height: 36)
 
                             Text(entry.emoji)
@@ -306,7 +289,7 @@ struct ProfileContentView<PrimaryAction: View, ToolbarTrailing: View>: View {
                         }
                         .overlay(
                             Circle()
-                                .stroke(Color.theme.accent, lineWidth: Calendar.current.isDateInToday(entry.date) ? 1 : 0)
+                                .stroke(Color.theme.accent, lineWidth: Calendar.current.isDateInToday(entry.date) ? 2 : 0)
                                 .frame(width: 40, height: 40)
                         )
                     }
@@ -315,20 +298,16 @@ struct ProfileContentView<PrimaryAction: View, ToolbarTrailing: View>: View {
             }
             .padding(.vertical, 12)
             .padding(.horizontal, 8)
-            .background(Color.theme.cardBackground)
+            .background(Color.theme.secondaryBackground)
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .stroke(Color.theme.border, lineWidth: 1)
-            )
         }
     }
 
-    // MARK: - 5. Analytics Section (Weekly Chart)
+    // MARK: - 5. Analytics Section
     private func analyticsSection(profile: UserProfile) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Analytics & Insights")
-                .font(.system(size: 15, weight: .bold, design: .rounded))
+                .font(.xSectionHeader)
                 .foregroundStyle(Color.theme.primaryText)
 
             VStack(spacing: 16) {
@@ -336,14 +315,8 @@ struct ProfileContentView<PrimaryAction: View, ToolbarTrailing: View>: View {
                     ForEach(profile.moodHistory.reversed().prefix(7)) { entry in
                         VStack(spacing: 8) {
                             Spacer()
-                            RoundedRectangle(cornerRadius: 6, style: .continuous)
-                                .fill(
-                                    LinearGradient(
-                                        colors: [Color.adaptiveMoodColor(hex: entry.colorHex), Color.adaptiveMoodColor(hex: entry.colorHex).opacity(0.6)],
-                                        startPoint: .top,
-                                        endPoint: .bottom
-                                    )
-                                )
+                            RoundedRectangle(cornerRadius: 4, style: .continuous)
+                                .fill(Color.theme.accent)
                                 .frame(height: CGFloat(moodValue(for: entry.emoji) * 22))
                                 .frame(width: 20)
 
@@ -356,8 +329,7 @@ struct ProfileContentView<PrimaryAction: View, ToolbarTrailing: View>: View {
                 .frame(height: 140)
                 .padding(.top, 10)
 
-                Divider()
-                    .background(Color.theme.divider)
+                Rectangle().fill(Color.theme.divider).frame(height: 0.5)
 
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
@@ -369,7 +341,7 @@ struct ProfileContentView<PrimaryAction: View, ToolbarTrailing: View>: View {
                             Text(mostCommonMoodEmoji(profile.moodHistory))
                                 .font(.system(size: 20))
                             Text(mostCommonMoodText(profile.moodHistory))
-                                .font(.system(size: 14, weight: .bold, design: .rounded))
+                                .font(.xDisplayName)
                                 .foregroundStyle(Color.theme.primaryText)
                         }
                     }
@@ -381,19 +353,15 @@ struct ProfileContentView<PrimaryAction: View, ToolbarTrailing: View>: View {
                             .foregroundStyle(Color.theme.secondaryText)
 
                         Text("7 / 7 check-ins")
-                            .font(.system(size: 14, weight: .bold, design: .rounded))
-                            .foregroundStyle(.teal)
+                            .font(.xDisplayName)
+                            .foregroundStyle(Color.theme.accent)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
             .padding(16)
-            .background(Color.theme.cardBackground)
-            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .stroke(Color.theme.border, lineWidth: 1)
-            )
+            .background(Color.theme.secondaryBackground)
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         }
     }
 
@@ -401,15 +369,15 @@ struct ProfileContentView<PrimaryAction: View, ToolbarTrailing: View>: View {
     private func achievementsSection(profile: UserProfile) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Achievements")
-                .font(.system(size: 15, weight: .bold, design: .rounded))
+                .font(.xSectionHeader)
                 .foregroundStyle(Color.theme.primaryText)
-                .padding(.horizontal, 20)
+                .padding(.horizontal, 16)
 
             if profile.achievements.isEmpty {
                 Text("No achievements unlocked yet.")
-                    .font(.system(size: 13))
+                    .font(.xTrendingMeta)
                     .foregroundStyle(Color.theme.secondaryText)
-                    .padding(.horizontal, 20)
+                    .padding(.horizontal, 16)
             } else {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 14) {
@@ -417,7 +385,7 @@ struct ProfileContentView<PrimaryAction: View, ToolbarTrailing: View>: View {
                             achievementCard(achievement: achievement)
                         }
                     }
-                    .padding(.horizontal, 20)
+                    .padding(.horizontal, 16)
                 }
             }
         }
@@ -427,21 +395,21 @@ struct ProfileContentView<PrimaryAction: View, ToolbarTrailing: View>: View {
         HStack(spacing: 12) {
             ZStack {
                 Circle()
-                                    .fill(Color.theme.accent.opacity(0.12))
-                    .frame(width: 48, height: 48)
+                    .fill(Color.theme.accent.opacity(0.15))
+                    .frame(width: 44, height: 44)
 
                 Image(systemName: achievement.icon)
-                    .font(.system(size: 20))
-                    .foregroundStyle(.teal)
+                    .font(.system(size: 18))
+                    .foregroundStyle(Color.theme.accent)
             }
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(achievement.title)
-                    .font(.system(size: 14, weight: .bold, design: .rounded))
+                    .font(.xDisplayName)
                     .foregroundStyle(Color.theme.primaryText)
 
                 Text(achievement.description)
-                    .font(.system(size: 11))
+                    .font(.xTrendingMeta)
                     .foregroundStyle(Color.theme.secondaryText)
                     .lineLimit(2)
                     .frame(width: 140, alignment: .leading)
@@ -449,37 +417,37 @@ struct ProfileContentView<PrimaryAction: View, ToolbarTrailing: View>: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
-        .background(Color.theme.cardBackground)
+        .background(Color.theme.secondaryBackground)
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(Color.theme.border, lineWidth: 1)
+                .stroke(Color.theme.divider, lineWidth: 1)
         )
     }
 
-    // MARK: - 7. Posts Section (Adaptive Grid)
+    // MARK: - 7. Posts Section
     private func postsSection(profile: UserProfile) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Logged Moments")
-                .font(.system(size: 15, weight: .bold, design: .rounded))
+            Text("Posts")
+                .font(.xSectionHeader)
                 .foregroundStyle(Color.theme.primaryText)
-                .padding(.horizontal, 20)
+                .padding(.horizontal, 16)
 
             if viewModel.posts.isEmpty {
                 VStack(spacing: 10) {
                     Image(systemName: "doc.text.image.fill")
-                        .font(.system(size: 40))
+                        .font(.system(size: 36))
                         .foregroundStyle(Color.theme.secondaryText)
-                    Text("No moments logged yet")
-                        .font(.system(size: 14, weight: .semibold, design: .rounded))
+                    Text("No posts yet")
+                        .font(.xDisplayName)
                         .foregroundStyle(Color.theme.secondaryText)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 40)
             } else {
-                let columns = Array(repeating: GridItem(.flexible(), spacing: 3), count: 3)
+                let columns = Array(repeating: GridItem(.flexible(), spacing: 2), count: 3)
 
-                LazyVGrid(columns: columns, spacing: 3) {
+                LazyVGrid(columns: columns, spacing: 2) {
                     ForEach(viewModel.posts) { post in
                         Button {
                             router.push(.postDetail(postId: post.id))
@@ -494,13 +462,12 @@ struct ProfileContentView<PrimaryAction: View, ToolbarTrailing: View>: View {
                         }
                     }
                 }
-                .padding(.horizontal, 2)
 
                 if viewModel.isLazyLoadingPosts {
                     HStack {
                         Spacer()
                         ProgressView()
-                            .tint(.teal)
+                            .tint(Color.theme.accent)
                             .padding(.vertical, 12)
                         Spacer()
                     }
@@ -511,7 +478,7 @@ struct ProfileContentView<PrimaryAction: View, ToolbarTrailing: View>: View {
 
     private func postGridCell(post: PostModel) -> some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 4)
+            RoundedRectangle(cornerRadius: 2)
                 .fill(
                     LinearGradient(
                         colors: [
