@@ -14,25 +14,39 @@ struct RootTabContainerView: View {
 
     // MARK: - Body
     var body: some View {
-        ZStack(alignment: .bottom) {
-            tabContent
+        GeometryReader { geo in
+            let bottomInset = geo.safeAreaInsets.bottom
 
-            if !router.hidesBottomBar {
-                // X-style tab bar (anchored at bottom)
-                BottomNavigationBar(selectedTab: $router.selectedTab) {
-                    router.present(.createPost)
-                }
+            ZStack(alignment: .bottom) {
+                tabContent
 
-                // Floating compose button (X FAB)
-                HStack {
-                    Spacer()
-                    XPostFAB {
+                if !router.hidesBottomBar {
+                    // FAB
+                    VStack {
+                        Spacer()
+                        HStack {
+                            Spacer()
+                            XPostFAB {
+                                router.present(.createPost)
+                            }
+                            .padding(.trailing, 16)
+                        }
+                        .padding(.bottom, router.showTabBar ? 48 + bottomInset + 16 : 16 + bottomInset)
+                        .animation(.easeInOut(duration: 0.3), value: router.showTabBar)
+                    }
+
+                    // Tab bar
+                    BottomNavigationBar(selectedTab: $router.selectedTab) {
                         router.present(.createPost)
                     }
-                    .padding(.trailing, 16)
-                    .padding(.bottom, 72) // Above tab bar
+                    .transition(.move(edge: .bottom))
+                    .offset(y: router.showTabBar ? 0 : 48 + bottomInset + 10)
+                    .animation(.easeInOut(duration: 0.3), value: router.showTabBar)
                 }
             }
+        }
+        .onChange(of: router.selectedTab) { _, _ in
+            router.resetScrollState()
         }
         .fullScreenCover(item: $router.presentedFullScreenCover) { cover in
             switch cover {

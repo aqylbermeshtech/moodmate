@@ -140,7 +140,7 @@ struct FollowListView: View {
                                 if user.isFollowing {
                                     Color.theme.groupedBackground
                                 } else {
-                                    Color.teal
+                                    Color.theme.accent
                                 }
                             }
                         )

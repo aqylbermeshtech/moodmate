@@ -24,7 +24,7 @@ struct HomeView: View {
             // Feed filter tabs
             XFeedFilter(selection: $feedFilter)
 
-            // Timeline
+            // Timeline with scroll tracking
             ScrollView {
                 LazyVStack(spacing: 0) {
                     // Mood check-in row (compact)
@@ -50,7 +50,16 @@ struct HomeView: View {
                             }
                         )
                     }
+
+                    // Bottom spacer so content doesn't hide behind tab bar
+                    Spacer()
+                        .frame(height: 100)
                 }
+            }
+            .onScrollGeometryChange(for: CGFloat.self) { geo in
+                geo.contentOffset.y
+            } action: { _, newOffset in
+                router.updateTabBarVisibility(scrollOffset: newOffset)
             }
             .scrollIndicators(.hidden)
             .refreshable {

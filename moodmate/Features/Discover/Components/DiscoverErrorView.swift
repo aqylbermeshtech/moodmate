@@ -29,7 +29,7 @@ struct DiscoverErrorView: View {
                 Button(action: onRetry) {
                     Text("Retry")
                         .font(.system(size: 13, weight: .bold))
-                        .foregroundStyle(.teal)
+                        .foregroundStyle(Color.theme.accent)
                 }
                 .buttonStyle(ScaleButtonStyle())
             }

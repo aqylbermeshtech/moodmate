@@ -59,38 +59,38 @@ struct BottomNavigationBar: View {
     }
 
     var body: some View {
-        HStack(spacing: 0) {
-            ForEach(visibleTabs) { tab in
-                Button {
-                    withAnimation(.easeOut(duration: 0.15)) {
-                        selectedTab = tab
+        VStack(spacing: 0) {
+            // Top divider line
+            Rectangle().fill(Color.theme.divider).frame(height: 0.5)
+
+            // Icon row — sits above the home indicator
+            HStack(spacing: 0) {
+                ForEach(visibleTabs) { tab in
+                    Button {
+                        withAnimation(.easeOut(duration: 0.15)) {
+                            selectedTab = tab
+                        }
+                    } label: {
+                        Image(systemName: selectedTab == tab ? tab.selectedIconName : tab.iconName)
+                            .font(.system(size: 24, weight: selectedTab == tab ? .bold : .regular))
+                            .foregroundStyle(selectedTab == tab ? Color.theme.primaryText : Color.theme.secondaryText)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 48)
+                            .contentShape(Rectangle())
                     }
-                } label: {
-                    Image(systemName: selectedTab == tab ? tab.selectedIconName : tab.iconName)
-                        .font(.system(size: 24, weight: selectedTab == tab ? .bold : .regular))
-                        .foregroundStyle(selectedTab == tab ? Color.theme.primaryText : Color.theme.secondaryText)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 48)
-                        .contentShape(Rectangle())
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
             }
+            .padding(.horizontal, 8)
         }
-        .padding(.horizontal, 8)
-        .padding(.top, 4)
         .background(
             ZStack {
-                // Blur effect background
                 Rectangle()
                     .fill(.ultraThinMaterial)
-
-                // Tinted overlay for true dark feel
                 Color.theme.primaryBackground.opacity(0.85)
             }
+            .ignoresSafeArea(.container, edges: .bottom)
         )
-        .overlay(alignment: .top) {
-            Rectangle().fill(Color.theme.divider).frame(height: 0.5)
-        }
     }
 }
 

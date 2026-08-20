@@ -77,11 +77,11 @@ struct SettingsView: View {
                                 } icon: {
                                     Image(systemName: "bell.badge.fill")
                                         .font(.system(size: 18))
-                                        .foregroundStyle(.teal)
+                                        .foregroundStyle(Color.theme.accent)
                                 }
                                 Spacer()
                                 Toggle("", isOn: $notificationsEnabled)
-                                    .tint(.teal)
+                                    .tint(Color.theme.accent)
                             }
                             .padding(.horizontal, 16)
                             .padding(.vertical, 14)
@@ -108,7 +108,7 @@ struct SettingsView: View {
                                 }
                                 Spacer()
                                 Toggle("", isOn: $weeklyDigestEnabled)
-                                    .tint(.teal)
+                                    .tint(Color.theme.accent)
                             }
                             .padding(.horizontal, 16)
                             .padding(.vertical, 14)
@@ -142,7 +142,7 @@ struct SettingsView: View {
                                     }
                                 }
                                 .pickerStyle(MenuPickerStyle())
-                                .tint(.teal)
+                                .tint(Color.theme.accent)
                             }
                             .padding(.horizontal, 16)
                             .padding(.vertical, 10)
@@ -235,7 +235,7 @@ struct SettingsView: View {
         HStack(spacing: 14) {
             Image(systemName: icon)
                 .font(.system(size: 20))
-                .foregroundStyle(.teal)
+                .foregroundStyle(Color.theme.accent)
                 .frame(width: 24)
             
             VStack(alignment: .leading, spacing: 2) {

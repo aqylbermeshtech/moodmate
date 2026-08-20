@@ -88,7 +88,7 @@ struct EditProfileView: View {
                         if editViewModel.isSaving || editViewModel.isUploadingAvatar {
                             HStack(spacing: 8) {
                                 ProgressView()
-                                    .tint(.teal)
+                                    .tint(Color.theme.accent)
                                 Text("Saving")
                                     .font(.system(size: 16, weight: .bold))
                             }
@@ -170,7 +170,7 @@ struct EditProfileView: View {
                     Text(hasCustomPhoto ? "Change Photo" : "Add Photo")
                         .font(.system(size: 13, weight: .semibold, design: .rounded))
                 }
-                .foregroundStyle(.teal)
+                .foregroundStyle(Color.theme.accent)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 6)
                 .background(Color.theme.accent.opacity(0.12))
@@ -370,7 +370,7 @@ struct EditProfileView: View {
                                 .foregroundStyle(Color.theme.primaryText)
                         }
                     }
-                    .tint(.teal)
+                    .tint(Color.theme.accent)
                     
                     if editViewModel.hasBirthday {
                         DatePicker(
@@ -379,7 +379,7 @@ struct EditProfileView: View {
                             displayedComponents: [.date]
                         )
                         .datePickerStyle(.graphical)
-                        .tint(.teal)
+                        .tint(Color.theme.accent)
                         .padding(8)
                         .background(Color.theme.surface)
                         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
@@ -473,7 +473,7 @@ struct PhotosPickerWrapper: View {
                 VStack(spacing: 16) {
                     Image(systemName: "photo.on.rectangle.angled")
                         .font(.system(size: 48))
-                        .foregroundStyle(.teal)
+                        .foregroundStyle(Color.theme.accent)
                     Text("Tap to Open Photo Library")
                         .font(.system(size: 16, weight: .bold, design: .rounded))
                         .foregroundStyle(Color.theme.primaryText)

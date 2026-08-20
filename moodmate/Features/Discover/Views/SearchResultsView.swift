@@ -31,7 +31,7 @@ struct SearchResultsView: View {
                                 .padding(.vertical, 8)
                                 .background {
                                     if scope == item {
-                                        Capsule().fill(Color.teal)
+                                        Capsule().fill(Color.theme.accent)
                                     } else {
                                         Capsule().fill(Color.theme.surface)
                                     }
@@ -207,10 +207,10 @@ private struct SearchResultRow: View {
             case .hashtag:
                 ZStack {
                     Circle()
-                        .fill(Color.teal.opacity(0.12))
+                        .fill(Color.theme.accent.opacity(0.12))
                     Text("#")
                         .font(.system(size: 18, weight: .bold, design: .rounded))
-                        .foregroundStyle(.teal)
+                        .foregroundStyle(Color.theme.accent)
                 }
                 .frame(width: 44, height: 44)
                 

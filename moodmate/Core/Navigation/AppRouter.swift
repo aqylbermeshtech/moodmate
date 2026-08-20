@@ -24,9 +24,57 @@ final class AppRouter: ObservableObject {
 
     @Published var presentedFullScreenCover: FullScreenRoute?
 
+    /// Controls tab bar visibility — driven by scroll direction in child views.
+    @Published var showTabBar: Bool = true
+    private var lastScrollOffset: CGFloat = 0
+    private var scrollAccumulator: CGFloat = 0
+    private let scrollThreshold: CGFloat = 15
+
     private var pendingURL: URL?
 
     private init() {}
+
+    // MARK: - Scroll-aware tab bar
+
+    /// Call from any scrollable view's onScroll to drive hide/show behaviour.
+    /// `offset` is the *content* offset (positive = scrolled down from top).
+    func updateTabBarVisibility(scrollOffset offset: CGFloat) {
+        let delta = offset - lastScrollOffset
+        lastScrollOffset = offset
+
+        // Don't hide near the top of content
+        guard offset > 60 else {
+            if !showTabBar {
+                withAnimation(.easeOut(duration: 0.25)) { showTabBar = true }
+            }
+            scrollAccumulator = 0
+            return
+        }
+
+        scrollAccumulator += delta
+
+        if scrollAccumulator > scrollThreshold && showTabBar {
+            // Scrolling down → hide
+            withAnimation(.easeOut(duration: 0.25)) { showTabBar = false }
+            scrollAccumulator = 0
+        } else if scrollAccumulator < -scrollThreshold && !showTabBar {
+            // Scrolling up → show
+            withAnimation(.easeOut(duration: 0.25)) { showTabBar = true }
+            scrollAccumulator = 0
+        }
+
+        // Clamp accumulator to avoid massive build-up
+        scrollAccumulator = max(-scrollThreshold * 3, min(scrollThreshold * 3, scrollAccumulator))
+    }
+
+    /// Reset scroll state — call when switching tabs so the bar always starts visible.
+    func resetScrollState() {
+        lastScrollOffset = 0
+        scrollAccumulator = 0
+        if !showTabBar {
+            withAnimation(.easeOut(duration: 0.25)) { showTabBar = true }
+        }
+    }
 
     // MARK: - Push navigation
 

@@ -87,11 +87,11 @@ struct AvatarPickerOptionsView: View {
                     HStack(spacing: 14) {
                         ZStack {
                             Circle()
-                                .fill(Color.teal.opacity(0.12))
+                                .fill(Color.theme.accent.opacity(0.12))
                                 .frame(width: 44, height: 44)
                             Image(systemName: "photo.on.rectangle")
                                 .font(.system(size: 18, weight: .semibold))
-                                .foregroundStyle(.teal)
+                                .foregroundStyle(Color.theme.accent)
                         }
                         
                         VStack(alignment: .leading, spacing: 2) {

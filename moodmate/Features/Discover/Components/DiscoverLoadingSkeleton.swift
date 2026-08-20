@@ -107,11 +107,7 @@ struct DiscoverLoadingSkeleton: View {
 
 #Preview {
     ZStack {
-        LinearGradient(
-            colors: [.teal.opacity(0.18), .purple.opacity(0.12)],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
+        Color.theme.primaryBackground
         .ignoresSafeArea()
         
         ScrollView {

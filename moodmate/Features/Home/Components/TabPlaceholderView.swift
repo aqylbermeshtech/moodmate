@@ -18,7 +18,7 @@ struct TabPlaceholderView: View {
                 .font(.system(size: 54))
                 .foregroundStyle(Color.theme.accent)
                 .padding()
-                .background(Circle().fill(.teal.opacity(0.08)))
+                .background(Circle().fill(Color.theme.accent.opacity(0.08)))
             
             Text(title)
                 .font(.system(size: 22, weight: .bold, design: .rounded))
