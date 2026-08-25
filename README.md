@@ -1,126 +1,85 @@
-# MoodMate | Not completed
+# MoodMate
 
-MoodMate is a social networking iOS application that encourages users to capture and share their daily emotions through photography. Every day, users select their current mood, upload a photo that represents how they feel, and connect with others through authentic daily moments.
-
-The goal of MoodMate is to create a healthier and more genuine social experience by focusing on emotions instead of perfection.
-
----
+MoodMate is a social networking iOS app built around daily emotional check-ins. Instead of curated, performance-driven posts, users pick a mood, pair it with a photo or thought, and share it with friends and followers — the goal is a more honest, less "highlight reel" kind of social feed.
 
 ## Features
 
-### Current
-- User Authentication
-- Sign In / Sign Up
-- Custom reusable UI components
-- SwiftUI interface
+- **Authentication** — email/password sign in and sign up via Firebase Auth, with email verification and password reset
+- **Home feed** — a scrollable feed of friends' mood posts, plus a friends tray and mood picker
+- **Create Post** — pick a mood, write a caption, attach a photo, choose post visibility, with local draft saving
+- **Discover** — search users and moods, browse trending moods and hashtags, suggested users to follow
+- **Chat** — direct messaging with a conversation list and per-thread message view
+- **Profile** — own profile and other users' profiles, edit profile, avatar picker, followers/following lists, post detail view, settings
+- **Theming** — light/dark mode support via a central theme manager
+- **Deep linking** — custom URL scheme (`moodmate://`) routed through a central app router
 
-### Planned
--  Daily mood photo posting
--  Mood selection before posting
--  Personalized social feed
--  Like and comment on posts
--  Follow other users
--  Search users and moods
--  Notifications
--  User profiles
--  Mood analytics and statistics
--  Daily posting streaks
--  Dark Mode
--  Offline caching
--  Cloud synchronization
+## Tech Stack
 
----
+- **Swift 5** / **SwiftUI**
+- **MVVM** architecture (`Views` + `ViewModels`, repository layer for data access)
+- **Swift Concurrency** (async/await)
+- **Firebase Auth** (via Firebase iOS SDK, added as a Swift Package)
+- Mock/local data providers for posts, feed, discover, and chat (no live backend for content yet — see [Current Limitations](#current-limitations))
 
-##  Tech Stack
-
-- Swift 6
-- SwiftUI
-- MVVM Architecture
-- Swift Concurrency (async/await)
-- Firebase (Authentication & Storage) *(planned)*
-- Cloud Firestore *(planned)*
-- SwiftData *(planned)*
-- Git & GitHub
-
----
-
-##  Project Structure
+## Project Structure
 
 ```
-MoodMate
-│
-├── App
-├── Core
-│   ├── Components
-│   ├── Extensions
-│   ├── Services
-│   └── Utilities
-│
-├── Features
-│   ├── Authentication
-│   ├── Feed
-│   ├── Profile
-│   ├── MoodSelection
-│   ├── Camera
-│   ├── Search
-│   ├── Notifications
-│   ├── Settings
-│   └── Analytics
-│
-├── Resources
-└── Tests
+moodmate/
+├── App/                     # App entry point, AppDelegate, Info.plist, GoogleService-Info.plist
+├── Core/
+│   ├── Components/          # Shared reusable views (avatar, text field, post card, toast)
+│   ├── Errors/               # App-wide error types
+│   ├── Extensions/           # Color, String, View extensions
+│   ├── Models/                # Shared domain models
+│   ├── Navigation/            # AppRouter, Route definitions
+│   ├── Repositories/           # Post, Follow, Avatar, Profile, UserStore repositories (+ protocols)
+│   └── Theme/                  # ThemeColors, ThemeManager
+└── Features/
+    ├── Authentication/          # Sign in / sign up, Firebase auth manager, session manager
+    ├── Chat/                    # Conversation list and thread views
+    ├── CreatePost/               # Mood/photo/caption post composer
+    ├── Discover/                  # Search, trending moods, suggested users
+    ├── Home/                       # Feed, tab container, bottom navigation
+    └── Profile/                     # Own/other profile, edit profile, follow lists, settings
 ```
 
----
+Each feature module follows the same shape: `Models/`, `ViewModels/`, `Views/`, and (where needed) `Components/` and `Services/` or `Repositories/`.
 
-##  Project Goals
+## Requirements
 
-- Build a production-ready SwiftUI application
-- Practice scalable MVVM architecture
-- Learn modern iOS development best practices
-- Implement reusable UI components
-- Develop experience with backend integration
-- Create a polished portfolio project
+- macOS with **Xcode 26** or newer
+- iOS **26.1**+ deployment target (simulator or device)
+- Swift 5 toolchain (bundled with Xcode)
+- A Firebase project with **Authentication** (Email/Password) enabled
+- Internet connection to resolve the Firebase iOS SDK Swift package on first build
 
----
+## Getting Started
 
-##  Future Improvements
+1. Clone the repository:
+   ```bash
+   git clone <repo-url>
+   cd moodmate
+   ```
+2. Open the project in Xcode:
+   ```bash
+   open moodmate.xcodeproj
+   ```
+3. Let Xcode resolve Swift Package dependencies (`firebase-ios-sdk`) — this happens automatically on first open/build.
+4. **Firebase setup**: the project already includes `moodmate/App/GoogleService-Info.plist`. If you're pointing this at your own Firebase project, replace it with your own config file downloaded from the [Firebase console](https://console.firebase.google.com/), and enable the **Email/Password** sign-in provider under Authentication.
+5. Select a simulator (or device) and run (`Cmd+R`).
 
-- AI-generated mood insights
-- Mood calendar
-- Widgets
-- Apple Sign In
-- Push Notifications
-- Friend recommendations
-- Photo filters
-- Share extensions
-- Accessibility improvements
-- Localization
+## Current Limitations
 
----
+- Feed, Discover, and Chat content are backed by local mock data providers, not a live database — posts, likes, and messages do not currently sync across devices or persist to a backend.
+- Only email/password authentication is implemented (no Sign in with Apple/Google yet).
+- No push notifications, offline caching, or cloud sync yet.
+- No automated test target is currently configured in the Xcode project.
 
-##  Screens
+## Notes
 
-- Splash
-- Onboarding
-- Authentication
-- Home Feed
-- Mood Selection
-- Create Post
-- User Profile
-- Search
-- Notifications
-- Analytics
-- Settings
+- `DESIGN-swiftui.md` and `report.md` are working/reference documents (design tokens and an implementation report) and are excluded from version control via `.gitignore` — only this `README.md` is tracked.
+- Bundle identifier: `com.lalalala.moodmate`.
 
----
-
-##  Author
-
-Developed as a portfolio project to explore modern iOS development using SwiftUI and MVVM architecture.
-
----
-
-##  License
+## License
 
 This project is intended for educational and portfolio purposes.
