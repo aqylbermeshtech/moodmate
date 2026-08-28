@@ -7,6 +7,11 @@
 //  routes every like/bookmark/create/delete mutation back through here, so a
 //  change made in one feature is visible in the others.
 //
+//  Posts persist to a JSON file in the app's documents directory — the same
+//  local-store pattern ProfileRepository uses for profiles. Seed content is
+//  only (re)generated when the file is missing or the seed version bumps;
+//  user-created posts are kept across launches.
+//
 
 import Foundation
 import Combine
@@ -36,9 +41,27 @@ final class PostRepository: PostRepositoryProtocol {
     private let logger = Logger(subsystem: "com.moodmate", category: "PostRepository")
     private let profileRepository: ProfileRepositoryProtocol
 
+    // MARK: - Local store
+
+    private let fileManager = FileManager.default
+    private let storageKey = "moodmate_posts_v1.json"
+
+    /// Bump when the seed content itself changes and needs to replace the
+    /// copy already written to disk. Mirrors ProfileRepository.mockDataVersion.
+    private static let seedVersion = 1
+    private static let seedVersionKey = "moodmate_post_seed_version"
+
+    private var storageFileURL: URL {
+        let paths = fileManager.urls(for: .documentDirectory, in: .userDomainMask)
+        return paths[0].appendingPathComponent(storageKey)
+    }
+
     init(profileRepository: ProfileRepositoryProtocol = ProfileRepository.shared) {
         self.profileRepository = profileRepository
-        seedInitialPosts()
+        loadPersistedPosts()
+        invalidateStaleSeedPostsIfNeeded()
+        seedMissingPosts()
+        persistPosts()
         observeProfileUpdates()
     }
 
@@ -82,6 +105,7 @@ final class PostRepository: PostRepositoryProtocol {
     func createPost(_ post: PostModel) async throws -> PostModel {
         try await Task.sleep(nanoseconds: 400_000_000)
         posts.insert(post, at: 0)
+        persistPosts()
         postUpdateSubject.send(post)
         return post
     }
@@ -89,6 +113,7 @@ final class PostRepository: PostRepositoryProtocol {
     func deletePost(id: String) async throws {
         try await Task.sleep(nanoseconds: 100_000_000)
         posts.removeAll { $0.id == id }
+        persistPosts()
     }
 
     func setLike(postId: String, isLiked: Bool) async throws {
@@ -99,6 +124,7 @@ final class PostRepository: PostRepositoryProtocol {
         updated.isLiked = isLiked
         updated.likesCount += isLiked ? 1 : -1
         posts[index] = updated
+        persistPosts()
 
         logger.debug("like committed for \(postId, privacy: .public): isLiked=\(isLiked, privacy: .public) count=\(updated.likesCount, privacy: .public)")
         postUpdateSubject.send(updated)
@@ -107,20 +133,67 @@ final class PostRepository: PostRepositoryProtocol {
     func toggleBookmark(postId: String) async throws {
         guard let index = posts.firstIndex(where: { $0.id == postId }) else { return }
         posts[index].isBookmarked.toggle()
+        persistPosts()
         postUpdateSubject.send(posts[index])
     }
 
     func migrateAuthor(from oldAuthorId: String, to newAuthorId: String) {
+        var changed = false
         for i in 0..<posts.count where posts[i].authorId == oldAuthorId {
             posts[i].authorId = newAuthorId
+            changed = true
         }
+        if changed { persistPosts() }
     }
 
 
+    // MARK: - Persistence
+
+    private func persistPosts() {
+        do {
+            let data = try JSONEncoder().encode(posts)
+            try data.write(to: storageFileURL, options: .atomic)
+        } catch {
+            logger.error("Failed to persist posts: \(error, privacy: .public)")
+        }
+    }
+
+    private func loadPersistedPosts() {
+        guard fileManager.fileExists(atPath: storageFileURL.path) else { return }
+        do {
+            let data = try Data(contentsOf: storageFileURL)
+            posts = try JSONDecoder().decode([PostModel].self, from: data)
+        } catch {
+            logger.error("Failed to load persisted posts: \(error, privacy: .public)")
+        }
+    }
+
     // MARK: - Mock Data Seeding
 
-    private func seedInitialPosts() {
-        posts = handAuthoredPosts + currentUserSeedPosts + generatedDiscoverPosts
+    /// The full seed set — 5 hand-authored + 3 current-user + 100 generated.
+    private func seedPosts() -> [PostModel] {
+        handAuthoredPosts + currentUserSeedPosts + generatedDiscoverPosts
+    }
+
+    /// On a seed-version bump, drop the seed-authored copies already on disk
+    /// so `seedMissingPosts()` re-adds the current content. User-created
+    /// posts (`post_*`) are untouched.
+    private func invalidateStaleSeedPostsIfNeeded() {
+        let storedVersion = UserDefaults.standard.integer(forKey: Self.seedVersionKey)
+        guard storedVersion < Self.seedVersion else { return }
+        let seedIds = Set(seedPosts().map(\.id))
+        posts.removeAll { seedIds.contains($0.id) || $0.id.hasPrefix("lazy_") }
+        UserDefaults.standard.set(Self.seedVersion, forKey: Self.seedVersionKey)
+    }
+
+    /// Adds any seed post whose id isn't already present (first launch, or
+    /// after an invalidation). Existing posts — user or seed — keep their
+    /// persisted state (likes, bookmarks, order).
+    private func seedMissingPosts() {
+        let existingIds = Set(posts.map(\.id))
+        let missing = seedPosts().filter { !existingIds.contains($0.id) }
+        guard !missing.isEmpty else { return }
+        posts.append(contentsOf: missing)
     }
 
     /// The original 5 hand-authored feed posts.
