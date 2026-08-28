@@ -102,15 +102,30 @@ final class DiscoverService: DiscoverServiceProtocol {
         let lowered = query.lowercased()
         var results: [SearchResult] = []
 
-        for user in suggestedUsers where user.displayName.lowercased().contains(lowered) || user.username.lowercased().contains(lowered) {
+        // Search every known account — the seed "friend" profiles (Pepper,
+        // Michele, …), the 25 suggested users, and anyone the current user
+        // has interacted with — not just the Discover suggestion roster.
+        // Excludes the signed-in user so you can't "discover" yourself.
+        let currentUserId = AppSessionManager.currentUserId()
+        let matchedUsers = profileRepository.allProfiles()
+            .filter { $0.id != currentUserId }
+            .filter {
+                $0.displayName.lowercased().contains(lowered)
+                    || $0.username.lowercased().contains(lowered)
+                    || $0.bio.lowercased().contains(lowered)
+            }
+            .sorted { $0.displayName.localizedCaseInsensitiveCompare($1.displayName) == .orderedAscending }
+
+        for profile in matchedUsers {
             results.append(SearchResult(
-                id: "sr_user_\(user.id)",
+                id: "sr_user_\(profile.id)",
                 type: .user,
-                userId: user.id,
-                userName: user.displayName,
-                username: user.username,
-                avatarColorHex: user.avatarColorHex,
-                userBio: user.bio
+                userId: profile.id,
+                userName: profile.displayName,
+                username: profile.username,
+                avatarColorHex: profile.avatarColorHex,
+                avatarImageData: profile.avatarImageData,
+                userBio: profile.bio
             ))
         }
 
