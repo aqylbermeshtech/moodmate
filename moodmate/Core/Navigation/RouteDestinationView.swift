@@ -5,9 +5,6 @@
 
 import SwiftUI
 
-/// Single place mapping a `Route` to the screen it represents — used
-/// identically by every tab's `.navigationDestination(for: Route.self)` so
-/// the mapping is written once, not once per tab.
 struct RouteDestinationView: View {
     let route: Route
 

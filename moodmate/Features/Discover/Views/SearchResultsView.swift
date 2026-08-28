@@ -96,8 +96,6 @@ private struct SearchResultRow: View {
     var onLikePost: (String) -> Void
     var userStore: UserStoreProtocol = UserStore.shared
 
-    /// Only meaningful for .post-type results — resolves the post's author
-    /// live from UserStore via postUserId rather than a stale copy.
     private var postAuthor: AppUser? {
         guard let postUserId = result.postUserId else { return nil }
         return userStore.user(for: postUserId)

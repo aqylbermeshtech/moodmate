@@ -106,11 +106,11 @@ struct ThemeColors {
     }
 
     var success: Color {
-        Color(red: 0.000, green: 0.729, blue: 0.486) // same as repostGreen
+        Color(red: 0.000, green: 0.729, blue: 0.486)
     }
 
     var warning: Color {
-        Color(red: 0.918, green: 0.702, blue: 0.031) // same as verifiedGold
+        Color(red: 0.918, green: 0.702, blue: 0.031)
     }
 
     var error: Color {

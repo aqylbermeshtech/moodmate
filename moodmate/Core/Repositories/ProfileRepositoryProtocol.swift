@@ -7,11 +7,6 @@ protocol ProfileRepositoryProtocol: AnyObject {
 
     func getProfile(forId id: String?) -> UserProfile?
 
-    /// All known profiles. Used by FollowRepository's mock follower/
-    /// following queries, which need to enumerate rather than look up by
-    /// id. A real backend implementation would likely serve this narrower
-    /// (e.g. a proper follow-edges query instead of "all profiles") — kept
-    /// as-is here to preserve today's mock behavior exactly.
     func allProfiles() -> [UserProfile]
 
     func fetchProfile(forId id: String?) async throws -> UserProfile?
@@ -39,11 +34,7 @@ protocol ProfileRepositoryProtocol: AnyObject {
 
     func validateUsername(username: String, currentUserId: String) -> (isValid: Bool, error: String?)
 
-    /// Upserts an already-fully-formed profile record (persist + broadcast),
-    /// with no field validation or avatar handling of its own. This is the
-    /// primitive FollowRepository writes through when it bumps
-    /// followers/following counts — those aren't user-edited profile
-    /// fields, so they don't belong going through updateProfile's
-    /// validation/avatar pipeline.
+    /// Upserts a fully-formed record (persist + broadcast) with no validation
+    /// or avatar handling — the write primitive for non-user-edited fields.
     func setProfile(_ profile: UserProfile)
 }

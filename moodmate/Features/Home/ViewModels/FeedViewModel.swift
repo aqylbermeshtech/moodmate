@@ -7,10 +7,6 @@ import OSLog
 @Observable
 final class FeedViewModel {
 
-    /// The two feed tabs shown by `XFeedFilter`.
-    ///
-    /// - `forYou`: the general timeline — every post, from anyone.
-    /// - `following`: only posts authored by people the current user follows.
     enum FeedFilter: Int, CaseIterable {
         case forYou = 0
         case following = 1
@@ -28,16 +24,12 @@ final class FeedViewModel {
     }
     private(set) var errorMessage: String?
 
-    /// Which tab is currently selected. `HomeView` binds `XFeedFilter` to this.
     var selectedFilter: FeedFilter = .forYou
 
-    /// Author ids the current user follows. Kept as observed state (rather
-    /// than recomputed inline) so the "Following" tab re-renders when a
-    /// follow/unfollow happens elsewhere in the app.
+    /// Stored (not computed) so the "Following" tab re-renders on a follow
+    /// toggle from anywhere — see `observeFollowChanges`.
     private(set) var followedAuthorIds: Set<String> = []
 
-    /// Posts to show for the active tab. `forYou` is the full timeline;
-    /// `following` is filtered to authors in `followedAuthorIds`.
     var visiblePosts: [FeedPost] {
         switch selectedFilter {
         case .forYou:
@@ -108,7 +100,7 @@ final class FeedViewModel {
         let previousLiked    = post.isLiked
         let previousCount    = post.likesCount
 
-        // Optimistic update — mutate the struct in-place so SwiftUI redraws this frame.
+        // Mutate in-place so SwiftUI redraws this frame.
         posts[index].isLiked    = desiredLikeState
         posts[index].likesCount = desiredLikeState ? previousCount + 1 : previousCount - 1
 
@@ -120,7 +112,6 @@ final class FeedViewModel {
             do {
                 try await postRepository.setLike(postId: post.id, isLiked: desiredLikeState)
             } catch {
-                // Rollback the optimistic update so UI stays consistent.
                 if let rollbackIndex = self.posts.firstIndex(where: { $0.id == post.id }) {
                     self.posts[rollbackIndex].isLiked    = previousLiked
                     self.posts[rollbackIndex].likesCount = previousCount
@@ -155,9 +146,6 @@ final class FeedViewModel {
 
     // MARK: - Private Observation
 
-    /// Rebuilds the followed-author set from whatever the profile store
-    /// currently holds. Follow state is denormalized onto `UserProfile`
-    /// (`isFollowing`), so this is just a filter over all known profiles.
     private func refreshFollowedAuthors() {
         followedAuthorIds = Set(
             profileRepository.allProfiles()
@@ -166,10 +154,6 @@ final class FeedViewModel {
         )
     }
 
-    /// Every follow/unfollow writes the target profile back through
-    /// `ProfileRepository.setProfile`, which broadcasts on this publisher —
-    /// so recomputing the set on each emission keeps the "Following" tab
-    /// in sync no matter where the follow was toggled.
     private func observeFollowChanges() {
         profileRepository.profileUpdatesPublisher
             .receive(on: DispatchQueue.main)
@@ -188,15 +172,8 @@ final class FeedViewModel {
                 let merged = postModels.map { model -> FeedPost in
                     var incoming = FeedPost(from: model)
 
-                    // If we already hold a local copy of this post, preserve any
-                    // in-flight interaction state (isLiked, isBookmarked) so that
-                    // an optimistic update applied synchronously by toggleLike /
-                    // toggleBookmark is never silently overwritten by a publisher
-                    // emission that carries stale server values.
-                    //
-                    // Once the service's own @Published update arrives *after*
-                    // the async call completes, the local and remote values will
-                    // agree and the guard below becomes a no-op.
+                    // Keep a just-applied optimistic like/bookmark from being
+                    // clobbered by a stale publisher emission mid-flight.
                     if let existing = self.posts.first(where: { $0.id == incoming.id }) {
                         if existing.isLiked != model.isLiked {
                             incoming.isLiked    = existing.isLiked

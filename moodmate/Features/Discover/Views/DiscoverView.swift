@@ -18,7 +18,6 @@ struct DiscoverView: View {
                     .ignoresSafeArea()
 
                 VStack(spacing: 0) {
-                    // Search bar header
                     VStack(spacing: 0) {
                         DiscoverSearchBar(
                             searchText: $viewModel.searchText,
@@ -125,7 +124,6 @@ struct DiscoverView: View {
                                         )
                                     }
 
-                                    // Categories
                                     if !viewModel.categories.isEmpty {
                                         VStack(alignment: .leading, spacing: 10) {
                                             Text("Topics")
@@ -153,7 +151,6 @@ struct DiscoverView: View {
                                         Rectangle().fill(Color.theme.divider).frame(height: 0.5)
                                     }
 
-                                    // Suggested Users
                                     if !viewModel.suggestedUsers.isEmpty {
                                         VStack(alignment: .leading, spacing: 10) {
                                             Text("Who to follow")
@@ -180,7 +177,6 @@ struct DiscoverView: View {
                                         Rectangle().fill(Color.theme.divider).frame(height: 0.5)
                                     }
 
-                                    // Hashtags
                                     if !viewModel.trendingHashtags.isEmpty {
                                         VStack(alignment: .leading, spacing: 10) {
                                             Text("Popular Hashtags")
@@ -208,7 +204,6 @@ struct DiscoverView: View {
                                         Rectangle().fill(Color.theme.divider).frame(height: 0.5)
                                     }
 
-                                    // Feed section
                                     if viewModel.discoverPosts.isEmpty {
                                         EmptyDiscoverView(
                                             hasActiveFilter: viewModel.hasActiveFilter,

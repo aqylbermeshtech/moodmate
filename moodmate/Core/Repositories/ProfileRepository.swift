@@ -2,10 +2,8 @@
 //  ProfileRepository.swift
 //  moodmate
 //
-//  Profile CRUD + local persistence only. Posts live in PostRepository,
-//  follow relationships in FollowRepository, avatar files in
-//  AvatarRepository, seed content in MockDataProvider — this type used to
-//  own all of that as ProfileService, which is why it was split.
+//  Profile CRUD + local persistence only. Posts, follows, avatars, and seed
+//  content live in their own repositories (this was once one ProfileService).
 //
 
 import UIKit
@@ -188,11 +186,8 @@ final class ProfileRepository: ProfileRepositoryProtocol {
 
     func syncWithFirebaseUser(user: User) {
         let currentId = user.uid
-        // Checked before migration so a profile that only exists because it
-        // was just copied from the pre-auth mock placeholder still counts as
-        // "new" for naming purposes — otherwise the migrated placeholder's
-        // name (e.g. "John"/"johndoe") permanently shadows the real Firebase
-        // displayName or email-derived fallback below.
+        // Must be read before migration, or a freshly-migrated placeholder
+        // profile counts as existing and its mock name shadows the real one.
         let isNewProfile = profiles[currentId] == nil
         migrateMockProfileToAuthenticatedUser(currentId: currentId)
 

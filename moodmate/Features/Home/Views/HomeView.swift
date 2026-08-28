@@ -7,9 +7,6 @@ struct HomeView: View {
     @ObservedObject var viewModel: HomeViewModel
     @EnvironmentObject private var router: AppRouter
 
-    /// Bridges `XFeedFilter`'s `Int` selection to the feed view model's
-    /// `FeedFilter` enum, which is the single source of truth for which
-    /// tab ("For you" / "Following") is active.
     private var feedFilter: Binding<Int> {
         Binding(
             get: { viewModel.feed.selectedFilter.rawValue },
@@ -21,22 +18,16 @@ struct HomeView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // X-style top bar
             GreetingHeader(viewModel: viewModel, onProfileTap: { router.switchTab(.profile) })
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
 
-            // Divider below header
             Rectangle().fill(Color.theme.divider).frame(height: 0.5)
 
-            // Feed filter tabs
             XFeedFilter(selection: feedFilter)
 
-            // Timeline with scroll tracking
             ScrollView {
                 LazyVStack(spacing: 0) {
-                    // Feed posts — "For you" shows everything, "Following"
-                    // is filtered to people the user follows.
                     if viewModel.feed.selectedFilter == .following && viewModel.feed.visiblePosts.isEmpty {
                         followingEmptyState
                     } else {
@@ -53,7 +44,6 @@ struct HomeView: View {
                         }
                     }
 
-                    // Bottom spacer so content doesn't hide behind tab bar
                     Spacer()
                         .frame(height: 100)
                 }
@@ -65,7 +55,6 @@ struct HomeView: View {
             }
             .scrollIndicators(.hidden)
             .refreshable {
-                // Pull to refresh
             }
         }
         .background {

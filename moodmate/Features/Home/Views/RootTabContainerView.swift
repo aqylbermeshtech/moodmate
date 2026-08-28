@@ -21,7 +21,6 @@ struct RootTabContainerView: View {
                 tabContent
 
                 if !router.hidesBottomBar {
-                    // FAB
                     VStack {
                         Spacer()
                         HStack {
@@ -35,7 +34,6 @@ struct RootTabContainerView: View {
                         .animation(.easeInOut(duration: 0.3), value: router.showTabBar)
                     }
 
-                    // Tab bar
                     BottomNavigationBar(selectedTab: $router.selectedTab) {
                         router.present(.createPost)
                     }

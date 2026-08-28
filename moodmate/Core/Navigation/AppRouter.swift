@@ -6,11 +6,9 @@
 import SwiftUI
 import Combine
 
-/// Single source of truth for navigation: tab selection, one push-stack per
-/// tab, and the app's two screen-shaped modals. Every screen dispatches
-/// intents here (`push`, `switchTab`, `present`) instead of constructing
-/// `NavigationLink`s or owning its own presentation `@State` — which is also
-/// what lets `handle(url:)` drive the exact same navigation a tap would.
+/// Single source of truth for navigation. Screens dispatch intents here
+/// (`push`, `switchTab`, `present`) so `handle(url:)` can drive the exact
+/// same navigation a tap would.
 @MainActor
 final class AppRouter: ObservableObject {
     static let shared = AppRouter()
@@ -24,7 +22,6 @@ final class AppRouter: ObservableObject {
 
     @Published var presentedFullScreenCover: FullScreenRoute?
 
-    /// Controls tab bar visibility — driven by scroll direction in child views.
     @Published var showTabBar: Bool = true
     private var lastScrollOffset: CGFloat = 0
     private var scrollAccumulator: CGFloat = 0
@@ -36,13 +33,11 @@ final class AppRouter: ObservableObject {
 
     // MARK: - Scroll-aware tab bar
 
-    /// Call from any scrollable view's onScroll to drive hide/show behaviour.
-    /// `offset` is the *content* offset (positive = scrolled down from top).
+    /// `offset` is the content offset (positive = scrolled down from top).
     func updateTabBarVisibility(scrollOffset offset: CGFloat) {
         let delta = offset - lastScrollOffset
         lastScrollOffset = offset
 
-        // Don't hide near the top of content
         guard offset > 60 else {
             if !showTabBar {
                 withAnimation(.easeOut(duration: 0.25)) { showTabBar = true }
@@ -54,20 +49,16 @@ final class AppRouter: ObservableObject {
         scrollAccumulator += delta
 
         if scrollAccumulator > scrollThreshold && showTabBar {
-            // Scrolling down → hide
             withAnimation(.easeOut(duration: 0.25)) { showTabBar = false }
             scrollAccumulator = 0
         } else if scrollAccumulator < -scrollThreshold && !showTabBar {
-            // Scrolling up → show
             withAnimation(.easeOut(duration: 0.25)) { showTabBar = true }
             scrollAccumulator = 0
         }
 
-        // Clamp accumulator to avoid massive build-up
         scrollAccumulator = max(-scrollThreshold * 3, min(scrollThreshold * 3, scrollAccumulator))
     }
 
-    /// Reset scroll state — call when switching tabs so the bar always starts visible.
     func resetScrollState() {
         lastScrollOffset = 0
         scrollAccumulator = 0
@@ -134,10 +125,6 @@ final class AppRouter: ObservableObject {
         }
     }
 
-    /// Drives whether `RootTabContainerView` hides the custom bottom bar —
-    /// replaces the old `NavigationVisibilityCoordinator` environment object.
-    /// True for screens that want the full height for their own bottom
-    /// chrome (a post's comment bar, a chat thread's message bar).
     var hidesBottomBar: Bool {
         switch currentPath.last {
         case .postDetail, .chatThread: return true

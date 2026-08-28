@@ -7,11 +7,8 @@
 
 import SwiftUI
 
-/// Presentational profile screen shared by `MyProfileView` and
-/// `OtherProfileView`. Everything here is common to viewing your own
-/// profile and viewing someone else's; the two things that actually
-/// differ — the primary action button and the trailing toolbar item — are
-/// injected by the caller instead of being branched on internally.
+/// Shared by `MyProfileView` and `OtherProfileView`; the primary action
+/// button and trailing toolbar item are injected by the caller.
 struct ProfileContentView<PrimaryAction: View, ToolbarTrailing: View>: View {
     @ObservedObject var viewModel: ProfileViewModel
     @EnvironmentObject private var router: AppRouter
@@ -44,12 +41,10 @@ struct ProfileContentView<PrimaryAction: View, ToolbarTrailing: View>: View {
                     VStack(spacing: 0) {
                         profileHeaderView(profile: profile)
 
-                        // Stats inline
                         statsView(profile: profile)
                             .padding(.horizontal, 16)
                             .padding(.top, 12)
 
-                        // Bio
                         if !profile.bio.isEmpty {
                             Text(profile.bio)
                                 .font(.xPostBody)
@@ -59,7 +54,6 @@ struct ProfileContentView<PrimaryAction: View, ToolbarTrailing: View>: View {
                                 .padding(.top, 12)
                         }
 
-                        // Action buttons
                         actionsView(profile: profile)
                             .padding(.horizontal, 16)
                             .padding(.top, 16)
@@ -67,7 +61,6 @@ struct ProfileContentView<PrimaryAction: View, ToolbarTrailing: View>: View {
                         Rectangle().fill(Color.theme.divider).frame(height: 0.5)
                             .padding(.top, 16)
 
-                        // Posts
                         postsSection(profile: profile)
                             .padding(.top, 16)
 
@@ -268,12 +261,10 @@ struct ProfileContentView<PrimaryAction: View, ToolbarTrailing: View>: View {
             .aspectRatio(1, contentMode: .fit)
             .overlay {
                 if let image = firstImage(in: post) {
-                    // Photo post — show the actual photo.
                     Image(uiImage: image)
                         .resizable()
                         .scaledToFill()
                 } else {
-                    // Text / quote post — gradient tile with the words on it.
                     gradientTextCell(post: post)
                 }
             }

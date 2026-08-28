@@ -5,10 +5,8 @@
 
 import Foundation
 
-/// Static, per-friend seed content for the mock chat UI — no send/receive
-/// logic, just enough canned history to make the list and thread screens
-/// look real. Shared by ChatListViewModel and ChatThreadViewModel so both
-/// show the same conversation for a given friend id.
+/// Per-friend canned chat history, shared by ChatListViewModel and
+/// ChatThreadViewModel so both show the same conversation for a friend id.
 enum MockChatData {
 
     static func unreadCount(for friendId: String) -> Int {

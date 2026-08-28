@@ -2,15 +2,12 @@
 //  PostRepository.swift
 //  moodmate
 //
-//  Single source of truth for all posts across Home, Profile, Discover, and
-//  CreatePost. Every feature reads its display projection from here and
-//  routes every like/bookmark/create/delete mutation back through here, so a
-//  change made in one feature is visible in the others.
+//  Single source of truth for all posts. Every feature reads a projection
+//  from here and routes mutations back through here.
 //
-//  Posts persist to a JSON file in the app's documents directory — the same
-//  local-store pattern ProfileRepository uses for profiles. Seed content is
-//  only (re)generated when the file is missing or the seed version bumps;
-//  user-created posts are kept across launches.
+//  Persists to a JSON file in the documents directory (like ProfileRepository).
+//  Seed content is regenerated only when the file is missing or the seed
+//  version bumps; user-created posts survive launches.
 //
 
 import Foundation
@@ -46,8 +43,7 @@ final class PostRepository: PostRepositoryProtocol {
     private let fileManager = FileManager.default
     private let storageKey = "moodmate_posts_v1.json"
 
-    /// Bump when the seed content itself changes and needs to replace the
-    /// copy already written to disk. Mirrors ProfileRepository.mockDataVersion.
+    /// Bump when seed content changes and must replace the copy on disk.
     private static let seedVersion = 1
     private static let seedVersionKey = "moodmate_post_seed_version"
 
@@ -71,12 +67,8 @@ final class PostRepository: PostRepositoryProtocol {
             .sink { [weak self] updatedProfile in
                 guard let self else { return }
 
-                // The first time a real Firebase user profile comes through,
-                // re-author whatever mock-seeded posts still belong to the
-                // pre-auth placeholder id — mirrors ProfileRepository's own
-                // mock-profile-to-authenticated-user migration. Posts carry
-                // only authorId now, so there's nothing else to patch here —
-                // display fields are resolved live from UserStore.
+                // On first real sign-in, re-author the mock-seeded posts from
+                // the pre-auth placeholder id to the Firebase uid.
                 if updatedProfile.id != AppSessionManager.mockUserId,
                    !self.posts(forAuthor: AppSessionManager.mockUserId).isEmpty {
                     self.migrateAuthor(from: AppSessionManager.mockUserId, to: updatedProfile.id)
@@ -170,14 +162,12 @@ final class PostRepository: PostRepositoryProtocol {
 
     // MARK: - Mock Data Seeding
 
-    /// The full seed set — 5 hand-authored + 3 current-user + 100 generated.
     private func seedPosts() -> [PostModel] {
         handAuthoredPosts + currentUserSeedPosts + generatedDiscoverPosts
     }
 
-    /// On a seed-version bump, drop the seed-authored copies already on disk
-    /// so `seedMissingPosts()` re-adds the current content. User-created
-    /// posts (`post_*`) are untouched.
+    /// On a version bump, drop the on-disk seed posts so they regenerate.
+    /// User-created posts (`post_*`) are untouched.
     private func invalidateStaleSeedPostsIfNeeded() {
         let storedVersion = UserDefaults.standard.integer(forKey: Self.seedVersionKey)
         guard storedVersion < Self.seedVersion else { return }
@@ -186,9 +176,6 @@ final class PostRepository: PostRepositoryProtocol {
         UserDefaults.standard.set(Self.seedVersion, forKey: Self.seedVersionKey)
     }
 
-    /// Adds any seed post whose id isn't already present (first launch, or
-    /// after an invalidation). Existing posts — user or seed — keep their
-    /// persisted state (likes, bookmarks, order).
     private func seedMissingPosts() {
         let existingIds = Set(posts.map(\.id))
         let missing = seedPosts().filter { !existingIds.contains($0.id) }
@@ -196,7 +183,6 @@ final class PostRepository: PostRepositoryProtocol {
         posts.append(contentsOf: missing)
     }
 
-    /// The original 5 hand-authored feed posts.
     private var handAuthoredPosts: [PostModel] {
         [
             PostModel(
@@ -282,11 +268,8 @@ final class PostRepository: PostRepositoryProtocol {
         ]
     }
 
-    /// The signed-in (or pre-auth mock) viewer's own 3 seed posts. Authored
-    /// against `AppSessionManager.mockUserId`; `migrateAuthor` re-points
-    /// them at the real Firebase uid the first time
-    /// `ProfileRepository.syncWithFirebaseUser` runs, mirroring how
-    /// ProfileRepository migrates the mock profile itself.
+    /// The viewer's own 3 seed posts, authored against `mockUserId` until
+    /// `migrateAuthor` re-points them at the real uid on first sign-in.
     private var currentUserSeedPosts: [PostModel] {
         return [
             PostModel(
@@ -340,19 +323,12 @@ final class PostRepository: PostRepositoryProtocol {
         ]
     }
 
-    /// Just the ids for cycling through authors below — the actual display
-    /// identities (name/username/avatar) for su1–su25 live in
-    /// ProfileRepository, published once by DiscoverService from its
-    /// suggestedUsers roster (the one canonical copy of who these 25
-    /// people are), and resolved by UserStore at render time.
+    /// ids only — display identities for su1–su25 live in ProfileRepository
+    /// (seeded by DiscoverService), resolved by UserStore at render time.
     private var discoverAuthorIds: [String] {
         (1...25).map { "su\($0)" }
     }
 
-    /// The 100 generated Discover-feed posts, ported from what used to be
-    /// DiscoverService.setupDiscoverPosts() — same generator, same content
-    /// pools, now producing canonical PostModel instead of a Discover-only
-    /// DiscoverPost that no other feature could see.
     private var generatedDiscoverPosts: [PostModel] {
         let gradientPairs: [(start: String, end: String)] = [
             ("38B2AC", "805AD5"), ("ED64A6", "ECC94B"), ("1A365D", "667EEA"),

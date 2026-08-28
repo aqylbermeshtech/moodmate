@@ -346,7 +346,6 @@ struct EditProfileView: View {
                     .foregroundStyle(Color.theme.secondaryText)
                     .padding(.horizontal, 4)
                 
-                // Location Field
                 VStack(alignment: .leading, spacing: 6) {
                     Text("Location")
                         .font(.system(size: 13, weight: .bold, design: .rounded))

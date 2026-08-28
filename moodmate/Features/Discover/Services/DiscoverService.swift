@@ -28,11 +28,9 @@ final class DiscoverService: DiscoverServiceProtocol {
         publishSuggestedUserProfiles()
     }
 
-    /// suggestedUsers is the one canonical roster for these 25 mock
-    /// identities. Publishing them into ProfileRepository (if not already
-    /// present) lets UserStore resolve display names for the generated
-    /// Discover posts authored by them, without a second copy of the same
-    /// roster living in PostRepository's seed data.
+    /// `suggestedUsers` is the one canonical roster for these 25 identities;
+    /// publish them into ProfileRepository so UserStore can resolve names
+    /// for the generated posts they author, without a second copy.
     private func publishSuggestedUserProfiles() {
         for user in suggestedUsers where profileRepository.getProfile(forId: user.id) == nil {
             profileRepository.setProfile(UserProfile(
@@ -46,8 +44,6 @@ final class DiscoverService: DiscoverServiceProtocol {
         }
     }
 
-    /// All posts, projected fresh from the shared repository on every call
-    /// so likes/bookmarks made in Feed or Profile are reflected here too.
     private var allPosts: [DiscoverPost] {
         postRepository.allPosts.map(DiscoverPost.init)
     }
@@ -102,10 +98,7 @@ final class DiscoverService: DiscoverServiceProtocol {
         let lowered = query.lowercased()
         var results: [SearchResult] = []
 
-        // Search every known account — the seed "friend" profiles (Pepper,
-        // Michele, …), the 25 suggested users, and anyone the current user
-        // has interacted with — not just the Discover suggestion roster.
-        // Excludes the signed-in user so you can't "discover" yourself.
+        // Search all known accounts (not just the suggestion roster), minus self.
         let currentUserId = AppSessionManager.currentUserId()
         let matchedUsers = profileRepository.allProfiles()
             .filter { $0.id != currentUserId }

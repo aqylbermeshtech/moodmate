@@ -36,17 +36,13 @@ struct PostCardView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .top, spacing: 12) {
-                // Avatar
                 avatarButton
 
                 VStack(alignment: .leading, spacing: 4) {
-                    // Header row: name + verified + handle + time + overflow
                     headerRow
 
-                    // Body content
                     bodyContent
 
-                    // Action row
                     actionRow
                         .padding(.top, 8)
                 }
@@ -125,7 +121,6 @@ struct PostCardView: View {
 
     @ViewBuilder
     private var bodyContent: some View {
-        // Caption / Text
         if !post.caption.isEmpty {
             Text(post.caption)
                 .font(.xPostBody)
@@ -134,12 +129,10 @@ struct PostCardView: View {
                 .fixedSize(horizontal: false, vertical: true)
         }
 
-        // Photo content
         if !post.images.isEmpty {
             photoContent
         }
 
-        // Quote content
         if !post.quoteText.isEmpty {
             quoteContent
         }
@@ -200,7 +193,6 @@ struct PostCardView: View {
 
     private var actionRow: some View {
         HStack(spacing: 0) {
-            // Reply
             XActionIcon(
                 systemName: "bubble.left",
                 count: post.commentsCount,
@@ -211,7 +203,6 @@ struct PostCardView: View {
 
             Spacer()
 
-            // Repost
             Image(systemName: "arrow.2.squarepath")
                 .font(.system(size: 18.75))
                 .foregroundStyle(isRepostedLocal ? Color.theme.repostGreen : Color.theme.secondaryText)
@@ -224,7 +215,6 @@ struct PostCardView: View {
 
             Spacer()
 
-            // Like
             HStack(spacing: 4) {
                 Image(systemName: isLikedLocal ? "heart.fill" : "heart")
                     .font(.system(size: 18.75, weight: isLikedLocal ? .semibold : .regular))
@@ -246,14 +236,12 @@ struct PostCardView: View {
 
             Spacer()
 
-            // Bookmark
             Image(systemName: post.isBookmarked ? "bookmark.fill" : "bookmark")
                 .font(.system(size: 18))
                 .foregroundStyle(post.isBookmarked ? Color.theme.accent : Color.theme.secondaryText)
                 .frame(minWidth: 44, minHeight: 44)
                 .onTapGesture { onBookmark() }
 
-            // Share
             Image(systemName: "square.and.arrow.up")
                 .font(.system(size: 18))
                 .foregroundStyle(Color.theme.secondaryText)

@@ -36,12 +36,9 @@ struct DiscoverPost: Identifiable, Equatable, Codable {
     let heightClass: CardHeightClass
     let createdAt: Date
 
-    /// Projection from the canonical PostModel. heightClass isn't part of
-    /// the domain model — it's masonry-grid layout metadata — so it's
-    /// derived deterministically from the post id instead, keeping the
-    /// grid stable within a session without storing it anywhere. Author
-    /// display fields (name/username/avatar) aren't carried here at all —
-    /// views resolve those from UserStore via userId at render time.
+    /// `heightClass` is masonry layout metadata, derived deterministically
+    /// from the post id so the grid stays stable without storing it. Author
+    /// display fields aren't carried — views resolve those from UserStore.
     init(from post: PostModel) {
         self.id = post.id
         self.userId = post.authorId

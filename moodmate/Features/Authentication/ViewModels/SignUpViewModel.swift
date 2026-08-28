@@ -41,14 +41,9 @@ final class SignUpViewModel: ObservableObject {
                 let displayName = self.name.trimmingCharacters(in: .whitespacesAndNewlines)
                 let user = try await authService.signUp(email: email, password: password, displayName: displayName)
 
-                // Don't round-trip through user.displayName here: Firebase's
-                // auth-state listener (which drives ProfileRepository's own
-                // sync) can fire before the profile change request above
-                // commits, so it may still see a nil displayName and fall
-                // back to an email-derived name. We already know the
-                // intended name locally, so apply it directly — safe to
-                // overwrite unconditionally since this account was just
-                // created (nothing else could have set a different name yet).
+                // Apply the name directly, not via user.displayName: Firebase's
+                // auth-state listener can fire before the displayName write
+                // commits and would fall back to an email-derived name.
                 if !displayName.isEmpty {
                     var profile = self.profileRepository.getProfile(forId: user.uid)
                         ?? MockDataProvider.newAuthenticatedUserSeedProfile(id: user.uid, displayName: displayName)

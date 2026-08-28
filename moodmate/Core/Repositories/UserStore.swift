@@ -2,20 +2,9 @@
 //  UserStore.swift
 //  moodmate
 //
-//  The single canonical publisher of "what does this user look like right
-//  now" — display name, username, avatar. Before this,
-//  FeedViewModel, HomeViewModel, DiscoverViewModel, and CreatePostViewModel
-//  each subscribed to profileUpdatesPublisher independently and patched
-//  their own stored copy (FeedPost.user, currentUser, SuggestedUser,
-//  DiscoverPost's author fields) — five sinks doing the same fan-out, any
-//  one of which could silently fail to fire.
-//
-//  UserStore replaces that for post rendering specifically: posts carry
-//  only an authorId, and views read the current identity here directly at
-//  render time via user(for:). Because this type is @Observable, that
-//  read participates in SwiftUI's normal view-invalidation tracking with
-//  no sink required anywhere — there's nothing to keep in sync because
-//  nothing else is holding a copy.
+//  Canonical current identity (name, username, avatar) for a user id.
+//  Posts carry only an authorId; views read the identity here at render
+//  time. @Observable, so the read tracks for invalidation with no sink.
 //
 
 import Foundation

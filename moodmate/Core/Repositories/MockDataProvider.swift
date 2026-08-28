@@ -13,8 +13,6 @@ import Foundation
 
 enum MockDataProvider {
 
-    /// The pre-auth placeholder profile seeded for `mockUserId` before any
-    /// Firebase user has signed in.
     static func currentUserSeedProfile(id: String) -> UserProfile {
         UserProfile(
             id: id,
@@ -29,8 +27,6 @@ enum MockDataProvider {
         )
     }
 
-    /// The seed profile for a newly-authenticated Firebase user who has no
-    /// existing (migrated or persisted) profile yet.
     static func newAuthenticatedUserSeedProfile(id: String, displayName: String?) -> UserProfile {
         UserProfile(
             id: id,
@@ -42,8 +38,6 @@ enum MockDataProvider {
         )
     }
 
-    /// The 5 seed "friend" profiles (ids "1"–"5") the mock social graph is
-    /// built around.
     static func friendSeedProfiles() -> [UserProfile] {
         [
             UserProfile(

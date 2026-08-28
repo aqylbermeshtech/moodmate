@@ -39,7 +39,6 @@ struct AvatarView: View {
 
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
-            // Main Avatar Base
             Group {
                 if let image {
                     Image(uiImage: image)
@@ -54,7 +53,6 @@ struct AvatarView: View {
                         .frame(width: size, height: size)
                         .clipShape(Circle())
                 } else {
-                    // Initials fallback — X-style neutral surface
                     ZStack {
                         Circle()
                             .fill(Color.theme.secondaryBackground)
@@ -71,7 +69,6 @@ struct AvatarView: View {
                     .stroke(Color.theme.divider, lineWidth: showBorder ? max(1.5, size * 0.03) : 0)
             )
 
-            // Action Icon Overlay (Camera edit button)
             if let overlayAction, let overlayIcon {
                 Button(action: overlayAction) {
                     ZStack {

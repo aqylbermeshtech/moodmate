@@ -18,9 +18,6 @@ class ProfileViewModel: ObservableObject {
     let postRepository: PostRepositoryProtocol
 
     @Published var profile: UserProfile?
-    /// The author's real posts, straight from `PostRepository` — no
-    /// synthesized filler. `postsSection` renders exactly this list and the
-    /// "Posts" stat is just its `count`.
     @Published var posts: [PostModel] = []
     @Published var followers: [UserProfile] = []
     @Published var following: [UserProfile] = []
@@ -45,15 +42,10 @@ class ProfileViewModel: ObservableObject {
         subscribeToProfileUpdates()
     }
 
-    /// The id whose profile/posts/followers this VM loads. Defaults to the
-    /// stored `userId`, but `OwnProfileViewModel` overrides this to always
-    /// resolve the live authenticated user, since sign-in can complete after
-    /// the VM is constructed and `userId` alone would go stale.
+    /// `OwnProfileViewModel` overrides this to resolve the live authenticated
+    /// user, since sign-in can complete after this VM is constructed.
     var targetUserId: String { userId }
 
-    /// Reconciles the displayed grid whenever any post changes anywhere in
-    /// the app (like/bookmark from Feed or Discover, a new post published)
-    /// so this profile's posts never drift from the canonical state.
     private func observePostUpdates() {
         postRepository.postsPublisher
             .receive(on: DispatchQueue.main)
@@ -64,9 +56,7 @@ class ProfileViewModel: ObservableObject {
             .store(in: &cancellables)
     }
 
-    /// Clears the displayed posts — used on sign-out so a subsequent
-    /// sign-in as a different user doesn't briefly show the previous
-    /// user's grid.
+    /// Called on sign-out so the next user doesn't briefly see this grid.
     func resetPosts() {
         posts = []
     }

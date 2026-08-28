@@ -17,16 +17,12 @@ final class AppSessionManager: ObservableObject {
     
     static let shared = AppSessionManager()
 
-    /// Canonical pre-auth placeholder id, used while no Firebase user is
-    /// signed in yet (mock data is seeded/queried against this id).
+    /// Pre-auth placeholder id; mock data is seeded/queried against it.
     static let mockUserId = "current_user_mock"
 
-    /// The one place "who is the current user" gets resolved. A static
-    /// function rather than an instance method so repositories (which must
-    /// not depend on AppSessionManager.shared — see PostRepository/
-    /// ProfileRepository's one-directional dependency on this class) can
-    /// call it without any risk of the circular-singleton-construction
-    /// deadlock that a `.shared`-defaulted instance dependency would cause.
+    /// Static (not an instance method) so repositories can call it without
+    /// depending on `AppSessionManager.shared` — that dependency would risk a
+    /// circular-singleton-construction deadlock.
     static func currentUserId() -> String {
         FirebaseAuthService.shared.currentUser?.uid ?? mockUserId
     }

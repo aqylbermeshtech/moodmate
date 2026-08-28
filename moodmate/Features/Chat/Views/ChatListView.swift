@@ -15,7 +15,6 @@ struct ChatListView: View {
                 .ignoresSafeArea()
 
             VStack(spacing: 0) {
-                // X-style header
                 HStack {
                     Text("Messages")
                         .font(.xScreenTitle)

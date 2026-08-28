@@ -207,9 +207,6 @@ struct PostDetailView: View {
         }
         didLoad = true
 
-        // Keep this post in sync with likes/bookmarks made anywhere else in
-        // the app (Feed, Discover, another profile) instead of only ever
-        // reflecting a local copy that resets the moment this view closes.
         postRepository.postsPublisher
             .receive(on: DispatchQueue.main)
             .sink { updatedPosts in

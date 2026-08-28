@@ -20,8 +20,8 @@ struct MessageBubble: View {
                     .padding(.vertical, 10)
                     .background(
                         message.isFromCurrentUser
-                            ? Color.theme.accent          // X Blue for sent
-                            : Color.theme.secondaryBackground  // X Surface for received
+                            ? Color.theme.accent
+                            : Color.theme.secondaryBackground
                     )
                     .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
                     .overlay {

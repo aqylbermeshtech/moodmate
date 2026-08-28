@@ -53,17 +53,14 @@ struct BottomNavigationBar: View {
     @Binding var selectedTab: HomeTab
     var onAddTap: () -> Void
 
-    /// Tabs displayed in the bar — excludes .add (handled by FAB)
     private var visibleTabs: [HomeTab] {
         HomeTab.allCases.filter { $0 != .add }
     }
 
     var body: some View {
         VStack(spacing: 0) {
-            // Top divider line
             Rectangle().fill(Color.theme.divider).frame(height: 0.5)
 
-            // Icon row — sits above the home indicator
             HStack(spacing: 0) {
                 ForEach(visibleTabs) { tab in
                     Button {
