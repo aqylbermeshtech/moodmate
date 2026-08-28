@@ -262,39 +262,74 @@ struct ProfileContentView<PrimaryAction: View, ToolbarTrailing: View>: View {
         }
     }
 
+    @ViewBuilder
     private func postGridCell(post: PostModel) -> some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 2)
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            Color(hex: post.gradientStartHex ?? "38B2AC"),
-                            Color(hex: post.gradientEndHex ?? "805AD5")
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .aspectRatio(1, contentMode: .fit)
-
-            VStack {
-                Image(systemName: "quote.opening")
-                    .font(.system(size: 12))
-                    .foregroundStyle(.white.opacity(0.5))
-
-                Text(post.quoteText ?? "")
-                    .font(.system(size: 9, weight: .bold, design: .serif))
-                    .foregroundStyle(.white)
-                    .lineLimit(3)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 6)
-
-                Image(systemName: "quote.closing")
-                    .font(.system(size: 12))
-                    .foregroundStyle(.white.opacity(0.5))
+        Color.clear
+            .aspectRatio(1, contentMode: .fit)
+            .overlay {
+                if let image = firstImage(in: post) {
+                    // Photo post — show the actual photo.
+                    Image(uiImage: image)
+                        .resizable()
+                        .scaledToFill()
+                } else {
+                    // Text / quote post — gradient tile with the words on it.
+                    gradientTextCell(post: post)
+                }
             }
-            .padding(4)
+            .clipped()
+            .contentShape(Rectangle())
+    }
+
+    private func gradientTextCell(post: PostModel) -> some View {
+        let quote = post.quoteText ?? ""
+        let caption = post.text ?? ""
+        let body = !quote.isEmpty ? quote : caption
+
+        return ZStack {
+            LinearGradient(
+                colors: [
+                    Color(hex: post.gradientStartHex ?? "38B2AC"),
+                    Color(hex: post.gradientEndHex ?? "805AD5")
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+
+            if !body.isEmpty {
+                VStack(spacing: 2) {
+                    if !quote.isEmpty {
+                        Image(systemName: "quote.opening")
+                            .font(.system(size: 12))
+                            .foregroundStyle(.white.opacity(0.5))
+                    }
+
+                    Text(body)
+                        .font(.system(size: 9, weight: .bold, design: quote.isEmpty ? .rounded : .serif))
+                        .foregroundStyle(.white)
+                        .lineLimit(4)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 6)
+
+                    if !quote.isEmpty {
+                        Image(systemName: "quote.closing")
+                            .font(.system(size: 12))
+                            .foregroundStyle(.white.opacity(0.5))
+                    }
+                }
+                .padding(4)
+            }
         }
+    }
+
+    private func firstImage(in post: PostModel) -> UIImage? {
+        for raw in post.images {
+            let base64 = raw.contains(",") ? String(raw.split(separator: ",").last ?? "") : raw
+            if let data = Data(base64Encoded: base64), let image = UIImage(data: data) {
+                return image
+            }
+        }
+        return nil
     }
 
 }
