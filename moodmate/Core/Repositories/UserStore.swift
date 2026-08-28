@@ -3,7 +3,7 @@
 //  moodmate
 //
 //  The single canonical publisher of "what does this user look like right
-//  now" — display name, username, avatar, current mood. Before this,
+//  now" — display name, username, avatar. Before this,
 //  FeedViewModel, HomeViewModel, DiscoverViewModel, and CreatePostViewModel
 //  each subscribed to profileUpdatesPublisher independently and patched
 //  their own stored copy (FeedPost.user, currentUser, SuggestedUser,
@@ -12,7 +12,7 @@
 //
 //  UserStore replaces that for post rendering specifically: posts carry
 //  only an authorId, and views read the current identity here directly at
-//  render time via moodUser(for:). Because this type is @Observable, that
+//  render time via user(for:). Because this type is @Observable, that
 //  read participates in SwiftUI's normal view-invalidation tracking with
 //  no sink required anywhere — there's nothing to keep in sync because
 //  nothing else is holding a copy.
@@ -27,7 +27,7 @@ import Observation
 final class UserStore: UserStoreProtocol {
     static let shared = UserStore()
 
-    private var identities: [String: MoodUser] = [:]
+    private var identities: [String: AppUser] = [:]
     private let profileRepository: ProfileRepositoryProtocol
     private var cancellables = Set<AnyCancellable>()
 
@@ -39,7 +39,7 @@ final class UserStore: UserStoreProtocol {
 
     private func seed() {
         for profile in profileRepository.allProfiles() {
-            identities[profile.id] = Self.moodUser(from: profile)
+            identities[profile.id] = Self.appUser(from: profile)
         }
     }
 
@@ -47,26 +47,23 @@ final class UserStore: UserStoreProtocol {
         profileRepository.profileUpdatesPublisher
             .receive(on: DispatchQueue.main)
             .sink { [weak self] profile in
-                self?.identities[profile.id] = Self.moodUser(from: profile)
+                self?.identities[profile.id] = Self.appUser(from: profile)
             }
             .store(in: &cancellables)
     }
 
-    func moodUser(for id: String) -> MoodUser? {
+    func user(for id: String) -> AppUser? {
         identities[id]
     }
 
-    private static func moodUser(from profile: UserProfile) -> MoodUser {
-        MoodUser(
+    private static func appUser(from profile: UserProfile) -> AppUser {
+        AppUser(
             id: profile.id,
             name: profile.displayName,
             username: profile.username,
             avatarImageName: profile.avatarImageName,
             avatarImageData: profile.avatarImageData,
-            avatarColorHex: profile.avatarColorHex,
-            currentMoodEmoji: profile.currentMoodEmoji,
-            currentMoodText: profile.currentMoodText,
-            currentMoodColorHex: profile.currentMoodColorHex
+            avatarColorHex: profile.avatarColorHex
         )
     }
 }

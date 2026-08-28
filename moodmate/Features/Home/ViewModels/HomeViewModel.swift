@@ -10,23 +10,13 @@ final class HomeViewModel: ObservableObject {
     @Published private(set) var currentUserAvatarData: Data?
     @Published private(set) var currentUserAvatarColorHex: String = "38B2AC"
 
-    @Published private(set) var friends: [MoodUser] = []
-
-    @Published var selectedMood: SelectedMood?
-    @Published var showMoodPickerSheet = false
-
     // MARK: - Composed child ViewModel
 
     let feed: FeedViewModel
 
-    // MARK: - Convenience accessors (backwards-compat for MoodCard / MoodPickerSheet)
-
-    let moodOptions: [MoodOption] = MoodOption.catalog
-
     // MARK: - Dependencies (all injected — no singletons)
 
     private let profileRepository: ProfileRepositoryProtocol
-    private let friendsRepository: FriendsRepositoryProtocol
     private let authService: AuthServiceProtocol
 
     private var cancellables = Set<AnyCancellable>()
@@ -36,20 +26,17 @@ final class HomeViewModel: ObservableObject {
     init(
         postRepository: PostRepositoryProtocol = PostRepository.shared,
         profileRepository: ProfileRepositoryProtocol = ProfileRepository.shared,
-        friendsRepository: FriendsRepositoryProtocol = FriendsRepository(),
         authService: AuthServiceProtocol = FirebaseAuthService.shared
     ) {
         self.profileRepository = profileRepository
-        self.friendsRepository = friendsRepository
         self.authService       = authService
-        self.feed = FeedViewModel(postRepository: postRepository)
+        self.feed = FeedViewModel(postRepository: postRepository, profileRepository: profileRepository)
     }
 
     // MARK: - Lifecycle
 
     func onAppear() {
         loadCurrentUser()
-        loadFriends()
         startObserving()
     }
 
@@ -61,16 +48,6 @@ final class HomeViewModel: ObservableObject {
     func stopObserving() {
         feed.stopObserving()
         cancellables.removeAll()
-    }
-
-    // MARK: - Mood
-
-    func selectMood(emoji: String, text: String, colorHex: String) {
-        selectedMood = SelectedMood(emoji: emoji, text: text, colorHex: colorHex)
-    }
-
-    func clearMood() {
-        selectedMood = nil
     }
 
     // MARK: - Feed delegation (keeps call sites in HomeView clean)
@@ -93,10 +70,6 @@ private extension HomeViewModel {
         }
     }
 
-    func loadFriends() {
-        friends = friendsRepository.loadFriends()
-    }
-
     func observeProfileUpdates() {
         profileRepository.profileUpdatesPublisher
             .receive(on: DispatchQueue.main)
@@ -105,17 +78,10 @@ private extension HomeViewModel {
                 let currentId = AppSessionManager.currentUserId()
 
                 if profile.id == currentId {
-                    updateCurrentUser(profile)
+                    applyCurrentUser(profile)
                 }
-                updateFriend(profile)
             }
             .store(in: &cancellables)
-    }
-
-    // MARK: Profile update helpers
-
-    func updateCurrentUser(_ profile: UserProfile) {
-        applyCurrentUser(profile)
     }
 
     func applyCurrentUser(_ profile: UserProfile) {
@@ -123,14 +89,4 @@ private extension HomeViewModel {
         currentUserAvatarData     = profile.avatarImageData
         currentUserAvatarColorHex = profile.avatarColorHex
     }
-
-    func updateFriend(_ profile: UserProfile) {
-        guard let index = friends.firstIndex(where: { $0.id == profile.id }) else { return }
-        friends[index].name            = profile.displayName
-        friends[index].username        = profile.username
-        friends[index].avatarColorHex  = profile.avatarColorHex
-        friends[index].avatarImageData = profile.avatarImageData
-    }
-
-
 }

@@ -125,39 +125,11 @@ struct DiscoverView: View {
                                         )
                                     }
 
-                                    // Trending Moods
-                                    if !viewModel.trendingMoods.isEmpty {
-                                        VStack(alignment: .leading, spacing: 10) {
-                                            Text("Trending")
-                                                .font(.xScreenTitle)
-                                                .foregroundStyle(Color.theme.primaryText)
-                                                .padding(.horizontal, 16)
-
-                                            ScrollView(.horizontal, showsIndicators: false) {
-                                                HStack(spacing: 10) {
-                                                    ForEach(viewModel.trendingMoods) { mood in
-                                                        TrendingMoodChip(
-                                                            mood: mood,
-                                                            isSelected: viewModel.selectedMood == mood,
-                                                            onTap: {
-                                                                viewModel.selectMood(mood)
-                                                            }
-                                                        )
-                                                    }
-                                                }
-                                                .padding(.horizontal, 16)
-                                            }
-                                        }
-                                        .padding(.vertical, 16)
-
-                                        Rectangle().fill(Color.theme.divider).frame(height: 0.5)
-                                    }
-
                                     // Categories
                                     if !viewModel.categories.isEmpty {
                                         VStack(alignment: .leading, spacing: 10) {
                                             Text("Topics")
-                                                .font(.xSectionHeader)
+                                                .font(.xScreenTitle)
                                                 .foregroundStyle(Color.theme.primaryText)
                                                 .padding(.horizontal, 16)
 

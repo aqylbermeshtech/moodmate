@@ -13,32 +13,27 @@ import FirebaseAuth
 @MainActor
 final class CreatePostViewModel: ObservableObject {
     // MARK: - Post Form State
-    @Published var selectedMoodEmoji: String? = nil
-    @Published var selectedMoodText: String? = nil
-    @Published var selectedMoodColorHex: String? = nil
-    
     @Published var text: String = ""
     @Published var selectedImages: [UIImage] = []
     @Published var visibility: Visibility = .publicVisibility
-    
+
     // MARK: - View UI State
     @Published var isPublishing: Bool = false
     @Published var showSuccessAnimation: Bool = false
-    @Published var showMoodPickerSheet: Bool = false
     @Published var showPhotoOptionsActionSheet: Bool = false
     @Published var showImagePicker: Bool = false
     @Published var showCameraPicker: Bool = false
     @Published var showDiscardDraftAlert: Bool = false
     @Published var errorMessage: String? = nil
-    
+
     // MARK: - Dependencies
     private let postRepository: PostRepositoryProtocol
     private let draftManager: DraftManager
     private let profileRepository: ProfileRepositoryProtocol
     private var cancellables = Set<AnyCancellable>()
 
-    @Published var currentUser: MoodUser
-    
+    @Published var currentUser: AppUser
+
     init(
         postRepository: PostRepositoryProtocol = PostRepository.shared,
         draftManager: DraftManager = DraftManager.shared,
@@ -51,16 +46,13 @@ final class CreatePostViewModel: ObservableObject {
 
         let userId = AppSessionManager.currentUserId()
         if let profile = profileRepository.getProfile(forId: userId) {
-            self.currentUser = MoodUser(
+            self.currentUser = AppUser(
                 id: profile.id,
                 name: profile.displayName,
                 username: profile.username,
                 avatarImageName: profile.avatarImageName,
                 avatarImageData: profile.avatarImageData,
-                avatarColorHex: profile.avatarColorHex,
-                currentMoodEmoji: profile.currentMoodEmoji,
-                currentMoodText: profile.currentMoodText,
-                currentMoodColorHex: profile.currentMoodColorHex
+                avatarColorHex: profile.avatarColorHex
             )
         } else {
             var userName = "John"
@@ -74,23 +66,20 @@ final class CreatePostViewModel: ObservableObject {
                     userHandle = prefix.lowercased()
                 }
             }
-            
-            self.currentUser = MoodUser(
+
+            self.currentUser = AppUser(
                 id: userId,
                 name: userName,
                 username: userHandle,
                 avatarImageName: nil,
-                avatarColorHex: "38B2AC",
-                currentMoodEmoji: nil,
-                currentMoodText: nil,
-                currentMoodColorHex: nil
+                avatarColorHex: "38B2AC"
             )
         }
 
         observeProfileUpdates()
         loadDraftIfAvailable()
     }
-    
+
     private func observeProfileUpdates() {
         profileRepository.profileUpdatesPublisher
             .receive(on: DispatchQueue.main)
@@ -98,83 +87,49 @@ final class CreatePostViewModel: ObservableObject {
                 guard let self = self else { return }
                 let currentId = AppSessionManager.currentUserId()
                 if profile.id == currentId {
-                    self.currentUser = MoodUser(
+                    self.currentUser = AppUser(
                         id: profile.id,
                         name: profile.displayName,
                         username: profile.username,
                         avatarImageName: profile.avatarImageName,
                         avatarImageData: profile.avatarImageData,
-                        avatarColorHex: profile.avatarColorHex,
-                        currentMoodEmoji: profile.currentMoodEmoji,
-                        currentMoodText: profile.currentMoodText,
-                        currentMoodColorHex: profile.currentMoodColorHex
+                        avatarColorHex: profile.avatarColorHex
                     )
                 }
             }
             .store(in: &cancellables)
     }
-    
+
     // MARK: - Validation
     var isValid: Bool {
-        let hasMood = selectedMoodEmoji != nil
         let hasText = !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         let hasPhoto = !selectedImages.isEmpty
-        
-        return (hasMood || hasText || hasPhoto) && text.count <= 500
+
+        return (hasText || hasPhoto) && text.count <= 500
     }
-    
+
     var hasUnsavedContent: Bool {
-        return selectedMoodEmoji != nil || !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !selectedImages.isEmpty
+        return !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !selectedImages.isEmpty
     }
-    
+
     var accentColor: Color {
-        if let hex = selectedMoodColorHex {
-            return Color.adaptiveMoodColor(hex: hex)
-        }
-        return Color.theme.accent
+        Color.theme.accent
     }
- 
-    let moodOptions = MoodOption.catalog
-    
+
     // MARK: - Form Actions
-    func selectMood(emoji: String, text: String, colorHex: String) {
-        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-            self.selectedMoodEmoji = emoji
-            self.selectedMoodText = text
-            self.selectedMoodColorHex = colorHex
- 
-            self.currentUser.currentMoodEmoji = emoji
-            self.currentUser.currentMoodText = text
-            self.currentUser.currentMoodColorHex = colorHex
-        }
-        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-    }
-    
-    func clearMood() {
-        withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-            self.selectedMoodEmoji = nil
-            self.selectedMoodText = nil
-            self.selectedMoodColorHex = nil
-        }
-    }
-    
-    func appendEmoji(_ emoji: String) {
-        text += emoji
-    }
-    
     func addImage(_ image: UIImage) {
         withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
             selectedImages.append(image)
         }
     }
-    
+
     func removeImage(at index: Int) {
         guard index >= 0 && index < selectedImages.count else { return }
         withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
             selectedImages.remove(at: index)
         }
     }
-    
+
     func replaceImage(at index: Int, with newImage: UIImage) {
         guard index >= 0 && index < selectedImages.count else { return }
         selectedImages[index] = newImage
@@ -183,16 +138,14 @@ final class CreatePostViewModel: ObservableObject {
     func addSamplePhoto() {
         let renderer = UIGraphicsImageRenderer(size: CGSize(width: 800, height: 600))
         let sampleImage = renderer.image { ctx in
-            let bounds = CGRect(x: 0, y: 0, width: 800, height: 600)
-
-            let color1 = UIColor(Color.adaptiveMoodColor(hex: selectedMoodColorHex ?? "38B2AC")).cgColor
+            let color1 = UIColor(Color.theme.accent).cgColor
             let color2 = UIColor(Color.purple).cgColor
             let colors = [color1, color2] as CFArray
             let space = CGColorSpaceCreateDeviceRGB()
             if let gradient = CGGradient(colorsSpace: space, colors: colors, locations: [0.0, 1.0]) {
                 ctx.cgContext.drawLinearGradient(gradient, start: CGPoint.zero, end: CGPoint(x: 800, y: 600), options: [])
             }
-            let text = "MoodMate Moment 🌿"
+            let text = "MoodMate Moment"
             let attrs: [NSAttributedString.Key: Any] = [
                 .font: UIFont.systemFont(ofSize: 42, weight: .bold),
                 .foregroundColor: UIColor.white
@@ -201,10 +154,10 @@ final class CreatePostViewModel: ObservableObject {
             let rect = CGRect(x: (800 - textSize.width)/2, y: (600 - textSize.height)/2, width: textSize.width, height: textSize.height)
             text.draw(in: rect, withAttributes: attrs)
         }
-        
+
         addImage(sampleImage)
     }
-    
+
     // MARK: - Draft Handling
     func saveDraft() {
         var base64Images: [String] = []
@@ -213,30 +166,24 @@ final class CreatePostViewModel: ObservableObject {
                 base64Images.append(data.base64EncodedString())
             }
         }
-        
+
         let draft = PostDraft(
-            moodText: selectedMoodText,
-            moodEmoji: selectedMoodEmoji,
-            moodColorHex: selectedMoodColorHex,
             text: text,
             imageBase64Strings: base64Images,
             visibility: visibility,
             savedAt: Date()
         )
-        
+
         draftManager.saveDraft(draft)
         UINotificationFeedbackGenerator().notificationOccurred(.success)
     }
-    
+
     func loadDraftIfAvailable() {
         guard let draft = draftManager.loadDraft() else { return }
-        
-        self.selectedMoodEmoji = draft.moodEmoji
-        self.selectedMoodText = draft.moodText
-        self.selectedMoodColorHex = draft.moodColorHex
+
         self.text = draft.text
         self.visibility = draft.visibility
-        
+
         var loadedImages: [UIImage] = []
         for base64 in draft.imageBase64Strings {
             if let data = Data(base64Encoded: base64), let img = UIImage(data: data) {
@@ -245,11 +192,11 @@ final class CreatePostViewModel: ObservableObject {
         }
         self.selectedImages = loadedImages
     }
-    
+
     func clearDraft() {
         draftManager.clearDraft()
     }
-    
+
     func handleCancelTap(onDismiss: () -> Void) {
         if hasUnsavedContent {
             showDiscardDraftAlert = true
@@ -257,11 +204,11 @@ final class CreatePostViewModel: ObservableObject {
             onDismiss()
         }
     }
-    
+
     // MARK: - Publish Action
     func publishPost(onSuccess: @escaping (PostModel) -> Void) {
         guard isValid else { return }
-        
+
         isPublishing = true
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
 
@@ -272,13 +219,10 @@ final class CreatePostViewModel: ObservableObject {
                 imageStrings.append(base64)
             }
         }
-        
+
         let newPost = PostModel(
             id: "post_\(UUID().uuidString.prefix(8))",
             authorId: currentUser.id,
-            mood: selectedMoodText,
-            moodEmoji: selectedMoodEmoji,
-            moodColorHex: selectedMoodColorHex,
             text: text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : text,
             images: imageStrings,
             visibility: visibility,
@@ -288,10 +232,10 @@ final class CreatePostViewModel: ObservableObject {
             bookmarksCount: 0,
             isLiked: false,
             isBookmarked: false,
-            gradientStartHex: selectedMoodColorHex ?? "38B2AC",
+            gradientStartHex: "38B2AC",
             gradientEndHex: "805AD5"
         )
-        
+
         Task {
             do {
                 let created = try await postRepository.createPost(newPost)
@@ -305,7 +249,7 @@ final class CreatePostViewModel: ObservableObject {
                 }
 
                 try await Task.sleep(nanoseconds: 600_000_000)
-                
+
                 await MainActor.run {
                     onSuccess(created)
                 }

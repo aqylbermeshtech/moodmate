@@ -18,17 +18,11 @@ struct UserProfile: Identifiable, Equatable, Codable {
     var location: String?
     var birthday: Date?
     var privacySetting: Visibility
-    var currentMoodEmoji: String?
-    var currentMoodText: String?
-    var currentMoodColorHex: String?
-    var moodStreak: Int
     var postsCount: Int
     var followersCount: Int
     var followingCount: Int
     var isFollowing: Bool
-    var achievements: [Achievement]
-    var moodHistory: [MoodHistoryEntry]
-    
+
     init(
         id: String,
         displayName: String,
@@ -40,16 +34,10 @@ struct UserProfile: Identifiable, Equatable, Codable {
         location: String? = nil,
         birthday: Date? = nil,
         privacySetting: Visibility = .publicVisibility,
-        currentMoodEmoji: String? = nil,
-        currentMoodText: String? = nil,
-        currentMoodColorHex: String? = nil,
-        moodStreak: Int = 0,
         postsCount: Int = 0,
         followersCount: Int = 0,
         followingCount: Int = 0,
-        isFollowing: Bool = false,
-        achievements: [Achievement] = [],
-        moodHistory: [MoodHistoryEntry] = []
+        isFollowing: Bool = false
     ) {
         self.id = id
         self.displayName = displayName
@@ -61,32 +49,9 @@ struct UserProfile: Identifiable, Equatable, Codable {
         self.location = location
         self.birthday = birthday
         self.privacySetting = privacySetting
-        self.currentMoodEmoji = currentMoodEmoji
-        self.currentMoodText = currentMoodText
-        self.currentMoodColorHex = currentMoodColorHex
-        self.moodStreak = moodStreak
         self.postsCount = postsCount
         self.followersCount = followersCount
         self.followingCount = followingCount
         self.isFollowing = isFollowing
-        self.achievements = achievements
-        self.moodHistory = moodHistory
     }
 }
-
-struct Achievement: Identifiable, Equatable, Codable {
-    var id: String { title }
-    let title: String
-    let description: String
-    let icon: String
-    let unlockedAt: Date
-}
-
-struct MoodHistoryEntry: Identifiable, Equatable, Codable {
-    let id: String
-    let date: Date
-    let emoji: String
-    let colorHex: String
-    let text: String
-}
-

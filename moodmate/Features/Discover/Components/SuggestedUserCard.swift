@@ -18,8 +18,7 @@ struct SuggestedUserCard: View {
                 name: user.displayName,
                 colorHex: user.avatarColorHex,
                 size: 48,
-                showBorder: false,
-                moodEmoji: user.moodEmoji
+                showBorder: false
             )
 
             VStack(spacing: 2) {
@@ -33,19 +32,13 @@ struct SuggestedUserCard: View {
                     .foregroundStyle(Color.theme.secondaryText)
                     .lineLimit(1)
 
-                if let moodText = user.moodText, let emoji = user.moodEmoji {
-                    HStack(spacing: 3) {
-                        Text(emoji)
-                            .font(.system(size: 10))
-                        Text(moodText)
-                            .font(.system(size: 10, weight: .semibold))
-                    }
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 2)
-                    .background(Color.theme.accent.opacity(0.12))
-                    .foregroundStyle(Color.theme.accent)
-                    .clipShape(Capsule())
-                    .padding(.top, 2)
+                if !user.bio.isEmpty {
+                    Text(user.bio)
+                        .font(.system(size: 10))
+                        .foregroundStyle(Color.theme.secondaryText)
+                        .lineLimit(2)
+                        .multilineTextAlignment(.center)
+                        .padding(.top, 2)
                 }
             }
 
@@ -85,16 +78,14 @@ struct SuggestedUserCard: View {
         SuggestedUserCard(
             user: SuggestedUser(
                 id: "1", displayName: "Luna Park", username: "luna_glow",
-                avatarColorHex: "ED64A6", bio: "Night owl.", moodEmoji: "🌙",
-                moodText: "Dreamy", moodColorHex: "805AD5", isFollowing: false
+                avatarColorHex: "ED64A6", bio: "Night owl.", isFollowing: false
             ),
             onFollow: {}
         )
         SuggestedUserCard(
             user: SuggestedUser(
                 id: "2", displayName: "River Stone", username: "river_flows",
-                avatarColorHex: "38B2AC", bio: "Kayaker.", moodEmoji: "🌊",
-                moodText: "Flowing", moodColorHex: "4DABF7", isFollowing: true
+                avatarColorHex: "38B2AC", bio: "Kayaker.", isFollowing: true
             ),
             onFollow: {}
         )

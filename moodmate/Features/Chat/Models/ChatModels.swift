@@ -14,7 +14,7 @@ struct ChatMessage: Identifiable, Equatable {
 
 struct Conversation: Identifiable, Equatable {
     let id: String
-    let participant: MoodUser
+    let participant: AppUser
     let messages: [ChatMessage]
     let unreadCount: Int
 

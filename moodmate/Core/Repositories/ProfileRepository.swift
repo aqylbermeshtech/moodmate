@@ -28,7 +28,7 @@ final class ProfileRepository: ProfileRepositoryProtocol {
     private let storageKey = "moodmate_user_profiles_v2.json"
     private let fileManager = FileManager.default
 
-    private static let mockDataVersion = 2
+    private static let mockDataVersion = 3
     private static let mockDataVersionKey = "moodmate_mock_data_version"
 
     private var storageFileURL: URL {
@@ -206,13 +206,6 @@ final class ProfileRepository: ProfileRepositoryProtocol {
                 profile.displayName = prefix.capitalized
                 profile.username = prefix.lowercased()
             }
-        }
-
-        if profile.achievements.isEmpty {
-            profile.achievements = MockDataProvider.defaultAchievements()
-        }
-        if profile.moodHistory.isEmpty {
-            profile.moodHistory = MockDataProvider.defaultMoodHistory()
         }
 
         setProfile(profile)

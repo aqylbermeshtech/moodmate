@@ -1,5 +1,5 @@
 import Foundation
 
 protocol FriendsRepositoryProtocol: AnyObject {
-    func loadFriends() -> [MoodUser]
+    func loadFriends() -> [AppUser]
 }

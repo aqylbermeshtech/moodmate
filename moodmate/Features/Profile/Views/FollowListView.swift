@@ -110,8 +110,7 @@ struct FollowListView: View {
                 name: user.displayName,
                 colorHex: user.avatarColorHex,
                 size: 44,
-                showBorder: true,
-                moodEmoji: user.currentMoodEmoji
+                showBorder: true
             )
             
             VStack(alignment: .leading, spacing: 2) {

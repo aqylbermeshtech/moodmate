@@ -38,7 +38,7 @@ struct MoodMateAuthView: View {
                                 .font(.largeTitle.weight(.medium))
                                 .foregroundStyle(Color.theme.primaryText)
 
-                            Text(authMode == .signUp ? "Let’s begin your mindful routine." : "Welcome back. How are you feeling today?")
+                            Text(authMode == .signUp ? "Create an account to get started." : "Welcome back. Sign in to continue.")
                                 .font(.subheadline)
                                 .foregroundStyle(Color.theme.secondaryText)
                                 .multilineTextAlignment(.center)

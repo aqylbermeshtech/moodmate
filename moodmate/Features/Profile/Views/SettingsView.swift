@@ -70,7 +70,7 @@ struct SettingsView: View {
                                         Text("Daily Reminders")
                                             .font(.system(size: 15, weight: .semibold, design: .rounded))
                                             .foregroundStyle(Color.theme.primaryText)
-                                        Text("Remind me to check in my mood")
+                                        Text("Remind me to post something")
                                             .font(.system(size: 11))
                                             .foregroundStyle(Color.theme.secondaryText)
                                     }

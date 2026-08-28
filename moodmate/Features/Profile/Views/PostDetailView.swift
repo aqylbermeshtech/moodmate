@@ -201,8 +201,8 @@ struct PostDetailView: View {
         if let post = postRepository.post(id: postId) {
             self.displayPost = FeedPost(from: post)
             self.comments = [
-                MockComment(name: "Michele", username: "mj", avatarColorHex: "4DABF7", text: "Such a beautiful quote! Grateful for this reminder today. 🙏🧘‍♀️", timeAgo: "1h ago"),
-                MockComment(name: "Pepper", username: "pepperoni", avatarColorHex: "FF6B6B", text: "Love the positive energy, keep tracking! 💪✨", timeAgo: "45m ago")
+                MockComment(name: "Michele", username: "mj", avatarColorHex: "4DABF7", text: "Such a beautiful quote. Grateful for this reminder today.", timeAgo: "1h ago"),
+                MockComment(name: "Pepper", username: "pepperoni", avatarColorHex: "FF6B6B", text: "Love the positive energy, keep it up!", timeAgo: "45m ago")
             ]
         }
         didLoad = true

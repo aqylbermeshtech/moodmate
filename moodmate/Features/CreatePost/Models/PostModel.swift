@@ -12,9 +12,6 @@ import Foundation
 struct PostModel: Identifiable, Codable, Equatable {
     let id: String
     var authorId: String
-    var mood: String?
-    var moodEmoji: String?
-    var moodColorHex: String?
     var text: String?
     var images: [String]
     var visibility: Visibility
@@ -38,9 +35,6 @@ struct PostModel: Identifiable, Codable, Equatable {
 
 // MARK: - Post Draft Model
 struct PostDraft: Codable, Equatable {
-    var moodText: String?
-    var moodEmoji: String?
-    var moodColorHex: String?
     var text: String
     var imageBase64Strings: [String]
     var visibility: Visibility

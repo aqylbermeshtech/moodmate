@@ -12,8 +12,8 @@ struct DiscoverCard: View {
     var onLike: () -> Void
     var userStore: UserStoreProtocol = UserStore.shared
 
-    private var author: MoodUser? {
-        userStore.moodUser(for: post.userId)
+    private var author: AppUser? {
+        userStore.user(for: post.userId)
     }
 
     var body: some View {
@@ -42,18 +42,6 @@ struct DiscoverCard: View {
                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
 
                 VStack(alignment: .leading, spacing: 6) {
-                    HStack(spacing: 4) {
-                        Text(post.moodEmoji)
-                            .font(.system(size: 10))
-                        Text(post.moodText)
-                            .font(.system(size: 10, weight: .bold))
-                    }
-                    .padding(.horizontal, 7)
-                    .padding(.vertical, 3)
-                    .background(Color.theme.primaryBackground.opacity(0.8))
-                    .foregroundStyle(Color.theme.primaryText)
-                    .clipShape(Capsule())
-
                     Text(post.quoteText)
                         .font(.system(size: 14, weight: .bold, design: .serif))
                         .foregroundStyle(.white)
@@ -113,8 +101,7 @@ struct DiscoverCard: View {
         DiscoverCard(
             post: DiscoverPost(
                 id: "1", userId: "su1",
-                moodEmoji: "😊", moodText: "Happy",
-                moodColorHex: "38B2AC", quoteText: "Stars can't shine without darkness.",
+                quoteText: "Stars can't shine without darkness.",
                 caption: "Night thoughts.", gradientStartHex: "38B2AC", gradientEndHex: "805AD5",
                 likesCount: 42, commentsCount: 5, isLiked: false,
                 heightClass: .tall, createdAt: Date()
@@ -125,8 +112,7 @@ struct DiscoverCard: View {
         DiscoverCard(
             post: DiscoverPost(
                 id: "2", userId: "su2",
-                moodEmoji: "😌", moodText: "Calm",
-                moodColorHex: "4A5568", quoteText: "Be here now.",
+                quoteText: "Be here now.",
                 caption: "Flowing.", gradientStartHex: "667EEA", gradientEndHex: "764BA2",
                 likesCount: 18, commentsCount: 2, isLiked: true,
                 heightClass: .compact, createdAt: Date()

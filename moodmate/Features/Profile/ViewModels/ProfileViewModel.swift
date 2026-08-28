@@ -189,7 +189,7 @@ class ProfileViewModel: ObservableObject {
             // can't leak into Feed/Discover or collide with real post ids.
             let additionalPosts = [
                 PostModel(
-                    id: "lazy_\(authorId)_\(currentPostCount + 1)", authorId: authorId, mood: nil, moodEmoji: nil, moodColorHex: nil,
+                    id: "lazy_\(authorId)_\(currentPostCount + 1)", authorId: authorId,
                     text: nil, images: [], visibility: .publicVisibility,
                     createdAt: Date().addingTimeInterval(-86400 * 5), likesCount: 18, commentsCount: 3,
                     bookmarksCount: 0, isLiked: false, isBookmarked: false,
@@ -197,7 +197,7 @@ class ProfileViewModel: ObservableObject {
                     gradientStartHex: "805AD5", gradientEndHex: "38B2AC"
                 ),
                 PostModel(
-                    id: "lazy_\(authorId)_\(currentPostCount + 2)", authorId: authorId, mood: nil, moodEmoji: nil, moodColorHex: nil,
+                    id: "lazy_\(authorId)_\(currentPostCount + 2)", authorId: authorId,
                     text: nil, images: [], visibility: .publicVisibility,
                     createdAt: Date().addingTimeInterval(-86400 * 6), likesCount: 22, commentsCount: 1,
                     bookmarksCount: 0, isLiked: true, isBookmarked: false,
@@ -205,7 +205,7 @@ class ProfileViewModel: ObservableObject {
                     gradientStartHex: "4A5568", gradientEndHex: "1A202C"
                 ),
                 PostModel(
-                    id: "lazy_\(authorId)_\(currentPostCount + 3)", authorId: authorId, mood: nil, moodEmoji: nil, moodColorHex: nil,
+                    id: "lazy_\(authorId)_\(currentPostCount + 3)", authorId: authorId,
                     text: nil, images: [], visibility: .publicVisibility,
                     createdAt: Date().addingTimeInterval(-86400 * 7), likesCount: 35, commentsCount: 4,
                     bookmarksCount: 0, isLiked: false, isBookmarked: true,

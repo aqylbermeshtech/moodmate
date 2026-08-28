@@ -15,8 +15,7 @@ struct ConversationRow: View {
                 name: conversation.participant.name,
                 colorHex: conversation.participant.avatarColorHex,
                 size: 48,
-                showBorder: false,
-                moodEmoji: conversation.participant.currentMoodEmoji
+                showBorder: false
             )
 
             VStack(alignment: .leading, spacing: 3) {

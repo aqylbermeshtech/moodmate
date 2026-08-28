@@ -7,7 +7,15 @@ struct HomeView: View {
     @ObservedObject var viewModel: HomeViewModel
     @EnvironmentObject private var router: AppRouter
 
-    @State private var feedFilter: Int = 0
+    /// Bridges `XFeedFilter`'s `Int` selection to the feed view model's
+    /// `FeedFilter` enum, which is the single source of truth for which
+    /// tab ("For you" / "Following") is active.
+    private var feedFilter: Binding<Int> {
+        Binding(
+            get: { viewModel.feed.selectedFilter.rawValue },
+            set: { viewModel.feed.selectedFilter = FeedViewModel.FeedFilter(rawValue: $0) ?? .forYou }
+        )
+    }
 
     // MARK: - Body
 
@@ -22,33 +30,27 @@ struct HomeView: View {
             Rectangle().fill(Color.theme.divider).frame(height: 0.5)
 
             // Feed filter tabs
-            XFeedFilter(selection: $feedFilter)
+            XFeedFilter(selection: feedFilter)
 
             // Timeline with scroll tracking
             ScrollView {
                 LazyVStack(spacing: 0) {
-                    // Mood check-in row (compact)
-                    MoodCard(viewModel: viewModel)
-
-                    Divider().background(Color.theme.divider)
-
-                    // Friends row
-                    if !viewModel.friends.isEmpty {
-                        friendsStoriesSection
-                        Divider().background(Color.theme.divider)
-                    }
-
-                    // Feed posts
-                    ForEach(viewModel.feed.posts) { post in
-                        PostCardView(
-                            post: post,
-                            style: .feed,
-                            onLike:     { viewModel.feed.toggleLike(for: post) },
-                            onBookmark: { viewModel.feed.toggleBookmark(for: post) },
-                            onComment: {
-                                router.push(.postDetail(postId: post.id))
-                            }
-                        )
+                    // Feed posts — "For you" shows everything, "Following"
+                    // is filtered to people the user follows.
+                    if viewModel.feed.selectedFilter == .following && viewModel.feed.visiblePosts.isEmpty {
+                        followingEmptyState
+                    } else {
+                        ForEach(viewModel.feed.visiblePosts) { post in
+                            PostCardView(
+                                post: post,
+                                style: .feed,
+                                onLike:     { viewModel.feed.toggleLike(for: post) },
+                                onBookmark: { viewModel.feed.toggleBookmark(for: post) },
+                                onComment: {
+                                    router.push(.postDetail(postId: post.id))
+                                }
+                            )
+                        }
                     }
 
                     // Bottom spacer so content doesn't hide behind tab bar
@@ -77,35 +79,29 @@ struct HomeView: View {
             get: { viewModel.feed.errorMessage },
             set: { if $0 == nil { viewModel.feed.clearError() } }
         ))
-        .sheet(isPresented: $viewModel.showMoodPickerSheet) {
-            MoodPickerSheet(viewModel: viewModel)
-                .presentationDetents([.height(380)])
-                .presentationDragIndicator(.hidden)
-        }
     }
 
-    // MARK: - Friends Stories Section
+    // MARK: - Following Empty State
 
-    private var friendsStoriesSection: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 16) {
-                ForEach(viewModel.friends) { friend in
-                    FriendAvatar(user: friend) {
-                        if let emoji = friend.currentMoodEmoji,
-                           let text  = friend.currentMoodText {
-                            viewModel.selectMood(
-                                emoji: emoji,
-                                text: "\(friend.name) is \(text)",
-                                colorHex: friend.currentMoodColorHex ?? "38B2AC"
-                            )
-                        }
-                    }
-                    .padding(.vertical, 4)
-                }
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
+    private var followingEmptyState: some View {
+        VStack(spacing: 8) {
+            Image(systemName: "person.2")
+                .font(.system(size: 32))
+                .foregroundStyle(Color.theme.secondaryText)
+                .padding(.bottom, 4)
+
+            Text("Nothing here yet")
+                .font(.system(size: 17, weight: .semibold))
+                .foregroundStyle(Color.theme.primaryText)
+
+            Text("Posts from people you follow will show up here. Switch to \u{201C}For you\u{201D} to discover more.")
+                .font(.system(size: 14))
+                .foregroundStyle(Color.theme.secondaryText)
+                .multilineTextAlignment(.center)
         }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 40)
+        .padding(.top, 64)
     }
 }
 

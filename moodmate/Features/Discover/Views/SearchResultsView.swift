@@ -98,9 +98,9 @@ private struct SearchResultRow: View {
 
     /// Only meaningful for .post-type results — resolves the post's author
     /// live from UserStore via postUserId rather than a stale copy.
-    private var postAuthor: MoodUser? {
+    private var postAuthor: AppUser? {
         guard let postUserId = result.postUserId else { return nil }
-        return userStore.moodUser(for: postUserId)
+        return userStore.user(for: postUserId)
     }
     
     var body: some View {
@@ -116,17 +116,10 @@ private struct SearchResultRow: View {
                 )
                 
                 VStack(alignment: .leading, spacing: 2) {
-                    HStack(spacing: 4) {
-                        Text(result.userName ?? "")
-                            .font(.system(size: 15, weight: .bold, design: .rounded))
-                            .foregroundStyle(Color.theme.primaryText)
-                        
-                        if let emoji = result.userMoodEmoji {
-                            Text(emoji)
-                                .font(.system(size: 12))
-                        }
-                    }
-                    
+                    Text(result.userName ?? "")
+                        .font(.system(size: 15, weight: .bold, design: .rounded))
+                        .foregroundStyle(Color.theme.primaryText)
+
                     Text("@\(result.username ?? "")")
                         .font(.system(size: 13))
                         .foregroundStyle(Color.theme.secondaryText)
@@ -143,8 +136,8 @@ private struct SearchResultRow: View {
                     .fill(
                         LinearGradient(
                             colors: [
-                                Color.adaptiveMoodColor(hex: result.postGradientStartHex ?? "38B2AC"),
-                                Color.adaptiveMoodColor(hex: result.postGradientEndHex ?? "805AD5")
+                                Color.adaptiveColor(hex: result.postGradientStartHex ?? "38B2AC"),
+                                Color.adaptiveColor(hex: result.postGradientEndHex ?? "805AD5")
                             ],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
@@ -178,31 +171,6 @@ private struct SearchResultRow: View {
                         .font(.system(size: 11, weight: .semibold, design: .rounded))
                         .foregroundStyle(Color.theme.secondaryText)
                 }
-                
-            case .mood:
-                ZStack {
-                    Circle()
-                        .fill(Color.adaptiveMoodColor(hex: result.moodColorHex ?? "38B2AC").opacity(0.2))
-                    Text(result.moodEmoji ?? "😊")
-                        .font(.system(size: 20))
-                }
-                .frame(width: 44, height: 44)
-                
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(result.moodName ?? "")
-                        .font(.system(size: 15, weight: .bold, design: .rounded))
-                        .foregroundStyle(Color.theme.primaryText)
-                    
-                    Text("\(result.moodPostCount ?? 0) posts")
-                        .font(.system(size: 12))
-                        .foregroundStyle(Color.theme.secondaryText)
-                }
-                
-                Spacer()
-                
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(Color.theme.tertiaryText)
                 
             case .hashtag:
                 ZStack {
@@ -246,7 +214,7 @@ private struct SearchResultRow: View {
 #Preview {
     SearchResultsView(
         results: [
-            SearchResult(id: "1", type: .user, userName: "Luna Park", username: "luna_glow", avatarColorHex: "ED64A6", userMoodEmoji: "🌙"),
+            SearchResult(id: "1", type: .user, userName: "Luna Park", username: "luna_glow", avatarColorHex: "ED64A6"),
             SearchResult(id: "2", type: .hashtag, hashtagName: "MorningWalk", hashtagPostCount: 3421)
         ],
         scope: .constant(.all),

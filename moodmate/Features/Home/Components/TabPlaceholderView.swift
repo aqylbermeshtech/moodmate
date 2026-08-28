@@ -24,7 +24,7 @@ struct TabPlaceholderView: View {
                 .font(.system(size: 22, weight: .bold, design: .rounded))
                 .foregroundStyle(Color.theme.primaryText)
             
-            Text("This screen is currently under active development. Stay tuned for mindfulness updates!")
+            Text("This screen is currently under active development. Check back soon for updates!")
                 .font(.system(size: 14))
                 .foregroundStyle(Color.theme.secondaryText)
                 .multilineTextAlignment(.center)

@@ -24,8 +24,8 @@ enum MockChatData {
         case "1":
             return [
                 ChatMessage(id: UUID().uuidString, text: "Hey! How's your week going?", isFromCurrentUser: false, timeLabel: "Mon 9:14 AM"),
-                ChatMessage(id: UUID().uuidString, text: "Pretty good, just logged today's mood 🙂", isFromCurrentUser: true, timeLabel: "Mon 9:20 AM"),
-                ChatMessage(id: UUID().uuidString, text: "Nice, keep the streak going!", isFromCurrentUser: false, timeLabel: "Mon 9:22 AM")
+                ChatMessage(id: UUID().uuidString, text: "Pretty good, just posted about my morning", isFromCurrentUser: true, timeLabel: "Mon 9:20 AM"),
+                ChatMessage(id: UUID().uuidString, text: "Nice, saw that one. Love it", isFromCurrentUser: false, timeLabel: "Mon 9:22 AM")
             ]
         case "2":
             return [

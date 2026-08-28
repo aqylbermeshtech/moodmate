@@ -14,7 +14,6 @@ struct AvatarView: View {
     let colorHex: String
     let size: CGFloat
     let showBorder: Bool
-    let moodEmoji: String?
     let overlayAction: (() -> Void)?
     let overlayIcon: String?
 
@@ -25,7 +24,6 @@ struct AvatarView: View {
         colorHex: String = "38B2AC",
         size: CGFloat = 80,
         showBorder: Bool = true,
-        moodEmoji: String? = nil,
         overlayAction: (() -> Void)? = nil,
         overlayIcon: String? = nil
     ) {
@@ -35,7 +33,6 @@ struct AvatarView: View {
         self.colorHex = colorHex
         self.size = size
         self.showBorder = showBorder
-        self.moodEmoji = moodEmoji
         self.overlayAction = overlayAction
         self.overlayIcon = overlayIcon
     }
@@ -73,19 +70,6 @@ struct AvatarView: View {
                 Circle()
                     .stroke(Color.theme.divider, lineWidth: showBorder ? max(1.5, size * 0.03) : 0)
             )
-
-            // Mood Emoji Badge Overlay
-            if let moodEmoji {
-                ZStack {
-                    Circle()
-                        .fill(Color.theme.primaryBackground)
-                        .frame(width: size * 0.33, height: size * 0.33)
-
-                    Text(moodEmoji)
-                        .font(.system(size: size * 0.2))
-                }
-                .offset(x: size * 0.04, y: size * 0.04)
-            }
 
             // Action Icon Overlay (Camera edit button)
             if let overlayAction, let overlayIcon {

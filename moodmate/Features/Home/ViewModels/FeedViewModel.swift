@@ -7,6 +7,15 @@ import OSLog
 @Observable
 final class FeedViewModel {
 
+    /// The two feed tabs shown by `XFeedFilter`.
+    ///
+    /// - `forYou`: the general timeline — every post, from anyone.
+    /// - `following`: only posts authored by people the current user follows.
+    enum FeedFilter: Int, CaseIterable {
+        case forYou = 0
+        case following = 1
+    }
+
     // MARK: - Observed State
 
     private(set) var posts: [FeedPost] = [] {
@@ -19,16 +28,40 @@ final class FeedViewModel {
     }
     private(set) var errorMessage: String?
 
+    /// Which tab is currently selected. `HomeView` binds `XFeedFilter` to this.
+    var selectedFilter: FeedFilter = .forYou
+
+    /// Author ids the current user follows. Kept as observed state (rather
+    /// than recomputed inline) so the "Following" tab re-renders when a
+    /// follow/unfollow happens elsewhere in the app.
+    private(set) var followedAuthorIds: Set<String> = []
+
+    /// Posts to show for the active tab. `forYou` is the full timeline;
+    /// `following` is filtered to authors in `followedAuthorIds`.
+    var visiblePosts: [FeedPost] {
+        switch selectedFilter {
+        case .forYou:
+            return posts
+        case .following:
+            return posts.filter { followedAuthorIds.contains($0.authorId) }
+        }
+    }
+
     // MARK: - Dependencies
 
     private let postRepository: PostRepositoryProtocol
+    private let profileRepository: ProfileRepositoryProtocol
     private var cancellables = Set<AnyCancellable>()
     private let logger = Logger(subsystem: "com.moodmate", category: "FeedViewModel")
 
     // MARK: - Init
 
-    init(postRepository: PostRepositoryProtocol = PostRepository.shared) {
+    init(
+        postRepository: PostRepositoryProtocol = PostRepository.shared,
+        profileRepository: ProfileRepositoryProtocol = ProfileRepository.shared
+    ) {
         self.postRepository = postRepository
+        self.profileRepository = profileRepository
     }
 
     // MARK: - Lifecycle
@@ -40,6 +73,8 @@ final class FeedViewModel {
         isObserving = true
 
         observePosts()
+        observeFollowChanges()
+        refreshFollowedAuthors()
 
         Task { [weak self] in
             guard let self else { return }
@@ -119,6 +154,30 @@ final class FeedViewModel {
     }
 
     // MARK: - Private Observation
+
+    /// Rebuilds the followed-author set from whatever the profile store
+    /// currently holds. Follow state is denormalized onto `UserProfile`
+    /// (`isFollowing`), so this is just a filter over all known profiles.
+    private func refreshFollowedAuthors() {
+        followedAuthorIds = Set(
+            profileRepository.allProfiles()
+                .filter(\.isFollowing)
+                .map(\.id)
+        )
+    }
+
+    /// Every follow/unfollow writes the target profile back through
+    /// `ProfileRepository.setProfile`, which broadcasts on this publisher —
+    /// so recomputing the set on each emission keeps the "Following" tab
+    /// in sync no matter where the follow was toggled.
+    private func observeFollowChanges() {
+        profileRepository.profileUpdatesPublisher
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.refreshFollowedAuthors()
+            }
+            .store(in: &cancellables)
+    }
 
     private func observePosts() {
         postRepository.postsPublisher

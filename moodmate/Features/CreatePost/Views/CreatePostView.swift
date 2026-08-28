@@ -26,22 +26,10 @@ struct CreatePostView: View {
                     VStack(spacing: 16) {
                         userHeaderView
 
-                        MoodPickerCard(
-                            selectedMoodEmoji: viewModel.selectedMoodEmoji,
-                            selectedMoodText: viewModel.selectedMoodText,
-                            selectedMoodColorHex: viewModel.selectedMoodColorHex,
-                            onTap: {
-                                viewModel.showMoodPickerSheet = true
-                            }
-                        )
-
                         PostTextEditor(
                             text: $viewModel.text,
                             placeholder: placeholderText,
-                            maxLength: 500,
-                            onEmojiSelected: { emoji in
-                                viewModel.appendEmoji(emoji)
-                            }
+                            maxLength: 500
                         )
 
                         PhotoAttachmentView(
@@ -108,11 +96,6 @@ struct CreatePostView: View {
                     .disabled(!viewModel.isValid || viewModel.isPublishing)
                     .buttonStyle(XPressableStyle())
                 }
-            }
-            .sheet(isPresented: $viewModel.showMoodPickerSheet) {
-                moodPickerSheet
-                    .presentationDetents([.height(400)])
-                    .presentationDragIndicator(.visible)
             }
             .confirmationDialog("Add Photo", isPresented: $viewModel.showPhotoOptionsActionSheet, titleVisibility: .visible) {
                 Button("Photo Preset / Sample Photo") {
@@ -197,62 +180,7 @@ struct CreatePostView: View {
     }
 
     private var placeholderText: String {
-        if let text = viewModel.selectedMoodText {
-            return "Describe why you're feeling \(text.lowercased()) today..."
-        }
-        return "What's happening?"
-    }
-
-    // MARK: - Mood Picker Sheet View
-    private var moodPickerSheet: some View {
-        VStack(spacing: 20) {
-            VStack(spacing: 4) {
-                Text("Select your mood")
-                    .font(.xScreenTitle)
-                    .foregroundStyle(Color.theme.primaryText)
-                Text("This will highlight your post on MoodMate")
-                    .font(.xTrendingMeta)
-                    .foregroundStyle(Color.theme.secondaryText)
-            }
-            .padding(.top, 16)
-
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 95, maximum: 110), spacing: 14)], spacing: 14) {
-                ForEach(viewModel.moodOptions) { option in
-                    let isSelected = viewModel.selectedMoodEmoji == option.emoji
-
-                    Button {
-                        viewModel.selectMood(emoji: option.emoji, text: option.text, colorHex: option.colorHex)
-                        viewModel.showMoodPickerSheet = false
-                    } label: {
-                        VStack(spacing: 10) {
-                            Text(option.emoji)
-                                .font(.system(size: 36))
-
-                            Text(option.text)
-                                .font(.xDisplayName)
-                                .foregroundStyle(Color.theme.primaryText)
-                        }
-                        .frame(width: 95, height: 95)
-                        .background(
-                            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                .fill(isSelected ? Color.theme.accent.opacity(0.15) : Color.theme.secondaryBackground)
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                .stroke(
-                                    isSelected ? Color.theme.accent : Color.theme.divider,
-                                    lineWidth: isSelected ? 2 : 1
-                                )
-                        )
-                    }
-                    .buttonStyle(XPressableStyle())
-                }
-            }
-            .padding(.horizontal, 20)
-
-            Spacer()
-        }
-        .background(Color.theme.primaryBackground)
+        "What's happening?"
     }
 
     // MARK: - Success Overlay

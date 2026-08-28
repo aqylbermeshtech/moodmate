@@ -29,15 +29,8 @@ struct PostCardView: View {
     @State private var isRepostedLocal: Bool = false
     @State private var repostRotation: Double = 0
 
-    private var author: MoodUser? {
-        userStore.moodUser(for: post.authorId)
-    }
-
-    private var postAccentColor: Color {
-        if let hex = post.moodColorHex {
-            return Color.adaptiveMoodColor(hex: hex)
-        }
-        return Color.theme.accent
+    private var author: AppUser? {
+        userStore.user(for: post.authorId)
     }
 
     var body: some View {
@@ -49,9 +42,6 @@ struct PostCardView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     // Header row: name + verified + handle + time + overflow
                     headerRow
-
-                    // Mood badge (if present)
-                    moodBadge
 
                     // Body content
                     bodyContent
@@ -131,26 +121,6 @@ struct PostCardView: View {
         }
     }
 
-    // MARK: - Mood Badge
-
-    @ViewBuilder
-    private var moodBadge: some View {
-        if let mood = post.moodEmoji ?? author?.currentMoodEmoji,
-           let text = post.moodText ?? author?.currentMoodText {
-            HStack(spacing: 4) {
-                Text(mood)
-                    .font(.system(size: 12))
-                Text(text)
-                    .font(.system(size: 12, weight: .semibold))
-            }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 3)
-            .background(postAccentColor.opacity(0.15))
-            .foregroundStyle(postAccentColor)
-            .clipShape(Capsule())
-        }
-    }
-
     // MARK: - Body Content
 
     @ViewBuilder
@@ -172,12 +142,6 @@ struct PostCardView: View {
         // Quote content
         if !post.quoteText.isEmpty {
             quoteContent
-        }
-
-        // Mood-only (no caption, no images, no quote)
-        if post.caption.isEmpty && post.images.isEmpty && post.quoteText.isEmpty,
-           let moodEmoji = post.moodEmoji, let moodText = post.moodText {
-            moodOnlyContent(moodEmoji: moodEmoji, moodText: moodText)
         }
     }
 
@@ -229,33 +193,6 @@ struct PostCardView: View {
             }
             .padding(.vertical, 8)
         }
-        .padding(.top, 4)
-    }
-
-    // MARK: - Mood-Only Content
-
-    private func moodOnlyContent(moodEmoji: String, moodText: String) -> some View {
-        HStack(spacing: 12) {
-            Text(moodEmoji)
-                .font(.system(size: 32))
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Feeling \(moodText)")
-                    .font(.xDisplayName)
-                    .foregroundStyle(Color.theme.primaryText)
-            }
-
-            Spacer()
-        }
-        .padding(14)
-        .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Color.theme.secondaryBackground)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(Color.theme.divider, lineWidth: 1)
-        )
         .padding(.top, 4)
     }
 
@@ -370,7 +307,7 @@ private extension View {
                     authorId: "2",
                     timeAgo: "2h",
                     quoteText: "Breathe in experience, breathe out poetry.",
-                    caption: "Taking a conscious pause today. 🌱"
+                    caption: "Taking a conscious pause today."
                 ),
                 style: .feed,
                 onLike: {}, onBookmark: {}, onComment: {}

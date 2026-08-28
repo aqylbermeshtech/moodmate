@@ -37,7 +37,7 @@ struct EmptyDiscoverView: View {
 
                 Text(hasActiveFilter
                      ? "Try a different filter or clear your current selection to explore more content."
-                     : "Start exploring moods, people, and moments. The community is waiting for you!")
+                     : "Start exploring people, posts, and moments. The community is waiting for you!")
                     .font(.xPostBody)
                     .foregroundStyle(Color.theme.secondaryText)
                     .multilineTextAlignment(.center)

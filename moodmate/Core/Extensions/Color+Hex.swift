@@ -33,7 +33,9 @@ extension Color {
         )
     }
     
-    static func adaptiveMoodColor(hex: String, darkOpacityMultiplier: Double = 0.85) -> Color {
+    /// Returns the hex color, slightly dimmed in dark mode so saturated
+    /// accent colors don't glare against a dark background.
+    static func adaptiveColor(hex: String, darkOpacityMultiplier: Double = 0.85) -> Color {
         let baseColor = Color(hex: hex)
         return Color(UIColor { trait in
             if trait.userInterfaceStyle == .dark {

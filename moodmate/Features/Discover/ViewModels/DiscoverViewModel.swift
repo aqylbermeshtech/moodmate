@@ -14,12 +14,10 @@ final class DiscoverViewModel: ObservableObject {
     // MARK: - Published State
 
     @Published var discoverPosts: [DiscoverPost] = []
-    @Published var trendingMoods: [TrendingMood] = []
     @Published var suggestedUsers: [SuggestedUser] = []
     @Published var trendingHashtags: [DiscoverHashtag] = []
     @Published var categories: [DiscoverCategory] = []
-    
-    @Published var selectedMood: TrendingMood? = nil
+
     @Published var selectedCategory: DiscoverCategory? = nil
     @Published var selectedHashtag: DiscoverHashtag? = nil
     
@@ -41,16 +39,15 @@ final class DiscoverViewModel: ObservableObject {
     private let recentSearchesKey = "moodmate_recent_searches"
     
     var hasActiveFilter: Bool {
-        selectedMood != nil || selectedCategory != nil || selectedHashtag != nil
+        selectedCategory != nil || selectedHashtag != nil
     }
-    
+
     var activeFilterLabel: String {
-        if let mood = selectedMood { return "\(mood.emoji) \(mood.name)" }
         if let category = selectedCategory { return category.name }
         if let hashtag = selectedHashtag { return "#\(hashtag.name)" }
         return ""
     }
-    
+
     var filteredSearchResults: [SearchResult] {
         switch searchScope {
         case .all:
@@ -59,8 +56,6 @@ final class DiscoverViewModel: ObservableObject {
             return searchResults.filter { $0.type == .user }
         case .posts:
             return searchResults.filter { $0.type == .post }
-        case .moods:
-            return searchResults.filter { $0.type == .mood }
         case .hashtags:
             return searchResults.filter { $0.type == .hashtag }
         }
@@ -123,9 +118,6 @@ final class DiscoverViewModel: ObservableObject {
                         avatarColorHex: updatedProfile.avatarColorHex,
                         avatarImageData: updatedProfile.avatarImageData,
                         bio: updatedProfile.bio,
-                        moodEmoji: updatedProfile.currentMoodEmoji,
-                        moodText: updatedProfile.currentMoodText,
-                        moodColorHex: updatedProfile.currentMoodColorHex,
                         isFollowing: self.suggestedUsers[index].isFollowing
                     )
                 }
@@ -140,13 +132,11 @@ final class DiscoverViewModel: ObservableObject {
         errorMessage = nil
         currentPage = 0
         
-        async let moods = discoverService.getTrendingMoods()
         async let users = discoverService.getSuggestedUsers()
         async let tags = discoverService.getHashtags()
         async let cats = discoverService.getCategories()
         async let posts = discoverService.getDiscoverPosts(page: 0)
-        
-        self.trendingMoods = await moods
+
         self.suggestedUsers = await users
         self.trendingHashtags = await tags
         self.categories = await cats
@@ -166,11 +156,10 @@ final class DiscoverViewModel: ObservableObject {
         
         let newPosts = await discoverService.getDiscoverPosts(
             page: currentPage,
-            mood: selectedMood,
             category: selectedCategory,
             hashtag: selectedHashtag
         )
-        
+
         if newPosts.isEmpty {
             hasMorePages = false
         } else {
@@ -187,78 +176,59 @@ final class DiscoverViewModel: ObservableObject {
         
         let posts = await discoverService.getDiscoverPosts(
             page: 0,
-            mood: selectedMood,
             category: selectedCategory,
             hashtag: selectedHashtag
         )
-        
+
         withAnimation(.easeOut(duration: 0.3)) {
             self.discoverPosts = posts
             self.hasMorePages = posts.count >= 20
         }
     }
-    
+
     // MARK: - Filters
-    
-    func selectMood(_ mood: TrendingMood) {
-        withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-            if selectedMood == mood {
-                selectedMood = nil
-            } else {
-                selectedMood = mood
-                selectedCategory = nil
-                selectedHashtag = nil
-            }
-        }
-        
-        Task { await reloadFilteredPosts() }
-    }
-    
+
     func selectCategory(_ category: DiscoverCategory) {
         withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
             if selectedCategory == category {
                 selectedCategory = nil
             } else {
                 selectedCategory = category
-                selectedMood = nil
                 selectedHashtag = nil
             }
         }
-        
+
         Task { await reloadFilteredPosts() }
     }
-    
+
     func selectHashtag(_ hashtag: DiscoverHashtag) {
         withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
             if selectedHashtag == hashtag {
                 selectedHashtag = nil
             } else {
                 selectedHashtag = hashtag
-                selectedMood = nil
                 selectedCategory = nil
             }
         }
-        
+
         Task { await reloadFilteredPosts() }
     }
-    
+
     func clearFilters() {
         withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-            selectedMood = nil
             selectedCategory = nil
             selectedHashtag = nil
         }
-        
+
         Task { await reloadFilteredPosts() }
     }
-    
+
     private func reloadFilteredPosts() async {
         currentPage = 0
         hasMorePages = true
-        
+
         let posts = await discoverService.getDiscoverPosts(
             page: 0,
-            mood: selectedMood,
             category: selectedCategory,
             hashtag: selectedHashtag
         )

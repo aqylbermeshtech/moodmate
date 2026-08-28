@@ -26,9 +26,6 @@ enum CardHeightClass: Int, CaseIterable, Codable {
 struct DiscoverPost: Identifiable, Equatable, Codable {
     let id: String
     let userId: String
-    let moodEmoji: String
-    let moodText: String
-    let moodColorHex: String
     let quoteText: String
     let caption: String
     let gradientStartHex: String
@@ -48,12 +45,9 @@ struct DiscoverPost: Identifiable, Equatable, Codable {
     init(from post: PostModel) {
         self.id = post.id
         self.userId = post.authorId
-        self.moodEmoji = post.moodEmoji ?? "😊"
-        self.moodText = post.mood ?? ""
-        self.moodColorHex = post.moodColorHex ?? "38B2AC"
         self.quoteText = post.quoteText ?? ""
         self.caption = post.text ?? ""
-        self.gradientStartHex = post.gradientStartHex ?? post.moodColorHex ?? "38B2AC"
+        self.gradientStartHex = post.gradientStartHex ?? "38B2AC"
         self.gradientEndHex = post.gradientEndHex ?? "805AD5"
         self.likesCount = post.likesCount
         self.commentsCount = post.commentsCount
@@ -65,15 +59,12 @@ struct DiscoverPost: Identifiable, Equatable, Codable {
 
     init(
         id: String, userId: String,
-        moodEmoji: String, moodText: String, moodColorHex: String, quoteText: String, caption: String,
+        quoteText: String, caption: String,
         gradientStartHex: String, gradientEndHex: String, likesCount: Int, commentsCount: Int,
         isLiked: Bool, heightClass: CardHeightClass, createdAt: Date
     ) {
         self.id = id
         self.userId = userId
-        self.moodEmoji = moodEmoji
-        self.moodText = moodText
-        self.moodColorHex = moodColorHex
         self.quoteText = quoteText
         self.caption = caption
         self.gradientStartHex = gradientStartHex
@@ -84,15 +75,6 @@ struct DiscoverPost: Identifiable, Equatable, Codable {
         self.heightClass = heightClass
         self.createdAt = createdAt
     }
-}
-
-// MARK: - Trending Mood
-struct TrendingMood: Identifiable, Equatable, Codable {
-    let id: String
-    let emoji: String
-    let name: String
-    var postCount: Int
-    let colorHex: String
 }
 
 // MARK: - Discover Hashtag
@@ -119,11 +101,8 @@ struct SuggestedUser: Identifiable, Equatable, Codable {
     var avatarColorHex: String
     var avatarImageData: Data?
     var bio: String
-    var moodEmoji: String?
-    var moodText: String?
-    var moodColorHex: String?
     var isFollowing: Bool
-    
+
     init(
         id: String,
         displayName: String,
@@ -131,9 +110,6 @@ struct SuggestedUser: Identifiable, Equatable, Codable {
         avatarColorHex: String = "38B2AC",
         avatarImageData: Data? = nil,
         bio: String = "",
-        moodEmoji: String? = nil,
-        moodText: String? = nil,
-        moodColorHex: String? = nil,
         isFollowing: Bool = false
     ) {
         self.id = id
@@ -142,9 +118,6 @@ struct SuggestedUser: Identifiable, Equatable, Codable {
         self.avatarColorHex = avatarColorHex
         self.avatarImageData = avatarImageData
         self.bio = bio
-        self.moodEmoji = moodEmoji
-        self.moodText = moodText
-        self.moodColorHex = moodColorHex
         self.isFollowing = isFollowing
     }
 }
@@ -153,7 +126,6 @@ struct SuggestedUser: Identifiable, Equatable, Codable {
 enum SearchResultType: String, CaseIterable, Codable {
     case user
     case post
-    case mood
     case hashtag
 }
 
@@ -166,7 +138,6 @@ struct SearchResult: Identifiable, Equatable {
     var username: String?
     var avatarColorHex: String?
     var avatarImageData: Data?
-    var userMoodEmoji: String?
     var userBio: String?
 
     var postQuote: String?
@@ -175,11 +146,6 @@ struct SearchResult: Identifiable, Equatable {
     var postGradientEndHex: String?
     var postLikesCount: Int?
     var postUserId: String?
-
-    var moodEmoji: String?
-    var moodName: String?
-    var moodColorHex: String?
-    var moodPostCount: Int?
 
     var hashtagName: String?
     var hashtagPostCount: Int?
@@ -190,6 +156,5 @@ enum SearchScope: String, CaseIterable {
     case all = "All"
     case users = "Users"
     case posts = "Posts"
-    case moods = "Moods"
     case hashtags = "Hashtags"
 }

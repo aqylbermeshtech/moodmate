@@ -11,13 +11,10 @@ struct PostTextEditor: View {
     @Binding var text: String
     let placeholder: String
     let maxLength: Int
-    var onEmojiSelected: (String) -> Void
     @FocusState private var isEditorFocused: Bool
 
-    private let quickEmojis = ["✨", "🌱", "☕️", "🏃‍♂️", "🎧", "☀️", "🌙", "🌊", "🙏", "💖"]
+    private let quickHashtags = ["#mindfulness", "#daily", "#gratitude", "#vibes"]
 
-    private let quickHashtags = ["#mood", "#mindfulness", "#daily", "#gratitude", "#vibes"]
-    
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             ZStack(alignment: .topLeading) {
@@ -65,30 +62,6 @@ struct PostTextEditor: View {
                 
                 CharacterCounter(currentLength: text.count, maxLength: maxLength)
             }
-            Divider()
-                .background(Color.theme.divider)
-
-            HStack(spacing: 8) {
-                Text("Quick add:")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(Color.theme.secondaryText)
-                
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 10) {
-                        ForEach(quickEmojis, id: \.self) { emoji in
-                            Button(action: {
-                                onEmojiSelected(emoji)
-                                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                            }) {
-                                Text(emoji)
-                                    .font(.system(size: 20))
-                                    .padding(4)
-                            }
-                            .buttonStyle(ScaleButtonStyle())
-                        }
-                    }
-                }
-            }
         }
         .padding(16)
         .background(
@@ -118,8 +91,7 @@ struct PostTextEditor: View {
     PostTextEditor(
         text: .constant("Having a wonderfully peaceful morning!"),
         placeholder: "What's on your mind today?",
-        maxLength: 500,
-        onEmojiSelected: { _ in }
+        maxLength: 500
     )
     .padding()
     .background(Color.theme.primaryBackground)

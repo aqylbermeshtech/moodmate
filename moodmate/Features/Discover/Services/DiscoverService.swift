@@ -10,7 +10,6 @@ import Foundation
 final class DiscoverService: DiscoverServiceProtocol {
     static let shared = DiscoverService()
 
-    private var trendingMoods: [TrendingMood] = []
     private var suggestedUsers: [SuggestedUser] = []
     private var hashtags: [DiscoverHashtag] = []
     private var categories: [DiscoverCategory] = []
@@ -42,10 +41,7 @@ final class DiscoverService: DiscoverServiceProtocol {
                 username: user.username,
                 avatarColorHex: user.avatarColorHex,
                 avatarImageData: user.avatarImageData,
-                bio: user.bio,
-                currentMoodEmoji: user.moodEmoji,
-                currentMoodText: user.moodText,
-                currentMoodColorHex: user.moodColorHex
+                bio: user.bio
             ))
         }
     }
@@ -57,11 +53,6 @@ final class DiscoverService: DiscoverServiceProtocol {
     }
     
     // MARK: - Public API
-    
-    func getTrendingMoods() async -> [TrendingMood] {
-        try? await Task.sleep(nanoseconds: 300_000_000)
-        return trendingMoods
-    }
     
     func getSuggestedUsers() async -> [SuggestedUser] {
         try? await Task.sleep(nanoseconds: 400_000_000)
@@ -77,15 +68,11 @@ final class DiscoverService: DiscoverServiceProtocol {
         return categories
     }
     
-    func getDiscoverPosts(page: Int, mood: TrendingMood? = nil, category: DiscoverCategory? = nil, hashtag: DiscoverHashtag? = nil) async -> [DiscoverPost] {
+    func getDiscoverPosts(page: Int, category: DiscoverCategory? = nil, hashtag: DiscoverHashtag? = nil) async -> [DiscoverPost] {
         try? await Task.sleep(nanoseconds: UInt64.random(in: 600_000_000...1_000_000_000))
-        
+
         var filtered = allPosts
-        
-        if let mood {
-            filtered = filtered.filter { $0.moodText.lowercased() == mood.name.lowercased() }
-        }
-        
+
         if let category {
             let keyword = category.name.lowercased()
             filtered = filtered.filter { $0.caption.lowercased().contains(keyword) || $0.quoteText.lowercased().contains(keyword) }
@@ -123,7 +110,6 @@ final class DiscoverService: DiscoverServiceProtocol {
                 userName: user.displayName,
                 username: user.username,
                 avatarColorHex: user.avatarColorHex,
-                userMoodEmoji: user.moodEmoji,
                 userBio: user.bio
             ))
         }
@@ -138,17 +124,6 @@ final class DiscoverService: DiscoverServiceProtocol {
                 postGradientEndHex: post.gradientEndHex,
                 postLikesCount: post.likesCount,
                 postUserId: post.userId
-            ))
-        }
-
-        for mood in trendingMoods where mood.name.lowercased().contains(lowered) {
-            results.append(SearchResult(
-                id: "sr_mood_\(mood.id)",
-                type: .mood,
-                moodEmoji: mood.emoji,
-                moodName: mood.name,
-                moodColorHex: mood.colorHex,
-                moodPostCount: mood.postCount
             ))
         }
 
@@ -173,27 +148,11 @@ final class DiscoverService: DiscoverServiceProtocol {
     // MARK: - Mock Data Setup
 
     private func setupMockData() {
-        setupTrendingMoods()
         setupCategories()
         setupHashtags()
         setupSuggestedUsers()
     }
-    
-    private func setupTrendingMoods() {
-        trendingMoods = [
-            TrendingMood(id: "m1",  emoji: "😊", name: "Happy",      postCount: 1247, colorHex: "38B2AC"),
-            TrendingMood(id: "m2",  emoji: "😴", name: "Tired",      postCount: 892,  colorHex: "667EEA"),
-            TrendingMood(id: "m3",  emoji: "😌", name: "Calm",       postCount: 1034, colorHex: "4A5568"),
-            TrendingMood(id: "m4",  emoji: "🤩", name: "Excited",    postCount: 756,  colorHex: "ED64A6"),
-            TrendingMood(id: "m5",  emoji: "😢", name: "Sad",        postCount: 543,  colorHex: "A0AEC0"),
-            TrendingMood(id: "m6",  emoji: "😤", name: "Frustrated", postCount: 321,  colorHex: "F56565"),
-            TrendingMood(id: "m7",  emoji: "🥰", name: "Loved",      postCount: 678,  colorHex: "ED64A6"),
-            TrendingMood(id: "m8",  emoji: "🧠", name: "Mindful",    postCount: 489,  colorHex: "805AD5"),
-            TrendingMood(id: "m9",  emoji: "😎", name: "Confident",  postCount: 412,  colorHex: "DD6B20"),
-            TrendingMood(id: "m10", emoji: "🫣", name: "Anxious",    postCount: 267,  colorHex: "B7791F")
-        ]
-    }
-    
+
     private func setupCategories() {
         categories = [
             DiscoverCategory(id: "c1",  name: "Photography", iconName: "camera.fill",           gradientStartHex: "667EEA", gradientEndHex: "764BA2"),
@@ -236,31 +195,31 @@ final class DiscoverService: DiscoverServiceProtocol {
     
     private func setupSuggestedUsers() {
         suggestedUsers = [
-            SuggestedUser(id: "su1",  displayName: "Luna Park",       username: "luna_glow",       avatarColorHex: "ED64A6", bio: "Night owl. Stargazer. Dream chaser.",              moodEmoji: "🌙", moodText: "Dreamy",     moodColorHex: "805AD5", isFollowing: false),
-            SuggestedUser(id: "su2",  displayName: "River Stone",     username: "river_flows",     avatarColorHex: "38B2AC", bio: "Kayaker & nature lover. Flow state addict.",       moodEmoji: "🌊", moodText: "Flowing",    moodColorHex: "4DABF7", isFollowing: false),
-            SuggestedUser(id: "su3",  displayName: "Maya Chen",       username: "maya_mindful",    avatarColorHex: "805AD5", bio: "Yoga instructor. Mindfulness advocate.",           moodEmoji: "🧘", moodText: "Centered",   moodColorHex: "38B2AC", isFollowing: false),
-            SuggestedUser(id: "su4",  displayName: "Kai Nakamura",    username: "kai_runs",        avatarColorHex: "FF6B6B", bio: "Marathon runner. Morning person.",                 moodEmoji: "🏃", moodText: "Energized",  moodColorHex: "F56565", isFollowing: false),
-            SuggestedUser(id: "su5",  displayName: "Sage Williams",   username: "sage_reads",      avatarColorHex: "D69E2E", bio: "Bookworm. Tea enthusiast. Quiet observer.",        moodEmoji: "📚", moodText: "Absorbed",   moodColorHex: "4A5568", isFollowing: false),
-            SuggestedUser(id: "su6",  displayName: "Aurora James",    username: "aurora_art",      avatarColorHex: "F093FB", bio: "Watercolor artist. Color is my language.",         moodEmoji: "🎨", moodText: "Creative",   moodColorHex: "ED64A6", isFollowing: false),
-            SuggestedUser(id: "su7",  displayName: "Jasper Cole",     username: "jasper_hikes",    avatarColorHex: "12B886", bio: "Trail runner. Mountain photographer.",             moodEmoji: "⛰️", moodText: "Adventurous",moodColorHex: "38B2AC", isFollowing: false),
-            SuggestedUser(id: "su8",  displayName: "Nova Singh",      username: "nova_codes",      avatarColorHex: "4DABF7", bio: "Developer by day, stargazer by night.",            moodEmoji: "💻", moodText: "Focused",    moodColorHex: "667EEA", isFollowing: false),
-            SuggestedUser(id: "su9",  displayName: "Willow Reed",     username: "willow_writes",   avatarColorHex: "A0AEC0", bio: "Poet. Journal keeper. Sunset collector.",          moodEmoji: "✍️", moodText: "Reflective", moodColorHex: "805AD5", isFollowing: false),
-            SuggestedUser(id: "su10", displayName: "Finn O'Brien",    username: "finn_surfs",      avatarColorHex: "00B5D8", bio: "Surfer. Ocean lover. Salt in my veins.",           moodEmoji: "🏄", moodText: "Stoked",     moodColorHex: "38B2AC", isFollowing: false),
-            SuggestedUser(id: "su11", displayName: "Ivy Martinez",    username: "ivy_grows",       avatarColorHex: "48BB78", bio: "Plant mom. Garden enthusiast.",                    moodEmoji: "🌱", moodText: "Growing",    moodColorHex: "12B886", isFollowing: false),
-            SuggestedUser(id: "su12", displayName: "Atlas Kim",       username: "atlas_travels",   avatarColorHex: "E53E3E", bio: "30 countries and counting. Wander often.",         moodEmoji: "✈️", moodText: "Wandering",  moodColorHex: "DD6B20", isFollowing: false),
-            SuggestedUser(id: "su13", displayName: "Coral Davis",     username: "coral_sings",     avatarColorHex: "D53F8C", bio: "Singer-songwriter. Music heals.",                  moodEmoji: "🎵", moodText: "Melodic",    moodColorHex: "ED64A6", isFollowing: false),
-            SuggestedUser(id: "su14", displayName: "Zane Foster",     username: "zane_lifts",      avatarColorHex: "C05621", bio: "Personal trainer. Discipline is freedom.",         moodEmoji: "💪", moodText: "Strong",     moodColorHex: "DD6B20", isFollowing: false),
-            SuggestedUser(id: "su15", displayName: "Pearl Wang",      username: "pearl_cooks",     avatarColorHex: "FAB005", bio: "Home chef. Comfort food creator.",                 moodEmoji: "🍳", moodText: "Nourished",  moodColorHex: "D69E2E", isFollowing: false),
-            SuggestedUser(id: "su16", displayName: "Rowan Blake",     username: "rowan_thinks",    avatarColorHex: "718096", bio: "Philosopher. Deep thinker. Quiet rebel.",          moodEmoji: "🤔", moodText: "Thoughtful", moodColorHex: "4A5568", isFollowing: false),
-            SuggestedUser(id: "su17", displayName: "Sienna Lopez",    username: "sienna_dances",   avatarColorHex: "F6AD55", bio: "Dancer. Movement is medicine.",                    moodEmoji: "💃", moodText: "Alive",      moodColorHex: "ED64A6", isFollowing: false),
-            SuggestedUser(id: "su18", displayName: "Orion Patel",     username: "orion_games",     avatarColorHex: "9F7AEA", bio: "Game designer. Pixel dreamer.",                    moodEmoji: "🎮", moodText: "Playful",    moodColorHex: "805AD5", isFollowing: false),
-            SuggestedUser(id: "su19", displayName: "Hazel Brown",     username: "hazel_bakes",     avatarColorHex: "B7791F", bio: "Baker. Spreading sweetness daily.",                moodEmoji: "🧁", moodText: "Sweet",      moodColorHex: "D69E2E", isFollowing: false),
-            SuggestedUser(id: "su20", displayName: "Reed Thompson",   username: "reed_meditates",  avatarColorHex: "319795", bio: "Meditation teacher. Stillness is power.",          moodEmoji: "🕯️", moodText: "Serene",     moodColorHex: "38B2AC", isFollowing: false),
-            SuggestedUser(id: "su21", displayName: "Ember Fox",       username: "ember_captures",  avatarColorHex: "E53E3E", bio: "Street photographer. Urban stories.",             moodEmoji: "📷", moodText: "Observant",  moodColorHex: "4A5568", isFollowing: false),
-            SuggestedUser(id: "su22", displayName: "Sky Tanaka",      username: "sky_breathes",    avatarColorHex: "4299E1", bio: "Breathwork facilitator. Inhale courage.",          moodEmoji: "🌬️", moodText: "Grounded",   moodColorHex: "38B2AC", isFollowing: false),
-            SuggestedUser(id: "su23", displayName: "Clover Hayes",    username: "clover_journals", avatarColorHex: "48BB78", bio: "Bullet journal artist. Analog soul.",              moodEmoji: "📓", moodText: "Organized",  moodColorHex: "12B886", isFollowing: false),
-            SuggestedUser(id: "su24", displayName: "Blaze Rivera",    username: "blaze_climbs",    avatarColorHex: "DD6B20", bio: "Rock climber. Fear is just a feeling.",            moodEmoji: "🧗", moodText: "Fearless",   moodColorHex: "F56565", isFollowing: false),
-            SuggestedUser(id: "su25", displayName: "Iris Zhao",       username: "iris_paints",     avatarColorHex: "9B2C2C", bio: "Oil painter. Every canvas is a conversation.",     moodEmoji: "🖌️", moodText: "Inspired",   moodColorHex: "805AD5", isFollowing: false)
+            SuggestedUser(id: "su1",  displayName: "Luna Park",       username: "luna_glow",       avatarColorHex: "ED64A6", bio: "Night owl. Stargazer. Dream chaser.", isFollowing: false),
+            SuggestedUser(id: "su2",  displayName: "River Stone",     username: "river_flows",     avatarColorHex: "38B2AC", bio: "Kayaker & nature lover. Flow state addict.", isFollowing: false),
+            SuggestedUser(id: "su3",  displayName: "Maya Chen",       username: "maya_mindful",    avatarColorHex: "805AD5", bio: "Yoga instructor. Mindfulness advocate.", isFollowing: false),
+            SuggestedUser(id: "su4",  displayName: "Kai Nakamura",    username: "kai_runs",        avatarColorHex: "FF6B6B", bio: "Marathon runner. Morning person.", isFollowing: false),
+            SuggestedUser(id: "su5",  displayName: "Sage Williams",   username: "sage_reads",      avatarColorHex: "D69E2E", bio: "Bookworm. Tea enthusiast. Quiet observer.", isFollowing: false),
+            SuggestedUser(id: "su6",  displayName: "Aurora James",    username: "aurora_art",      avatarColorHex: "F093FB", bio: "Watercolor artist. Color is my language.", isFollowing: false),
+            SuggestedUser(id: "su7",  displayName: "Jasper Cole",     username: "jasper_hikes",    avatarColorHex: "12B886", bio: "Trail runner. Mountain photographer.", isFollowing: false),
+            SuggestedUser(id: "su8",  displayName: "Nova Singh",      username: "nova_codes",      avatarColorHex: "4DABF7", bio: "Developer by day, stargazer by night.", isFollowing: false),
+            SuggestedUser(id: "su9",  displayName: "Willow Reed",     username: "willow_writes",   avatarColorHex: "A0AEC0", bio: "Poet. Journal keeper. Sunset collector.", isFollowing: false),
+            SuggestedUser(id: "su10", displayName: "Finn O'Brien",    username: "finn_surfs",      avatarColorHex: "00B5D8", bio: "Surfer. Ocean lover. Salt in my veins.", isFollowing: false),
+            SuggestedUser(id: "su11", displayName: "Ivy Martinez",    username: "ivy_grows",       avatarColorHex: "48BB78", bio: "Plant mom. Garden enthusiast.", isFollowing: false),
+            SuggestedUser(id: "su12", displayName: "Atlas Kim",       username: "atlas_travels",   avatarColorHex: "E53E3E", bio: "30 countries and counting. Wander often.", isFollowing: false),
+            SuggestedUser(id: "su13", displayName: "Coral Davis",     username: "coral_sings",     avatarColorHex: "D53F8C", bio: "Singer-songwriter. Music heals.", isFollowing: false),
+            SuggestedUser(id: "su14", displayName: "Zane Foster",     username: "zane_lifts",      avatarColorHex: "C05621", bio: "Personal trainer. Discipline is freedom.", isFollowing: false),
+            SuggestedUser(id: "su15", displayName: "Pearl Wang",      username: "pearl_cooks",     avatarColorHex: "FAB005", bio: "Home chef. Comfort food creator.", isFollowing: false),
+            SuggestedUser(id: "su16", displayName: "Rowan Blake",     username: "rowan_thinks",    avatarColorHex: "718096", bio: "Philosopher. Deep thinker. Quiet rebel.", isFollowing: false),
+            SuggestedUser(id: "su17", displayName: "Sienna Lopez",    username: "sienna_dances",   avatarColorHex: "F6AD55", bio: "Dancer. Movement is medicine.", isFollowing: false),
+            SuggestedUser(id: "su18", displayName: "Orion Patel",     username: "orion_games",     avatarColorHex: "9F7AEA", bio: "Game designer. Pixel dreamer.", isFollowing: false),
+            SuggestedUser(id: "su19", displayName: "Hazel Brown",     username: "hazel_bakes",     avatarColorHex: "B7791F", bio: "Baker. Spreading sweetness daily.", isFollowing: false),
+            SuggestedUser(id: "su20", displayName: "Reed Thompson",   username: "reed_meditates",  avatarColorHex: "319795", bio: "Meditation teacher. Stillness is power.", isFollowing: false),
+            SuggestedUser(id: "su21", displayName: "Ember Fox",       username: "ember_captures",  avatarColorHex: "E53E3E", bio: "Street photographer. Urban stories.", isFollowing: false),
+            SuggestedUser(id: "su22", displayName: "Sky Tanaka",      username: "sky_breathes",    avatarColorHex: "4299E1", bio: "Breathwork facilitator. Inhale courage.", isFollowing: false),
+            SuggestedUser(id: "su23", displayName: "Clover Hayes",    username: "clover_journals", avatarColorHex: "48BB78", bio: "Bullet journal artist. Analog soul.", isFollowing: false),
+            SuggestedUser(id: "su24", displayName: "Blaze Rivera",    username: "blaze_climbs",    avatarColorHex: "DD6B20", bio: "Rock climber. Fear is just a feeling.", isFollowing: false),
+            SuggestedUser(id: "su25", displayName: "Iris Zhao",       username: "iris_paints",     avatarColorHex: "9B2C2C", bio: "Oil painter. Every canvas is a conversation.", isFollowing: false)
         ]
     }
 
