@@ -196,11 +196,6 @@ enum AppRadius {
     static let image: CGFloat = 16
 }
 
-enum AppShadow {
-    static let radius: CGFloat = 0     // X uses no shadows except FAB
-    static let y: CGFloat = 0
-}
-
 // MARK: - X Pressable Button Style
 
 struct XPressableStyle: ButtonStyle {
@@ -209,43 +204,6 @@ struct XPressableStyle: ButtonStyle {
         configuration.label
             .scaleEffect(configuration.isPressed ? pressedScale : 1)
             .animation(.spring(response: 0.25, dampingFraction: 0.7), value: configuration.isPressed)
-    }
-}
-
-// MARK: - Like Burst Particle Animation
-
-struct LikeBurstModifier: ViewModifier {
-    @Binding var isLiked: Bool
-    @State private var particles: [CGPoint] = []
-
-    func body(content: Content) -> some View {
-        content
-            .scaleEffect(isLiked ? 1.0 : 1.0)
-            .animation(.spring(response: 0.35, dampingFraction: 0.55), value: isLiked)
-            .overlay {
-                ForEach(Array(particles.enumerated()), id: \.offset) { _, p in
-                    Circle()
-                        .fill(Color.theme.likePink)
-                        .frame(width: 4, height: 4)
-                        .offset(x: p.x, y: p.y)
-                        .opacity(0)
-                        .animation(.easeOut(duration: 0.4), value: particles.count)
-                }
-            }
-            .onChange(of: isLiked) { _, newValue in
-                guard newValue else { return }
-                let radius: CGFloat = 18
-                particles = (0..<6).map { i in
-                    let angle = Double(i) * .pi / 3
-                    return CGPoint(x: cos(angle) * radius, y: sin(angle) * radius)
-                }
-            }
-    }
-}
-
-extension View {
-    func xLikeBurst(isLiked: Binding<Bool>) -> some View {
-        modifier(LikeBurstModifier(isLiked: isLiked))
     }
 }
 
@@ -319,36 +277,3 @@ struct XFeedFilter: View {
     }
 }
 
-// MARK: - X Follow Pill
-
-struct XFollowPill: View {
-    @Binding var isFollowing: Bool
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            Text(isFollowing ? "Following" : "Follow")
-                .font(.xButton)
-                .foregroundStyle(isFollowing ? Color.theme.primaryText : .black)
-                .padding(.vertical, 8)
-                .padding(.horizontal, 16)
-                .frame(minWidth: 80)
-                .background(
-                    Capsule().fill(isFollowing ? Color.clear : Color.theme.primaryText)
-                )
-                .overlay(
-                    Capsule().strokeBorder(isFollowing ? Color.theme.secondaryText : .clear, lineWidth: 1)
-                )
-        }
-        .buttonStyle(XPressableStyle())
-    }
-}
-
-// MARK: - Legacy quietCard (now flat X-style row)
-
-extension View {
-    func quietCard() -> some View {
-        self
-            .background(Color.theme.primaryBackground)
-    }
-}
