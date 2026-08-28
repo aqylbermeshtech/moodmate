@@ -18,9 +18,6 @@ struct UserProfile: Identifiable, Equatable, Codable {
     var location: String?
     var birthday: Date?
     var privacySetting: Visibility
-    var postsCount: Int
-    var followersCount: Int
-    var followingCount: Int
     var isFollowing: Bool
 
     init(
@@ -34,9 +31,6 @@ struct UserProfile: Identifiable, Equatable, Codable {
         location: String? = nil,
         birthday: Date? = nil,
         privacySetting: Visibility = .publicVisibility,
-        postsCount: Int = 0,
-        followersCount: Int = 0,
-        followingCount: Int = 0,
         isFollowing: Bool = false
     ) {
         self.id = id
@@ -49,9 +43,6 @@ struct UserProfile: Identifiable, Equatable, Codable {
         self.location = location
         self.birthday = birthday
         self.privacySetting = privacySetting
-        self.postsCount = postsCount
-        self.followersCount = followersCount
-        self.followingCount = followingCount
         self.isFollowing = isFollowing
     }
 }

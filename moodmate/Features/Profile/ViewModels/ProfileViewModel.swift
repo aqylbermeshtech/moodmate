@@ -18,20 +18,14 @@ class ProfileViewModel: ObservableObject {
     let postRepository: PostRepositoryProtocol
 
     @Published var profile: UserProfile?
+    /// The author's real posts, straight from `PostRepository` — no
+    /// synthesized filler. `postsSection` renders exactly this list and the
+    /// "Posts" stat is just its `count`.
     @Published var posts: [PostModel] = []
     @Published var followers: [UserProfile] = []
     @Published var following: [UserProfile] = []
 
-    /// `posts` is `repositoryPosts + demoLoadedPosts` — split so the fake
-    /// posts `loadMorePosts` synthesizes (see below) can be merged in without
-    /// ever being written to `postRepository`, and without getting wiped out
-    /// the next time `postRepository.postsPublisher` emits.
-    private var repositoryPosts: [PostModel] = []
-    private var demoLoadedPosts: [PostModel] = []
-
     @Published var isLoading = true
-    @Published var isLazyLoadingPosts = false
-    @Published var hasMorePosts = true
     @Published var errorMessage: String?
 
     var cancellables = Set<AnyCancellable>()
@@ -65,22 +59,15 @@ class ProfileViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] allPosts in
                 guard let self else { return }
-                self.repositoryPosts = allPosts.filter { $0.authorId == self.targetUserId }
-                self.recomputePosts()
+                self.posts = allPosts.filter { $0.authorId == self.targetUserId }
             }
             .store(in: &cancellables)
     }
 
-    private func recomputePosts() {
-        posts = repositoryPosts + demoLoadedPosts
-    }
-
-    /// Clears both the repository-backed and demo-loaded post state — used
-    /// on sign-out so a subsequent sign-in as a different user doesn't merge
-    /// stale demo posts from the previous session into the new one.
+    /// Clears the displayed posts — used on sign-out so a subsequent
+    /// sign-in as a different user doesn't briefly show the previous
+    /// user's grid.
     func resetPosts() {
-        repositoryPosts = []
-        demoLoadedPosts = []
         posts = []
     }
 
@@ -123,7 +110,6 @@ class ProfileViewModel: ObservableObject {
     private func loadProfileData(for profileId: String) async {
         self.followers = followRepository.getFollowers(forId: profileId)
         self.following = followRepository.getFollowing(forId: profileId)
-        self.hasMorePosts = true
 
         do {
             self.profile = try await profileRepository.fetchProfile(forId: profileId)
@@ -164,59 +150,5 @@ class ProfileViewModel: ObservableObject {
     func loadFollowersAndFollowing() {
         self.followers = followRepository.getFollowers(forId: targetUserId)
         self.following = followRepository.getFollowing(forId: targetUserId)
-    }
-
-    func loadMorePosts() {
-        guard !isLazyLoadingPosts && hasMorePosts else { return }
-
-        isLazyLoadingPosts = true
-
-        Task { [weak self] in
-            guard let self else { return }
-            try? await Task.sleep(nanoseconds: 800_000_000)
-
-            let currentPostCount = self.posts.count
-            if currentPostCount >= 9 {
-                self.hasMorePosts = false
-                self.isLazyLoadingPosts = false
-                return
-            }
-
-            let authorId = self.targetUserId
-
-            // Synthesized demo content only — merged into `posts` via
-            // `recomputePosts()`, never written to `postRepository`, so it
-            // can't leak into Feed/Discover or collide with real post ids.
-            let additionalPosts = [
-                PostModel(
-                    id: "lazy_\(authorId)_\(currentPostCount + 1)", authorId: authorId,
-                    text: nil, images: [], visibility: .publicVisibility,
-                    createdAt: Date().addingTimeInterval(-86400 * 5), likesCount: 18, commentsCount: 3,
-                    bookmarksCount: 0, isLiked: false, isBookmarked: false,
-                    quoteText: "Grateful hearts see awesome things.",
-                    gradientStartHex: "805AD5", gradientEndHex: "38B2AC"
-                ),
-                PostModel(
-                    id: "lazy_\(authorId)_\(currentPostCount + 2)", authorId: authorId,
-                    text: nil, images: [], visibility: .publicVisibility,
-                    createdAt: Date().addingTimeInterval(-86400 * 6), likesCount: 22, commentsCount: 1,
-                    bookmarksCount: 0, isLiked: true, isBookmarked: false,
-                    quoteText: "Calm is a super power.",
-                    gradientStartHex: "4A5568", gradientEndHex: "1A202C"
-                ),
-                PostModel(
-                    id: "lazy_\(authorId)_\(currentPostCount + 3)", authorId: authorId,
-                    text: nil, images: [], visibility: .publicVisibility,
-                    createdAt: Date().addingTimeInterval(-86400 * 7), likesCount: 35, commentsCount: 4,
-                    bookmarksCount: 0, isLiked: false, isBookmarked: true,
-                    quoteText: "Keep moving, keep growing.",
-                    gradientStartHex: "ED64A6", gradientEndHex: "E2E8F0"
-                )
-            ]
-
-            self.demoLoadedPosts.append(contentsOf: additionalPosts)
-            self.recomputePosts()
-            self.isLazyLoadingPosts = false
-        }
     }
 }

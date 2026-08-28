@@ -25,9 +25,6 @@ enum MockDataProvider {
             location: "San Francisco, CA",
             birthday: nil,
             privacySetting: .publicVisibility,
-            postsCount: 3,
-            followersCount: 120,
-            followingCount: 5,
             isFollowing: false
         )
     }
@@ -41,9 +38,6 @@ enum MockDataProvider {
             username: "johndoe",
             avatarColorHex: "38B2AC",
             bio: "Just here for the quiet corners of the internet.",
-            postsCount: 3,
-            followersCount: 120,
-            followingCount: 85,
             isFollowing: false
         )
     }
@@ -60,9 +54,6 @@ enum MockDataProvider {
                 bio: "Endorphin addict. Morning run enthusiast. Motion creates emotion.",
                 location: "Seattle, WA",
                 privacySetting: .publicVisibility,
-                postsCount: 2,
-                followersCount: 234,
-                followingCount: 189,
                 isFollowing: false
             ),
             UserProfile(
@@ -73,9 +64,6 @@ enum MockDataProvider {
                 bio: "Breathe in experience, breathe out poetry. Yoga teacher and writer.",
                 location: "Portland, OR",
                 privacySetting: .publicVisibility,
-                postsCount: 2,
-                followersCount: 512,
-                followingCount: 342,
                 isFollowing: true
             ),
             UserProfile(
@@ -86,9 +74,6 @@ enum MockDataProvider {
                 bio: "Quiet seeker. Rain lover. Early to sleep, early to rise.",
                 location: "Vancouver, BC",
                 privacySetting: .friendsOnly,
-                postsCount: 2,
-                followersCount: 98,
-                followingCount: 120,
                 isFollowing: false
             ),
             UserProfile(
@@ -99,9 +84,6 @@ enum MockDataProvider {
                 bio: "Product designer and tinkerer. Celebrating the tiny wins.",
                 location: "Austin, TX",
                 privacySetting: .publicVisibility,
-                postsCount: 2,
-                followersCount: 843,
-                followingCount: 610,
                 isFollowing: true
             ),
             UserProfile(
@@ -112,9 +94,6 @@ enum MockDataProvider {
                 bio: "Sipping matcha, practicing presence. Be here now.",
                 location: "Kyoto, Japan",
                 privacySetting: .publicVisibility,
-                postsCount: 2,
-                followersCount: 156,
-                followingCount: 112,
                 isFollowing: true
             )
         ]

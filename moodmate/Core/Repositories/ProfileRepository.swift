@@ -274,8 +274,5 @@ final class ProfileRepository: ProfileRepositoryProtocol {
         for friend in MockDataProvider.friendSeedProfiles() where profiles[friend.id] == nil {
             profiles[friend.id] = friend
         }
-
-        let followingCount = profiles.values.filter { $0.id != currentId && $0.isFollowing }.count
-        profiles[currentId]?.followingCount = followingCount
     }
 }

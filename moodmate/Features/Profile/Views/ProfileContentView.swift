@@ -175,19 +175,19 @@ struct ProfileContentView<PrimaryAction: View, ToolbarTrailing: View>: View {
     // MARK: - 2. Statistics Row (inline text, X-style)
     private func statsView(profile: UserProfile) -> some View {
         HStack(spacing: 16) {
-            statsItem(count: profile.postsCount, label: "Posts")
+            statsItem(count: viewModel.posts.count, label: "Posts")
 
             Button {
                 router.push(.followList(type: .followers, userId: viewModel.targetUserId))
             } label: {
-                statsItem(count: profile.followersCount, label: "Followers")
+                statsItem(count: viewModel.followers.count, label: "Followers")
             }
             .buttonStyle(PlainButtonStyle())
 
             Button {
                 router.push(.followList(type: .following, userId: viewModel.targetUserId))
             } label: {
-                statsItem(count: profile.followingCount, label: "Following")
+                statsItem(count: viewModel.following.count, label: "Following")
             }
             .buttonStyle(PlainButtonStyle())
 
@@ -256,21 +256,6 @@ struct ProfileContentView<PrimaryAction: View, ToolbarTrailing: View>: View {
                             postGridCell(post: post)
                         }
                         .buttonStyle(PlainButtonStyle())
-                        .onAppear {
-                            if post.id == viewModel.posts.last?.id {
-                                viewModel.loadMorePosts()
-                            }
-                        }
-                    }
-                }
-
-                if viewModel.isLazyLoadingPosts {
-                    HStack {
-                        Spacer()
-                        ProgressView()
-                            .tint(Color.theme.accent)
-                            .padding(.vertical, 12)
-                        Spacer()
                     }
                 }
             }
