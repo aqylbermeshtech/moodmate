@@ -1,13 +1,13 @@
 # MoodMate
 
-MoodMate is a minimal text-and-photo social networking iOS app. Write a short post, attach a photo, follow people, and read a feed — a plain, low-friction social experience without the mood-tracking layer the app started with.
+MoodMate is a minimal social networking iOS app built around daily emotional check-ins. Write a short post, attach a photo or thought, and share it with friends and followers — a low-friction social experience that keeps the focus on authentic daily check-ins without the curated highlight-reel feel.
 
 ## Features
 
 - **Authentication** — email/password sign in and sign up via Firebase Auth, with email verification and password reset
-- **Home feed** — a scrollable timeline with **For You** (everyone) and **Following** (people you follow) tabs
-- **Create Post** — write a caption, attach a photo, choose post visibility, with local draft saving
-- **Discover** — search users, posts, and hashtags; browse topics, trending hashtags, and suggested users to follow
+- **Home feed** — a scrollable timeline of friends' mood posts, with **For You** (everyone) and **Following** (people you follow) tabs, plus a friends tray and mood picker
+- **Create Post** — pick a mood, write a caption, attach a photo, choose post visibility, with local draft saving
+- **Discover** — search users, posts, moods, and hashtags; browse topics, trending moods and hashtags, and suggested users to follow
 - **Chat** — direct messaging with a conversation list and per-thread message view
 - **Profile** — own profile and other users' profiles, edit profile, avatar picker, followers/following lists, post detail view, settings
 - **Theming** — light/dark mode support via a central theme manager
@@ -37,8 +37,8 @@ moodmate/
 └── Features/
     ├── Authentication/          # Sign in / sign up, Firebase auth manager, session manager
     ├── Chat/                    # Conversation list and thread views
-    ├── CreatePost/               # Text/photo post composer
-    ├── Discover/                  # Search, topics, hashtags, suggested users
+    ├── CreatePost/               # Mood/photo/caption post composer
+    ├── Discover/                  # Search, moods, hashtags, trending topics, suggested users
     ├── Home/                       # Feed, tab container, bottom navigation
     └── Profile/                     # Own/other profile, edit profile, follow lists, settings
 ```
