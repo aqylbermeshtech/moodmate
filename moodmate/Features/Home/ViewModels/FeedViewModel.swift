@@ -121,6 +121,31 @@ final class FeedViewModel {
         }
     }
 
+    /// Only your own posts can be deleted — there's no moderation path for
+    /// anyone else's.
+    func canDelete(_ post: FeedPost) -> Bool {
+        !post.authorId.isEmpty && post.authorId == AppSessionManager.currentUserId()
+    }
+
+    func deletePost(_ post: FeedPost) {
+        guard canDelete(post) else { return }
+
+        let index = posts.firstIndex(where: { $0.id == post.id })
+        if let index { posts.remove(at: index) }
+
+        Task {
+            do {
+                try await postRepository.deletePost(id: post.id)
+            } catch {
+                // Put it back where it was so the feed still matches the store.
+                if let index, !posts.contains(where: { $0.id == post.id }) {
+                    posts.insert(post, at: min(index, posts.count))
+                }
+                errorMessage = "Could not delete that post. Please try again."
+            }
+        }
+    }
+
     func toggleBookmark(for post: FeedPost) {
         guard let index = posts.firstIndex(where: { $0.id == post.id }) else { return }
 

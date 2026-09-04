@@ -22,9 +22,13 @@ struct PostCardView: View {
     var onLike: () -> Void
     var onBookmark: () -> Void
     var onComment: () -> Void
+    /// Supplied only when the viewer is allowed to delete this post — the
+    /// overflow menu is the delete affordance, so it stays hidden without it.
+    var onDelete: (() -> Void)? = nil
     var userStore: UserStoreProtocol = UserStore.shared
     @EnvironmentObject private var router: AppRouter
 
+    @State private var showDeleteConfirmation = false
     @State private var isLikedLocal: Bool = false
     @State private var isRepostedLocal: Bool = false
     @State private var repostRotation: Double = 0
@@ -109,10 +113,38 @@ struct PostCardView: View {
 
             Spacer()
 
-            Button { /* overflow menu */ } label: {
+            overflowMenu
+        }
+    }
+
+    // MARK: - Overflow Menu
+
+    @ViewBuilder
+    private var overflowMenu: some View {
+        if let onDelete {
+            Menu {
+                Button(role: .destructive) {
+                    showDeleteConfirmation = true
+                } label: {
+                    Label("Delete post", systemImage: "trash")
+                }
+            } label: {
                 Image(systemName: "ellipsis")
                     .font(.system(size: 18))
                     .foregroundStyle(Color.theme.secondaryText)
+                    .frame(width: 32, height: 32, alignment: .trailing)
+                    .contentShape(Rectangle())
+            }
+            .accessibilityLabel("More options")
+            .confirmationDialog(
+                "Delete this post?",
+                isPresented: $showDeleteConfirmation,
+                titleVisibility: .visible
+            ) {
+                Button("Delete", role: .destructive) { onDelete() }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("This post will be removed for good. This can't be undone.")
             }
         }
     }

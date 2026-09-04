@@ -39,7 +39,10 @@ struct HomeView: View {
                                 onBookmark: { viewModel.feed.toggleBookmark(for: post) },
                                 onComment: {
                                     router.push(.postDetail(postId: post.id))
-                                }
+                                },
+                                onDelete: viewModel.feed.canDelete(post)
+                                    ? { viewModel.feed.deletePost(post) }
+                                    : nil
                             )
                         }
                     }

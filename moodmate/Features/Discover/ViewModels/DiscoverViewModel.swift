@@ -87,9 +87,11 @@ final class DiscoverViewModel: ObservableObject {
             .sink { [weak self] allPosts in
                 guard let self else { return }
                 guard !self.discoverPosts.isEmpty else { return }
+                // compactMap, not map: an id that's gone from the store was
+                // deleted, and has to leave the grid with it.
                 let byId = Dictionary(uniqueKeysWithValues: allPosts.map { ($0.id, $0) })
-                self.discoverPosts = self.discoverPosts.map { existing in
-                    guard let updated = byId[existing.id] else { return existing }
+                self.discoverPosts = self.discoverPosts.compactMap { existing in
+                    guard let updated = byId[existing.id] else { return nil }
                     return DiscoverPost(from: updated)
                 }
             }

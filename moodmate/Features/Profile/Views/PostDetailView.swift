@@ -45,7 +45,8 @@ struct PostDetailView: View {
                             style: .detail,
                             onLike: toggleLike,
                             onBookmark: toggleBookmark,
-                            onComment: {}
+                            onComment: {},
+                            onDelete: deleteAction(for: currentPost)
                         )
                         Text("Comments (\(comments.count))")
                             .font(.system(size: 16, weight: .bold, design: .rounded))
@@ -215,6 +216,27 @@ struct PostDetailView: View {
                 displayPost = updated
             }
             .store(in: &cancellables)
+    }
+
+    /// Only your own posts can be deleted — mirrors `FeedViewModel.canDelete`.
+    /// Returns nil for anyone else's post, which hides the overflow menu.
+    private func deleteAction(for post: FeedPost) -> (() -> Void)? {
+        guard let currentUserId = profileRepository.getProfile(forId: nil)?.id,
+              post.authorId == currentUserId else {
+            return nil
+        }
+        return deletePost
+    }
+
+    private func deletePost() {
+        Task {
+            do {
+                try await postRepository.deletePost(id: postId)
+                dismiss()
+            } catch {
+                errorMessage = "Could not delete that post. Please try again."
+            }
+        }
     }
 
     private func toggleLike() {
