@@ -50,10 +50,10 @@ final class DiscoverService: DiscoverServiceProtocol {
             }
     }
 
-    /// Discover is a visual surface — a photo grid and photo search rows —
-    /// so a word-only post has nothing to show there. Filtering at this one
-    /// source keeps the grid, the search results, and the hashtag counts that
-    /// lead back into them all agreeing on what Discover contains.
+    /// The browse grid is a photo wall, so a word-only post has nothing to
+    /// show there. Hashtag counts come off the same set, because tapping a tag
+    /// filters this grid — a tag counted from posts the grid can't show would
+    /// lead straight to an empty result.
     private var discoverablePosts: [PostModel] {
         postRepository.allPosts.filter { !$0.images.isEmpty }
     }
@@ -88,8 +88,14 @@ final class DiscoverService: DiscoverServiceProtocol {
             .map { String($0.dropFirst()) }
     }
 
-    private var allPosts: [DiscoverPost] {
+    private var gridPosts: [DiscoverPost] {
         discoverablePosts.map(DiscoverPost.init)
+    }
+
+    /// Search reaches every post, photo or not: text you wrote should stay
+    /// findable by that text even though it never appears in the grid.
+    private var searchablePosts: [DiscoverPost] {
+        postRepository.allPosts.map(DiscoverPost.init)
     }
     
     // MARK: - Public API
@@ -111,7 +117,7 @@ final class DiscoverService: DiscoverServiceProtocol {
     func getDiscoverPosts(page: Int, category: DiscoverCategory? = nil, hashtag: DiscoverHashtag? = nil) async -> [DiscoverPost] {
         try? await Task.sleep(nanoseconds: UInt64.random(in: 600_000_000...1_000_000_000))
 
-        var filtered = allPosts
+        var filtered = gridPosts
 
         // A filter that matches nothing returns nothing — the caller shows an
         // empty state rather than unrelated posts standing in for a match.
@@ -163,7 +169,7 @@ final class DiscoverService: DiscoverServiceProtocol {
             ))
         }
 
-        for post in allPosts where post.quoteText.lowercased().contains(lowered) || post.caption.lowercased().contains(lowered) {
+        for post in searchablePosts where post.quoteText.lowercased().contains(lowered) || post.caption.lowercased().contains(lowered) {
             results.append(SearchResult(
                 id: "sr_post_\(post.id)",
                 type: .post,

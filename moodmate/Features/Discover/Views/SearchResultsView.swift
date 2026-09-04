@@ -227,7 +227,9 @@ private struct SearchResultRow: View {
                     endPoint: .bottomTrailing
                 )
                 .overlay(
-                    Image(systemName: "photo")
+                    // No photo at all is a word-only post; a photo that hasn't
+                    // decoded yet is a different thing, and reads as one.
+                    Image(systemName: result.postImage == nil ? "quote.bubble.fill" : "photo")
                         .font(.system(size: 16))
                         .foregroundStyle(.white.opacity(0.8))
                 )
