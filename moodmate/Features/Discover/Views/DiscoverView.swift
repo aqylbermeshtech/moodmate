@@ -126,7 +126,7 @@ struct DiscoverView: View {
 
                                     if !viewModel.categories.isEmpty {
                                         VStack(alignment: .leading, spacing: 10) {
-                                            Text("Topics")
+                                            Text("Explore")
                                                 .font(.xScreenTitle)
                                                 .foregroundStyle(Color.theme.primaryText)
                                                 .padding(.horizontal, 16)
