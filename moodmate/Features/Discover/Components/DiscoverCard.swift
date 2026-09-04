@@ -12,43 +12,40 @@ struct DiscoverCard: View {
     var onLike: () -> Void
     var userStore: UserStoreProtocol = UserStore.shared
 
+    /// Decoded once when the card appears rather than on every body pass —
+    /// base64 JPEG decoding is far too expensive to repeat while scrolling.
+    @State private var photo: UIImage?
+
     private var author: AppUser? {
         userStore.user(for: post.userId)
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            ZStack(alignment: .bottomLeading) {
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                Color(hex: post.gradientStartHex),
-                                Color(hex: post.gradientEndHex)
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .frame(height: post.heightClass.heightValue)
-
-                GeometryReader { geo in
-                    Circle()
-                        .fill(Color.white.opacity(0.08))
-                        .frame(width: geo.size.width * 0.5, height: geo.size.width * 0.5)
-                        .blur(radius: 18)
-                        .offset(x: geo.size.width * 0.2, y: -geo.size.height * 0.1)
+            // The gradient sizes the slot; the photo rides in an overlay so
+            // that `scaledToFill` can't widen the card past its grid column.
+            gradientBackdrop
+                .frame(maxWidth: .infinity)
+                .frame(height: post.heightClass.heightValue)
+                .overlay {
+                    if let photo {
+                        Image(uiImage: photo)
+                            .resizable()
+                            .scaledToFill()
+                    }
+                }
+                .overlay(alignment: .bottom) {
+                    if !post.quoteText.isEmpty {
+                        quoteOverlay
+                    }
                 }
                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(post.quoteText)
-                        .font(.system(size: 14, weight: .bold, design: .serif))
-                        .foregroundStyle(.white)
-                        .lineLimit(3)
-                        .shadow(color: .black.opacity(0.3), radius: 4, x: 0, y: 2)
+            .task(id: post.id) {
+                guard let encoded = post.images.first else {
+                    photo = nil
+                    return
                 }
-                .padding(12)
+                photo = UIImage.fromBase64(encoded)
             }
 
             VStack(alignment: .leading, spacing: 6) {
@@ -94,6 +91,40 @@ struct DiscoverCard: View {
         )
     }
 
+    // MARK: - Artwork
+
+    /// Visible only while the photo decode is in flight, or if the stored
+    /// data can't be read.
+    private var gradientBackdrop: some View {
+        LinearGradient(
+            colors: [
+                Color(hex: post.gradientStartHex),
+                Color(hex: post.gradientEndHex)
+            ],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
+
+    /// Scrimmed so the text stays readable whatever the photo underneath does.
+    private var quoteOverlay: some View {
+        Text(post.quoteText)
+            .font(.system(size: 13, weight: .bold, design: .serif))
+            .foregroundStyle(.white)
+            .lineLimit(2)
+            .shadow(color: .black.opacity(0.4), radius: 4, x: 0, y: 1)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 12)
+            .padding(.top, 24)
+            .padding(.bottom, 12)
+            .background(
+                LinearGradient(
+                    colors: [.clear, .black.opacity(0.7)],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            )
+    }
 }
 
 #Preview {

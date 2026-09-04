@@ -28,6 +28,9 @@ struct DiscoverPost: Identifiable, Equatable, Codable {
     let userId: String
     let quoteText: String
     let caption: String
+    /// Base64 photo strings, as stored on `PostModel`. Discover only ever
+    /// surfaces posts that have at least one.
+    let images: [String]
     let gradientStartHex: String
     let gradientEndHex: String
     var likesCount: Int
@@ -44,6 +47,7 @@ struct DiscoverPost: Identifiable, Equatable, Codable {
         self.userId = post.authorId
         self.quoteText = post.quoteText ?? ""
         self.caption = post.text ?? ""
+        self.images = post.images
         self.gradientStartHex = post.gradientStartHex ?? "38B2AC"
         self.gradientEndHex = post.gradientEndHex ?? "805AD5"
         self.likesCount = post.likesCount
@@ -56,7 +60,7 @@ struct DiscoverPost: Identifiable, Equatable, Codable {
 
     init(
         id: String, userId: String,
-        quoteText: String, caption: String,
+        quoteText: String, caption: String, images: [String] = [],
         gradientStartHex: String, gradientEndHex: String, likesCount: Int, commentsCount: Int,
         isLiked: Bool, heightClass: CardHeightClass, createdAt: Date
     ) {
@@ -64,6 +68,7 @@ struct DiscoverPost: Identifiable, Equatable, Codable {
         self.userId = userId
         self.quoteText = quoteText
         self.caption = caption
+        self.images = images
         self.gradientStartHex = gradientStartHex
         self.gradientEndHex = gradientEndHex
         self.likesCount = likesCount
@@ -139,6 +144,7 @@ struct SearchResult: Identifiable, Equatable {
 
     var postQuote: String?
     var postCaption: String?
+    var postImage: String?
     var postGradientStartHex: String?
     var postGradientEndHex: String?
     var postLikesCount: Int?

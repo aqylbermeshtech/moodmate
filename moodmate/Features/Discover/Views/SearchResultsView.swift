@@ -96,6 +96,16 @@ private struct SearchResultRow: View {
     var onLikePost: (String) -> Void
     var userStore: UserStoreProtocol = UserStore.shared
 
+    @State private var postThumbnail: UIImage?
+
+    /// Posts written in the app carry an empty quote rather than a nil one,
+    /// so `??` alone would leave this row's title blank.
+    private var postTitle: String {
+        if let quote = result.postQuote, !quote.isEmpty { return quote }
+        if let caption = result.postCaption, !caption.isEmpty { return caption }
+        return "Photo"
+    }
+
     private var postAuthor: AppUser? {
         guard let postUserId = result.postUserId else { return nil }
         return userStore.user(for: postUserId)
@@ -130,26 +140,10 @@ private struct SearchResultRow: View {
                     .foregroundStyle(Color.theme.tertiaryText)
                 
             case .post:
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                Color.adaptiveColor(hex: result.postGradientStartHex ?? "38B2AC"),
-                                Color.adaptiveColor(hex: result.postGradientEndHex ?? "805AD5")
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .frame(width: 44, height: 44)
-                    .overlay(
-                        Image(systemName: "quote.bubble.fill")
-                            .font(.system(size: 16))
-                            .foregroundStyle(.white.opacity(0.8))
-                    )
+                postThumbnailView
                 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(result.postQuote ?? result.postCaption ?? "")
+                    Text(postTitle)
                         .font(.system(size: 14, weight: .medium))
                         .foregroundStyle(Color.theme.primaryText)
                         .lineLimit(1)
@@ -199,6 +193,13 @@ private struct SearchResultRow: View {
         }
         .padding(.vertical, 8)
         .padding(.horizontal, 12)
+        .task(id: result.id) {
+            guard let encoded = result.postImage else {
+                postThumbnail = nil
+                return
+            }
+            postThumbnail = UIImage.fromBase64(encoded)
+        }
         .background(Color.theme.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         .overlay(
@@ -207,6 +208,34 @@ private struct SearchResultRow: View {
         )
     }
     
+    /// Mirrors `DiscoverCard`: the post's photo, with the gradient standing in
+    /// only while the decode is in flight or if the data can't be read.
+    @ViewBuilder
+    private var postThumbnailView: some View {
+        Group {
+            if let postThumbnail {
+                Image(uiImage: postThumbnail)
+                    .resizable()
+                    .scaledToFill()
+            } else {
+                LinearGradient(
+                    colors: [
+                        Color.adaptiveColor(hex: result.postGradientStartHex ?? "38B2AC"),
+                        Color.adaptiveColor(hex: result.postGradientEndHex ?? "805AD5")
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .overlay(
+                    Image(systemName: "photo")
+                        .font(.system(size: 16))
+                        .foregroundStyle(.white.opacity(0.8))
+                )
+            }
+        }
+        .frame(width: 44, height: 44)
+        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+    }
 }
 
 #Preview {

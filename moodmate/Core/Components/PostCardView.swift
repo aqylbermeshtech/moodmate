@@ -196,7 +196,7 @@ struct PostCardView: View {
     private var photoContent: some View {
         VStack(spacing: 4) {
             ForEach(post.images, id: \.self) { imageString in
-                if let uiImage = imageFromBase64(imageString) {
+                if let uiImage = UIImage.fromBase64(imageString) {
                     Image(uiImage: uiImage)
                         .resizable()
                         .scaledToFill()
@@ -312,18 +312,6 @@ struct PostCardView: View {
         case 1_000...:     return String(format: "%.1fK", Double(n)/1_000)
         default:           return "\(n)"
         }
-    }
-
-    private func imageFromBase64(_ string: String) -> UIImage? {
-        var base64 = string
-        if string.contains(",") {
-            let components = string.components(separatedBy: ",")
-            if components.count > 1 {
-                base64 = components[1]
-            }
-        }
-        guard let data = Data(base64Encoded: base64) else { return nil }
-        return UIImage(data: data)
     }
 }
 

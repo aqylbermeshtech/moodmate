@@ -50,12 +50,20 @@ final class DiscoverService: DiscoverServiceProtocol {
             }
     }
 
+    /// Discover is a visual surface — a photo grid and photo search rows —
+    /// so a word-only post has nothing to show there. Filtering at this one
+    /// source keeps the grid, the search results, and the hashtag counts that
+    /// lead back into them all agreeing on what Discover contains.
+    private var discoverablePosts: [PostModel] {
+        postRepository.allPosts.filter { !$0.images.isEmpty }
+    }
+
     /// Counted off the real post bodies, so a tag only trends if it's used.
     private var hashtags: [DiscoverHashtag] {
         var counts: [String: Int] = [:]
         var firstSpelling: [String: String] = [:]
 
-        for post in postRepository.allPosts {
+        for post in discoverablePosts {
             let tags = Set(Self.hashtags(in: post.text ?? "") + Self.hashtags(in: post.quoteText ?? ""))
             for tag in tags {
                 let key = tag.lowercased()
@@ -81,7 +89,7 @@ final class DiscoverService: DiscoverServiceProtocol {
     }
 
     private var allPosts: [DiscoverPost] {
-        postRepository.allPosts.map(DiscoverPost.init)
+        discoverablePosts.map(DiscoverPost.init)
     }
     
     // MARK: - Public API
@@ -161,6 +169,7 @@ final class DiscoverService: DiscoverServiceProtocol {
                 type: .post,
                 postQuote: post.quoteText,
                 postCaption: post.caption,
+                postImage: post.images.first,
                 postGradientStartHex: post.gradientStartHex,
                 postGradientEndHex: post.gradientEndHex,
                 postLikesCount: post.likesCount,
