@@ -226,7 +226,9 @@ struct XActionIcon: View {
                     .foregroundStyle(color)
             }
         }
-        .frame(minWidth: 44, minHeight: 44, alignment: .leading)
+        // Centred, so a row of these separated by equal spacers ends up with
+        // equal gaps between the glyphs themselves.
+        .frame(minWidth: 44, minHeight: 44)
     }
 
     private func formatted(_ n: Int) -> String {

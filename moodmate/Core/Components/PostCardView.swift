@@ -119,34 +119,55 @@ struct PostCardView: View {
 
     // MARK: - Overflow Menu
 
-    @ViewBuilder
     private var overflowMenu: some View {
-        if let onDelete {
-            Menu {
+        Menu {
+            ShareLink(item: shareText) {
+                Label("Share post", systemImage: "square.and.arrow.up")
+            }
+
+            if onDelete != nil {
                 Button(role: .destructive) {
                     showDeleteConfirmation = true
                 } label: {
                     Label("Delete post", systemImage: "trash")
                 }
-            } label: {
-                Image(systemName: "ellipsis")
-                    .font(.system(size: 18))
-                    .foregroundStyle(Color.theme.secondaryText)
-                    .frame(width: 32, height: 32, alignment: .trailing)
-                    .contentShape(Rectangle())
             }
-            .accessibilityLabel("More options")
-            .confirmationDialog(
-                "Delete this post?",
-                isPresented: $showDeleteConfirmation,
-                titleVisibility: .visible
-            ) {
-                Button("Delete", role: .destructive) { onDelete() }
-                Button("Cancel", role: .cancel) {}
-            } message: {
-                Text("This post will be removed for good. This can't be undone.")
-            }
+        } label: {
+            Image(systemName: "ellipsis")
+                .font(.system(size: 18))
+                .foregroundStyle(Color.theme.secondaryText)
+                .frame(width: 32, height: 32, alignment: .trailing)
+                .contentShape(Rectangle())
         }
+        .accessibilityLabel("More options")
+        .confirmationDialog(
+            "Delete this post?",
+            isPresented: $showDeleteConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("Delete", role: .destructive) { onDelete?() }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This post will be removed for good. This can't be undone.")
+        }
+    }
+
+    /// Plain text rather than a `moodmate://post/...` deep link: posts live
+    /// only on the device that wrote them, so a link would dead-end for
+    /// whoever received it. Worth revisiting once posts are server-backed.
+    private var shareText: String {
+        let body = post.caption.isEmpty ? post.quoteText : post.caption
+
+        var parts: [String] = []
+        if !body.isEmpty { parts.append(body) }
+
+        if let author, !author.name.isEmpty {
+            parts.append("— \(author.name) (@\(author.username)) on MoodMate")
+        } else {
+            parts.append("Shared from MoodMate")
+        }
+
+        return parts.joined(separator: "\n\n")
     }
 
     // MARK: - Body Content
@@ -223,6 +244,8 @@ struct PostCardView: View {
 
     // MARK: - Action Row
 
+    /// Four equally-spaced actions. Every item carries the same centred
+    /// 44pt frame, so the spacers between them render as equal gaps.
     private var actionRow: some View {
         HStack(spacing: 0) {
             XActionIcon(
@@ -231,21 +254,23 @@ struct PostCardView: View {
                 color: Color.theme.secondaryText,
                 active: false
             )
+            .contentShape(Rectangle())
             .onTapGesture { onComment() }
 
-            Spacer()
+            Spacer(minLength: 8)
 
             Image(systemName: "arrow.2.squarepath")
                 .font(.system(size: 18.75))
                 .foregroundStyle(isRepostedLocal ? Color.theme.repostGreen : Color.theme.secondaryText)
                 .rotationEffect(.degrees(repostRotation))
                 .frame(minWidth: 44, minHeight: 44)
+                .contentShape(Rectangle())
                 .onTapGesture {
                     isRepostedLocal.toggle()
                     withAnimation(.easeOut(duration: 0.4)) { repostRotation += 360 }
                 }
 
-            Spacer()
+            Spacer(minLength: 8)
 
             HStack(spacing: 4) {
                 Image(systemName: isLikedLocal ? "heart.fill" : "heart")
@@ -260,23 +285,22 @@ struct PostCardView: View {
                         .foregroundStyle(isLikedLocal ? Color.theme.likePink : Color.theme.secondaryText)
                 }
             }
-            .frame(minWidth: 44, minHeight: 44, alignment: .leading)
+            .frame(minWidth: 44, minHeight: 44)
+            .contentShape(Rectangle())
             .onTapGesture {
                 onLike()
             }
             .sensoryFeedback(.impact(flexibility: .soft), trigger: isLikedLocal)
 
-            Spacer()
+            Spacer(minLength: 8)
 
             Image(systemName: post.isBookmarked ? "bookmark.fill" : "bookmark")
                 .font(.system(size: 18))
                 .foregroundStyle(post.isBookmarked ? Color.theme.accent : Color.theme.secondaryText)
                 .frame(minWidth: 44, minHeight: 44)
+                .contentShape(Rectangle())
                 .onTapGesture { onBookmark() }
-
-            Image(systemName: "square.and.arrow.up")
-                .font(.system(size: 18))
-                .foregroundStyle(Color.theme.secondaryText)
+                .accessibilityLabel(post.isBookmarked ? "Remove from saved" : "Save post")
         }
     }
 
