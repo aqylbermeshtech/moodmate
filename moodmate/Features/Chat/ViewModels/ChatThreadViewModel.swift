@@ -21,6 +21,8 @@ final class ChatThreadViewModel: ObservableObject {
         loadThread()
     }
 
+    /// Resolves the participant only. `messages` stays empty until there is a
+    /// real message store behind it.
     private func loadThread() {
         guard let profile = profileRepository.getProfile(forId: userId) else { return }
 
@@ -31,6 +33,5 @@ final class ChatThreadViewModel: ObservableObject {
             avatarImageData: profile.avatarImageData,
             avatarColorHex: profile.avatarColorHex
         )
-        messages = MockChatData.messages(for: profile.id)
     }
 }

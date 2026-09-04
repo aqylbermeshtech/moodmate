@@ -8,6 +8,9 @@
 import Foundation
 
 struct UserProfile: Identifiable, Equatable, Codable {
+    /// Avatar tint used until the user picks one of their own.
+    static let defaultAvatarColorHex = "38B2AC"
+
     var id: String
     var displayName: String
     var username: String
@@ -24,7 +27,7 @@ struct UserProfile: Identifiable, Equatable, Codable {
         id: String,
         displayName: String,
         username: String,
-        avatarColorHex: String = "38B2AC",
+        avatarColorHex: String = UserProfile.defaultAvatarColorHex,
         avatarImageData: Data? = nil,
         avatarImageName: String? = nil,
         bio: String = "",

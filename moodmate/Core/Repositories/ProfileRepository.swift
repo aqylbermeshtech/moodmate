@@ -2,8 +2,8 @@
 //  ProfileRepository.swift
 //  moodmate
 //
-//  Profile CRUD + local persistence only. Posts, follows, avatars, and seed
-//  content live in their own repositories (this was once one ProfileService).
+//  Profile CRUD + local persistence only. Posts, follows, and avatars live in
+//  their own repositories (this was once one ProfileService).
 //
 
 import UIKit
@@ -23,33 +23,38 @@ final class ProfileRepository: ProfileRepositoryProtocol {
         profileSubject.eraseToAnyPublisher()
     }
 
-    private let storageKey = "moodmate_user_profiles_v2.json"
+    private let storageKey = "moodmate_user_profiles_v3.json"
+
+    /// Files written by builds that seeded fake profiles. Removed on first
+    /// launch so that content can't come back from disk.
+    private static let legacyStorageKeys = ["moodmate_user_profiles_v2.json"]
+    private static let legacyDefaultsKeys = ["moodmate_mock_data_version"]
+
     private let fileManager = FileManager.default
 
-    private static let mockDataVersion = 3
-    private static let mockDataVersionKey = "moodmate_mock_data_version"
-
     private var storageFileURL: URL {
-        let paths = fileManager.urls(for: .documentDirectory, in: .userDomainMask)
-        return paths[0].appendingPathComponent(storageKey)
+        documentsDirectory.appendingPathComponent(storageKey)
+    }
+
+    private var documentsDirectory: URL {
+        fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0]
     }
 
     private let avatarRepository: AvatarRepositoryProtocol
 
     init(avatarRepository: AvatarRepositoryProtocol = AvatarRepository.shared) {
         self.avatarRepository = avatarRepository
+        removeLegacyStorage()
         loadPersistedProfiles()
-        invalidateStaleMockProfilesIfNeeded()
-        setupMockData()
     }
 
-    private func invalidateStaleMockProfilesIfNeeded() {
-        let storedVersion = UserDefaults.standard.integer(forKey: Self.mockDataVersionKey)
-        guard storedVersion < Self.mockDataVersion else { return }
-        for id in ["1", "2", "3", "4", "5"] {
-            profiles.removeValue(forKey: id)
+    private func removeLegacyStorage() {
+        for key in Self.legacyStorageKeys {
+            try? fileManager.removeItem(at: documentsDirectory.appendingPathComponent(key))
         }
-        UserDefaults.standard.set(Self.mockDataVersion, forKey: Self.mockDataVersionKey)
+        for key in Self.legacyDefaultsKeys {
+            UserDefaults.standard.removeObject(forKey: key)
+        }
     }
 
     // MARK: - Synchronous Fetching
@@ -185,25 +190,48 @@ final class ProfileRepository: ProfileRepositoryProtocol {
     // MARK: - Firebase Syncing
 
     func syncWithFirebaseUser(user: User) {
-        let currentId = user.uid
-        // Must be read before migration, or a freshly-migrated placeholder
-        // profile counts as existing and its mock name shadows the real one.
-        let isNewProfile = profiles[currentId] == nil
-        migrateMockProfileToAuthenticatedUser(currentId: currentId)
+        let profile = profiles[user.uid] ?? Self.profile(for: user)
+        setProfile(profile)
+    }
 
-        var profile = profiles[currentId] ?? MockDataProvider.newAuthenticatedUserSeedProfile(id: currentId, displayName: user.displayName)
+    /// A brand new account: everything the app knows comes from the Firebase
+    /// user itself. Bio, location, and birthday stay empty until the user
+    /// fills them in from Edit Profile.
+    static func profile(for user: User) -> UserProfile {
+        let emailPrefix = user.email?
+            .components(separatedBy: "@").first?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
 
-        if isNewProfile {
-            if let displayName = user.displayName, !displayName.isEmpty {
-                profile.displayName = displayName
-            } else if let email = user.email {
-                let prefix = email.components(separatedBy: "@").first ?? "john"
-                profile.displayName = prefix.capitalized
-                profile.username = prefix.lowercased()
-            }
+        let trimmedDisplayName = user.displayName?
+            .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+
+        let displayName: String
+        if !trimmedDisplayName.isEmpty {
+            displayName = trimmedDisplayName
+        } else if let emailPrefix, !emailPrefix.isEmpty {
+            displayName = emailPrefix.capitalized
+        } else {
+            displayName = ""
         }
 
-        setProfile(profile)
+        return UserProfile(
+            id: user.uid,
+            displayName: displayName,
+            username: defaultUsername(emailPrefix: emailPrefix, displayName: displayName, uid: user.uid),
+            avatarColorHex: UserProfile.defaultAvatarColorHex,
+            bio: "",
+            isFollowing: false
+        )
+    }
+
+    private static func defaultUsername(emailPrefix: String?, displayName: String, uid: String) -> String {
+        for candidate in [emailPrefix ?? "", displayName] {
+            let sanitized = candidate
+                .lowercased()
+                .filter { $0.isLetter || $0.isNumber || $0 == "_" }
+            if sanitized.count >= 3 { return String(sanitized.prefix(30)) }
+        }
+        return "user\(uid.lowercased().prefix(8))"
     }
 
     // MARK: - Persistence Helpers
@@ -230,44 +258,6 @@ final class ProfileRepository: ProfileRepositoryProtocol {
             }
         } catch {
             logger.error("Failed to load persisted profiles: \(error, privacy: .public)")
-        }
-    }
-
-    // MARK: - Mock Data Seeding
-
-    private func migrateMockProfileToAuthenticatedUser(currentId: String) {
-        guard currentId != AppSessionManager.mockUserId,
-              profiles[currentId] == nil,
-              let mockProfile = profiles[AppSessionManager.mockUserId] else {
-            return
-        }
-
-        var migratedProfile = mockProfile
-        migratedProfile.id = currentId
-        profiles[currentId] = migratedProfile
-    }
-
-    private func setupMockData() {
-        let currentId = AppSessionManager.currentUserId()
-
-        if profiles[currentId] == nil {
-            var currentUserProfile = MockDataProvider.currentUserSeedProfile(id: currentId)
-
-            if let fbUser = Auth.auth().currentUser {
-                if let displayName = fbUser.displayName, !displayName.isEmpty {
-                    currentUserProfile.displayName = displayName
-                } else if let email = fbUser.email {
-                    let prefix = email.components(separatedBy: "@").first ?? "john"
-                    currentUserProfile.displayName = prefix.capitalized
-                    currentUserProfile.username = prefix.lowercased()
-                }
-            }
-
-            profiles[currentId] = currentUserProfile
-        }
-
-        for friend in MockDataProvider.friendSeedProfiles() where profiles[friend.id] == nil {
-            profiles[friend.id] = friend
         }
     }
 }

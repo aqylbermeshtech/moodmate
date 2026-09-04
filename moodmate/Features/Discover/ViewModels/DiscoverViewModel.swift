@@ -103,7 +103,7 @@ final class DiscoverViewModel: ObservableObject {
                 guard let self = self else { return }
 
                 // suggestedUsers still needs patching here — SuggestedUser
-                // carries bio/isFollowing, which UserStore doesn't own.
+                // carries bio, which UserStore doesn't own.
                 if let index = self.suggestedUsers.firstIndex(where: { $0.id == updatedProfile.id }) {
                     self.suggestedUsers[index] = SuggestedUser(
                         id: updatedProfile.id,
@@ -112,7 +112,7 @@ final class DiscoverViewModel: ObservableObject {
                         avatarColorHex: updatedProfile.avatarColorHex,
                         avatarImageData: updatedProfile.avatarImageData,
                         bio: updatedProfile.bio,
-                        isFollowing: self.suggestedUsers[index].isFollowing
+                        isFollowing: updatedProfile.isFollowing
                     )
                 }
             }

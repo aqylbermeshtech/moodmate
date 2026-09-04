@@ -8,7 +8,7 @@
 import SwiftUI
 import Combine
 
-struct MockComment: Identifiable {
+struct PostComment: Identifiable {
     let id = UUID()
     let name: String
     let username: String
@@ -20,9 +20,12 @@ struct MockComment: Identifiable {
 struct PostDetailView: View {
     let postId: String
     var postRepository: PostRepositoryProtocol = PostRepository.shared
+    var profileRepository: ProfileRepositoryProtocol = ProfileRepository.shared
     @Environment(\.dismiss) private var dismiss
 
-    @State private var comments: [MockComment] = []
+    /// Comments live only for the lifetime of this screen — there is no
+    /// comment store behind them yet.
+    @State private var comments: [PostComment] = []
     @State private var commentText = ""
     @State private var displayPost: FeedPost?
     @State private var cancellables = Set<AnyCancellable>()
@@ -119,7 +122,7 @@ struct PostDetailView: View {
 
 
     // MARK: - Comment Row Component
-    private func commentRow(comment: MockComment) -> some View {
+    private func commentRow(comment: PostComment) -> some View {
         HStack(alignment: .top, spacing: 10) {
             AvatarView(
                 name: comment.name,
@@ -200,10 +203,6 @@ struct PostDetailView: View {
 
         if let post = postRepository.post(id: postId) {
             self.displayPost = FeedPost(from: post)
-            self.comments = [
-                MockComment(name: "Michele", username: "mj", avatarColorHex: "4DABF7", text: "Such a beautiful quote. Grateful for this reminder today.", timeAgo: "1h ago"),
-                MockComment(name: "Pepper", username: "pepperoni", avatarColorHex: "FF6B6B", text: "Love the positive energy, keep it up!", timeAgo: "45m ago")
-            ]
         }
         didLoad = true
 
@@ -261,10 +260,12 @@ struct PostDetailView: View {
     private func addComment() {
         guard !commentText.isEmpty else { return }
 
-        let newComment = MockComment(
-            name: "You",
-            username: "johndoe",
-            avatarColorHex: "38B2AC",
+        let author = profileRepository.getProfile(forId: nil)
+
+        let newComment = PostComment(
+            name: author?.displayName ?? "You",
+            username: author?.username ?? "",
+            avatarColorHex: author?.avatarColorHex ?? UserProfile.defaultAvatarColorHex,
             text: commentText,
             timeAgo: "Just now"
         )

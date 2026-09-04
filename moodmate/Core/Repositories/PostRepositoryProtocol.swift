@@ -18,5 +18,4 @@ protocol PostRepositoryProtocol: AnyObject {
     func deletePost(id: String) async throws
     func setLike(postId: String, isLiked: Bool) async throws
     func toggleBookmark(postId: String) async throws
-    func migrateAuthor(from oldAuthorId: String, to newAuthorId: String)
 }

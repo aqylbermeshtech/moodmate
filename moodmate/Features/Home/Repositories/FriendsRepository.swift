@@ -1,19 +1,18 @@
 import Foundation
 
+/// "Friends" are the accounts the signed-in user follows — the only social
+/// graph the local store can answer for. See `FollowRepository`.
 final class FriendsRepository: FriendsRepositoryProtocol {
 
-    private let service: ProfileRepositoryProtocol
+    private let followRepository: FollowRepositoryProtocol
 
-    init(service: ProfileRepositoryProtocol = ProfileRepository.shared) {
-        self.service = service
+    init(followRepository: FollowRepositoryProtocol = FollowRepository.shared) {
+        self.followRepository = followRepository
     }
 
     func loadFriends() -> [AppUser] {
-
-        let friendIds = ["1", "2", "3", "4", "5"]
-        return friendIds.compactMap { id in
-            guard let profile = service.getProfile(forId: id) else { return nil }
-            return AppUser(
+        followRepository.getFollowing(forId: nil).map { profile in
+            AppUser(
                 id:              profile.id,
                 name:            profile.displayName,
                 username:        profile.username,

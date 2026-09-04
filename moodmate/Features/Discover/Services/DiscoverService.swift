@@ -10,38 +10,74 @@ import Foundation
 final class DiscoverService: DiscoverServiceProtocol {
     static let shared = DiscoverService()
 
-    private var suggestedUsers: [SuggestedUser] = []
-    private var hashtags: [DiscoverHashtag] = []
+    /// Fixed topic taxonomy — app-defined browse filters, not user content.
     private var categories: [DiscoverCategory] = []
 
     private let pageSize = 20
+    private let maxHashtags = 20
     private let postRepository: PostRepositoryProtocol
     private let profileRepository: ProfileRepositoryProtocol
+    private let followRepository: FollowRepositoryProtocol
 
     init(
         postRepository: PostRepositoryProtocol = PostRepository.shared,
-        profileRepository: ProfileRepositoryProtocol = ProfileRepository.shared
+        profileRepository: ProfileRepositoryProtocol = ProfileRepository.shared,
+        followRepository: FollowRepositoryProtocol = FollowRepository.shared
     ) {
         self.postRepository = postRepository
         self.profileRepository = profileRepository
-        setupMockData()
-        publishSuggestedUserProfiles()
+        self.followRepository = followRepository
+        setupCategories()
     }
 
-    /// `suggestedUsers` is the one canonical roster for these 25 identities;
-    /// publish them into ProfileRepository so UserStore can resolve names
-    /// for the generated posts they author, without a second copy.
-    private func publishSuggestedUserProfiles() {
-        for user in suggestedUsers where profileRepository.getProfile(forId: user.id) == nil {
-            profileRepository.setProfile(UserProfile(
-                id: user.id,
-                displayName: user.displayName,
-                username: user.username,
-                avatarColorHex: user.avatarColorHex,
-                avatarImageData: user.avatarImageData,
-                bio: user.bio
-            ))
+    /// Every known account except the viewer's own, ordered by name so the
+    /// row stays stable between loads.
+    private var suggestedUsers: [SuggestedUser] {
+        let currentUserId = AppSessionManager.currentUserId()
+        return profileRepository.allProfiles()
+            .filter { $0.id != currentUserId }
+            .sorted { $0.displayName.localizedCaseInsensitiveCompare($1.displayName) == .orderedAscending }
+            .map { profile in
+                SuggestedUser(
+                    id: profile.id,
+                    displayName: profile.displayName,
+                    username: profile.username,
+                    avatarColorHex: profile.avatarColorHex,
+                    avatarImageData: profile.avatarImageData,
+                    bio: profile.bio,
+                    isFollowing: profile.isFollowing
+                )
+            }
+    }
+
+    /// Counted off the real post bodies, so a tag only trends if it's used.
+    private var hashtags: [DiscoverHashtag] {
+        var counts: [String: Int] = [:]
+        var firstSpelling: [String: String] = [:]
+
+        for post in postRepository.allPosts {
+            let tags = Set(Self.hashtags(in: post.text ?? "") + Self.hashtags(in: post.quoteText ?? ""))
+            for tag in tags {
+                let key = tag.lowercased()
+                counts[key, default: 0] += 1
+                if firstSpelling[key] == nil { firstSpelling[key] = tag }
+            }
         }
+
+        return counts
+            .sorted {
+                $0.value == $1.value ? $0.key < $1.key : $0.value > $1.value
+            }
+            .prefix(maxHashtags)
+            .map { key, count in
+                DiscoverHashtag(id: "h_\(key)", name: firstSpelling[key] ?? key, postCount: count)
+            }
+    }
+
+    private static func hashtags(in text: String) -> [String] {
+        text.split(whereSeparator: { !$0.isLetter && !$0.isNumber && $0 != "#" && $0 != "_" })
+            .filter { $0.hasPrefix("#") && $0.count > 1 }
+            .map { String($0.dropFirst()) }
     }
 
     private var allPosts: [DiscoverPost] {
@@ -69,21 +105,18 @@ final class DiscoverService: DiscoverServiceProtocol {
 
         var filtered = allPosts
 
+        // A filter that matches nothing returns nothing — the caller shows an
+        // empty state rather than unrelated posts standing in for a match.
         if let category {
             let keyword = category.name.lowercased()
             filtered = filtered.filter { $0.caption.lowercased().contains(keyword) || $0.quoteText.lowercased().contains(keyword) }
-            if filtered.isEmpty {
-                filtered = allPosts.shuffled().prefix(30).map { $0 }
-            }
         }
-        
+
         if let hashtag {
-            let tag = hashtag.name.lowercased()
-            filtered = filtered.filter { $0.caption.lowercased().contains(tag.replacingOccurrences(of: "#", with: "")) }
-            if filtered.isEmpty {
-                filtered = allPosts.shuffled().prefix(20).map { $0 }
-            }
+            let tag = hashtag.name.lowercased().replacingOccurrences(of: "#", with: "")
+            filtered = filtered.filter { $0.caption.lowercased().contains(tag) || $0.quoteText.lowercased().contains(tag) }
         }
+
         
         let start = page * pageSize
         guard start < filtered.count else { return [] }
@@ -148,18 +181,10 @@ final class DiscoverService: DiscoverServiceProtocol {
     }
     
     func toggleFollow(userId: String) {
-        if let index = suggestedUsers.firstIndex(where: { $0.id == userId }) {
-            suggestedUsers[index].isFollowing.toggle()
-        }
+        _ = followRepository.toggleFollow(targetId: userId)
     }
-    
-    // MARK: - Mock Data Setup
 
-    private func setupMockData() {
-        setupCategories()
-        setupHashtags()
-        setupSuggestedUsers()
-    }
+    // MARK: - Topic Setup
 
     private func setupCategories() {
         categories = [
@@ -175,60 +200,4 @@ final class DiscoverService: DiscoverServiceProtocol {
             DiscoverCategory(id: "c10", name: "Lifestyle",   iconName: "sparkles",               gradientStartHex: "FFECD2", gradientEndHex: "FCB69F")
         ]
     }
-    
-    private func setupHashtags() {
-        hashtags = [
-            DiscoverHashtag(id: "h1",  name: "MorningWalk",       postCount: 3421),
-            DiscoverHashtag(id: "h2",  name: "StudyDay",          postCount: 2187),
-            DiscoverHashtag(id: "h3",  name: "WeekendMood",       postCount: 4532),
-            DiscoverHashtag(id: "h4",  name: "MindfulMonday",     postCount: 1876),
-            DiscoverHashtag(id: "h5",  name: "SelfCare",          postCount: 5621),
-            DiscoverHashtag(id: "h6",  name: "Gratitude",         postCount: 3298),
-            DiscoverHashtag(id: "h7",  name: "NatureVibes",       postCount: 2745),
-            DiscoverHashtag(id: "h8",  name: "FitnessJourney",    postCount: 1932),
-            DiscoverHashtag(id: "h9",  name: "CalmDown",          postCount: 1456),
-            DiscoverHashtag(id: "h10", name: "GoodVibesOnly",     postCount: 6214),
-            DiscoverHashtag(id: "h11", name: "MentalHealth",      postCount: 4127),
-            DiscoverHashtag(id: "h12", name: "InnerPeace",        postCount: 2893),
-            DiscoverHashtag(id: "h13", name: "DailyReflection",   postCount: 1654),
-            DiscoverHashtag(id: "h14", name: "PositiveEnergy",    postCount: 3876),
-            DiscoverHashtag(id: "h15", name: "JournalEntry",      postCount: 1243),
-            DiscoverHashtag(id: "h16", name: "MoodTracker",       postCount: 987),
-            DiscoverHashtag(id: "h17", name: "Meditation",        postCount: 2654),
-            DiscoverHashtag(id: "h18", name: "BreathWork",        postCount: 1123),
-            DiscoverHashtag(id: "h19", name: "SunsetChaser",      postCount: 3542),
-            DiscoverHashtag(id: "h20", name: "MorningRoutine",    postCount: 2876)
-        ]
-    }
-    
-    private func setupSuggestedUsers() {
-        suggestedUsers = [
-            SuggestedUser(id: "su1",  displayName: "Luna Park",       username: "luna_glow",       avatarColorHex: "ED64A6", bio: "Night owl. Stargazer. Dream chaser.", isFollowing: false),
-            SuggestedUser(id: "su2",  displayName: "River Stone",     username: "river_flows",     avatarColorHex: "38B2AC", bio: "Kayaker & nature lover. Flow state addict.", isFollowing: false),
-            SuggestedUser(id: "su3",  displayName: "Maya Chen",       username: "maya_mindful",    avatarColorHex: "805AD5", bio: "Yoga instructor. Mindfulness advocate.", isFollowing: false),
-            SuggestedUser(id: "su4",  displayName: "Kai Nakamura",    username: "kai_runs",        avatarColorHex: "FF6B6B", bio: "Marathon runner. Morning person.", isFollowing: false),
-            SuggestedUser(id: "su5",  displayName: "Sage Williams",   username: "sage_reads",      avatarColorHex: "D69E2E", bio: "Bookworm. Tea enthusiast. Quiet observer.", isFollowing: false),
-            SuggestedUser(id: "su6",  displayName: "Aurora James",    username: "aurora_art",      avatarColorHex: "F093FB", bio: "Watercolor artist. Color is my language.", isFollowing: false),
-            SuggestedUser(id: "su7",  displayName: "Jasper Cole",     username: "jasper_hikes",    avatarColorHex: "12B886", bio: "Trail runner. Mountain photographer.", isFollowing: false),
-            SuggestedUser(id: "su8",  displayName: "Nova Singh",      username: "nova_codes",      avatarColorHex: "4DABF7", bio: "Developer by day, stargazer by night.", isFollowing: false),
-            SuggestedUser(id: "su9",  displayName: "Willow Reed",     username: "willow_writes",   avatarColorHex: "A0AEC0", bio: "Poet. Journal keeper. Sunset collector.", isFollowing: false),
-            SuggestedUser(id: "su10", displayName: "Finn O'Brien",    username: "finn_surfs",      avatarColorHex: "00B5D8", bio: "Surfer. Ocean lover. Salt in my veins.", isFollowing: false),
-            SuggestedUser(id: "su11", displayName: "Ivy Martinez",    username: "ivy_grows",       avatarColorHex: "48BB78", bio: "Plant mom. Garden enthusiast.", isFollowing: false),
-            SuggestedUser(id: "su12", displayName: "Atlas Kim",       username: "atlas_travels",   avatarColorHex: "E53E3E", bio: "30 countries and counting. Wander often.", isFollowing: false),
-            SuggestedUser(id: "su13", displayName: "Coral Davis",     username: "coral_sings",     avatarColorHex: "D53F8C", bio: "Singer-songwriter. Music heals.", isFollowing: false),
-            SuggestedUser(id: "su14", displayName: "Zane Foster",     username: "zane_lifts",      avatarColorHex: "C05621", bio: "Personal trainer. Discipline is freedom.", isFollowing: false),
-            SuggestedUser(id: "su15", displayName: "Pearl Wang",      username: "pearl_cooks",     avatarColorHex: "FAB005", bio: "Home chef. Comfort food creator.", isFollowing: false),
-            SuggestedUser(id: "su16", displayName: "Rowan Blake",     username: "rowan_thinks",    avatarColorHex: "718096", bio: "Philosopher. Deep thinker. Quiet rebel.", isFollowing: false),
-            SuggestedUser(id: "su17", displayName: "Sienna Lopez",    username: "sienna_dances",   avatarColorHex: "F6AD55", bio: "Dancer. Movement is medicine.", isFollowing: false),
-            SuggestedUser(id: "su18", displayName: "Orion Patel",     username: "orion_games",     avatarColorHex: "9F7AEA", bio: "Game designer. Pixel dreamer.", isFollowing: false),
-            SuggestedUser(id: "su19", displayName: "Hazel Brown",     username: "hazel_bakes",     avatarColorHex: "B7791F", bio: "Baker. Spreading sweetness daily.", isFollowing: false),
-            SuggestedUser(id: "su20", displayName: "Reed Thompson",   username: "reed_meditates",  avatarColorHex: "319795", bio: "Meditation teacher. Stillness is power.", isFollowing: false),
-            SuggestedUser(id: "su21", displayName: "Ember Fox",       username: "ember_captures",  avatarColorHex: "E53E3E", bio: "Street photographer. Urban stories.", isFollowing: false),
-            SuggestedUser(id: "su22", displayName: "Sky Tanaka",      username: "sky_breathes",    avatarColorHex: "4299E1", bio: "Breathwork facilitator. Inhale courage.", isFollowing: false),
-            SuggestedUser(id: "su23", displayName: "Clover Hayes",    username: "clover_journals", avatarColorHex: "48BB78", bio: "Bullet journal artist. Analog soul.", isFollowing: false),
-            SuggestedUser(id: "su24", displayName: "Blaze Rivera",    username: "blaze_climbs",    avatarColorHex: "DD6B20", bio: "Rock climber. Fear is just a feeling.", isFollowing: false),
-            SuggestedUser(id: "su25", displayName: "Iris Zhao",       username: "iris_paints",     avatarColorHex: "9B2C2C", bio: "Oil painter. Every canvas is a conversation.", isFollowing: false)
-        ]
-    }
-
 }

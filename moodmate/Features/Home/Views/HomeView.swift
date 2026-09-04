@@ -28,8 +28,8 @@ struct HomeView: View {
 
             ScrollView {
                 LazyVStack(spacing: 0) {
-                    if viewModel.feed.selectedFilter == .following && viewModel.feed.visiblePosts.isEmpty {
-                        followingEmptyState
+                    if viewModel.feed.visiblePosts.isEmpty {
+                        emptyState
                     } else {
                         ForEach(viewModel.feed.visiblePosts) { post in
                             PostCardView(
@@ -70,11 +70,13 @@ struct HomeView: View {
         ))
     }
 
-    // MARK: - Following Empty State
+    // MARK: - Empty State
 
-    private var followingEmptyState: some View {
-        VStack(spacing: 8) {
-            Image(systemName: "person.2")
+    private var emptyState: some View {
+        let isFollowingTab = viewModel.feed.selectedFilter == .following
+
+        return VStack(spacing: 8) {
+            Image(systemName: isFollowingTab ? "person.2" : "square.and.pencil")
                 .font(.system(size: 32))
                 .foregroundStyle(Color.theme.secondaryText)
                 .padding(.bottom, 4)
@@ -83,7 +85,9 @@ struct HomeView: View {
                 .font(.system(size: 17, weight: .semibold))
                 .foregroundStyle(Color.theme.primaryText)
 
-            Text("Posts from people you follow will show up here. Switch to \u{201C}For you\u{201D} to discover more.")
+            Text(isFollowingTab
+                 ? "Posts from people you follow will show up here. Switch to \u{201C}For you\u{201D} to discover more."
+                 : "Write your first post, or head to Discover to find people to follow.")
                 .font(.system(size: 14))
                 .foregroundStyle(Color.theme.secondaryText)
                 .multilineTextAlignment(.center)

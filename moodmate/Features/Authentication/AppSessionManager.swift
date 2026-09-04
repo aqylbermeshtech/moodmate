@@ -17,14 +17,14 @@ final class AppSessionManager: ObservableObject {
     
     static let shared = AppSessionManager()
 
-    /// Pre-auth placeholder id; mock data is seeded/queried against it.
-    static let mockUserId = "current_user_mock"
-
     /// Static (not an instance method) so repositories can call it without
     /// depending on `AppSessionManager.shared` — that dependency would risk a
     /// circular-singleton-construction deadlock.
+    ///
+    /// Empty while signed out. The app UI is gated behind authentication, so
+    /// callers only ever see a real uid from a screen the user can reach.
     static func currentUserId() -> String {
-        FirebaseAuthService.shared.currentUser?.uid ?? mockUserId
+        FirebaseAuthService.shared.currentUser?.uid ?? ""
     }
 
     init(

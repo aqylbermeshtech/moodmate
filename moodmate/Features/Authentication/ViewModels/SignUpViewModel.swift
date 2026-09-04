@@ -46,7 +46,7 @@ final class SignUpViewModel: ObservableObject {
                 // commits and would fall back to an email-derived name.
                 if !displayName.isEmpty {
                     var profile = self.profileRepository.getProfile(forId: user.uid)
-                        ?? MockDataProvider.newAuthenticatedUserSeedProfile(id: user.uid, displayName: displayName)
+                        ?? ProfileRepository.profile(for: user)
                     profile.displayName = displayName
                     self.profileRepository.setProfile(profile)
                 }

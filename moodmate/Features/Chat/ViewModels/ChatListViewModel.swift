@@ -18,13 +18,15 @@ final class ChatListViewModel: ObservableObject {
         loadConversations()
     }
 
+    /// One row per account the user follows. Message history stays empty until
+    /// there is a real message store behind it.
     private func loadConversations() {
         conversations = friendsRepository.loadFriends().map { friend in
             Conversation(
                 id: friend.id,
                 participant: friend,
-                messages: MockChatData.messages(for: friend.id),
-                unreadCount: MockChatData.unreadCount(for: friend.id)
+                messages: [],
+                unreadCount: 0
             )
         }
     }

@@ -55,14 +55,17 @@ final class CreatePostViewModel: ObservableObject {
                 avatarColorHex: profile.avatarColorHex
             )
         } else {
-            var userName = "John"
-            var userHandle = "john_doe"
+            // No stored profile yet (sign-up still settling): show whatever the
+            // Firebase user carries, and let `observeProfileUpdates` fill in the
+            // rest as soon as the profile lands.
+            var userName = ""
+            var userHandle = ""
             if let firebaseUser = authService.currentUser {
                 if let name = firebaseUser.displayName, !name.isEmpty {
                     userName = name
-                } else if let email = firebaseUser.email, !email.isEmpty {
-                    let prefix = email.components(separatedBy: "@").first ?? "john"
-                    userName = prefix.capitalized
+                }
+                if let email = firebaseUser.email, let prefix = email.components(separatedBy: "@").first {
+                    if userName.isEmpty { userName = prefix.capitalized }
                     userHandle = prefix.lowercased()
                 }
             }
@@ -72,7 +75,7 @@ final class CreatePostViewModel: ObservableObject {
                 name: userName,
                 username: userHandle,
                 avatarImageName: nil,
-                avatarColorHex: "38B2AC"
+                avatarColorHex: UserProfile.defaultAvatarColorHex
             )
         }
 
