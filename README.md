@@ -19,6 +19,7 @@ MoodMate is a minimal social networking iOS app built around daily emotional che
 - **MVVM** architecture (`Views` + `ViewModels`, repository layer for data access)
 - **Swift Concurrency** (async/await)
 - **Firebase Auth** (via Firebase iOS SDK, added as a Swift Package)
+- Interest-based onboarding: new accounts pick their core interests before reaching the app, and those picks live on the profile
 - On-device local stores for posts and profiles, persisted to JSON in the app's documents directory (no live backend for content yet — see [Current Limitations](#current-limitations))
 
 ## Project Structure
@@ -72,6 +73,7 @@ Each feature module follows the same shape: `Models/`, `ViewModels/`, `Views/`, 
 
 - Feed, Discover, and Chat content is backed by on-device local stores, not a live database — posts and likes persist only on the device that created them, and do not sync across devices.
 - The app ships with no seeded content or accounts: a fresh install starts empty, and the feed, profile grid, and Discover fill in only as the signed-in user creates posts.
+- Interests are captured at onboarding and shown on the profile, but nothing consumes them yet — ranking, recommendations, and the planned AI features still need to be built on top of them.
 - The follow graph is one-directional and local: `isFollowing` records only who the signed-in user follows, so follower lists for other accounts stay empty until a backend stores both directions.
 - Messaging is not implemented — the inbox lists the accounts you follow, but message history and sending are stubs pending a message store.
 - Only email/password authentication is implemented (no Sign in with Apple/Google yet).

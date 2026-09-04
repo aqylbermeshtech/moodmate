@@ -20,7 +20,10 @@ final class EditProfileViewModel: ObservableObject {
     @Published var hasBirthday: Bool = false
     @Published var birthday: Date = Date()
     @Published var privacySetting: Visibility = .publicVisibility
-    @Published var avatarColorHex: String = "38B2AC"
+    @Published var avatarColorHex: String = UserProfile.defaultAvatarColorHex
+
+    /// Ordered so the profile lists interests the way the user picked them.
+    @Published private(set) var interests: [String] = []
 
     @Published var selectedAvatarImage: UIImage? = nil
     @Published var currentAvatarData: Data? = nil
@@ -46,6 +49,16 @@ final class EditProfileViewModel: ObservableObject {
     @Published var activePickerSource: ImagePickerSourceType? = nil
     @Published var showRemoveAvatarConfirmation: Bool = false
     
+    var selectedInterestIds: Set<String> { Set(interests) }
+
+    func toggleInterest(_ interest: Interest) {
+        if let index = interests.firstIndex(of: interest.id) {
+            interests.remove(at: index)
+        } else {
+            interests.append(interest.id)
+        }
+    }
+
     let maxBioLength: Int = 160
     let maxDisplayNameLength: Int = 50
     
@@ -114,6 +127,7 @@ final class EditProfileViewModel: ObservableObject {
         }
         self.privacySetting = profile.privacySetting
         self.avatarColorHex = profile.avatarColorHex
+        self.interests = profile.interests
         self.currentAvatarData = profile.avatarImageData
         self.isAvatarRemoved = false
         self.selectedAvatarImage = nil
@@ -227,6 +241,7 @@ final class EditProfileViewModel: ObservableObject {
                 birthday: hasBirthday ? birthday : nil,
                 privacySetting: privacySetting,
                 avatarColorHex: avatarColorHex,
+                interests: interests,
                 avatarImageData: avatarDataToSave,
                 clearAvatar: isAvatarRemoved
             )

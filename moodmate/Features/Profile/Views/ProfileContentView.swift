@@ -54,6 +54,8 @@ struct ProfileContentView<PrimaryAction: View, ToolbarTrailing: View>: View {
                                 .padding(.top, 12)
                         }
 
+                        interestsView(profile: profile)
+
                         actionsView(profile: profile)
                             .padding(.horizontal, 16)
                             .padding(.top, 16)
@@ -199,7 +201,31 @@ struct ProfileContentView<PrimaryAction: View, ToolbarTrailing: View>: View {
         }
     }
 
-    // MARK: - 3. Action Buttons Row
+    // MARK: - 3. Interests
+
+    @ViewBuilder
+    private func interestsView(profile: UserProfile) -> some View {
+        let interests = InterestCatalog.interests(ids: profile.interests)
+
+        if !interests.isEmpty {
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Interests")
+                    .font(.system(size: 11, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color.theme.secondaryText)
+
+                FlowLayout(spacing: 8, lineSpacing: 8) {
+                    ForEach(interests) { interest in
+                        InterestChip(interest: interest)
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 16)
+            .padding(.top, 16)
+        }
+    }
+
+    // MARK: - 4. Action Buttons Row
     private func actionsView(profile: UserProfile) -> some View {
         HStack(spacing: 12) {
             primaryAction()
@@ -219,7 +245,7 @@ struct ProfileContentView<PrimaryAction: View, ToolbarTrailing: View>: View {
         }
     }
 
-    // MARK: - 4. Posts Section
+    // MARK: - 5. Posts Section
     private func postsSection(profile: UserProfile) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Posts")

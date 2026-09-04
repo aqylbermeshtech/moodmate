@@ -11,6 +11,7 @@ import PhotosUI
 struct EditProfileView: View {
     @Environment(\.dismiss) var dismiss
     @StateObject private var editViewModel: EditProfileViewModel
+    @State private var showInterestsPicker = false
     
     init(viewModel: ProfileViewModel) {
         let userId = viewModel.profile?.id ?? viewModel.getCurrentUserId()
@@ -49,6 +50,8 @@ struct EditProfileView: View {
                             .padding(.top, 10)
 
                         colorThemeSection
+
+                        interestsSection
 
                         formFieldsSection
                         
@@ -100,6 +103,12 @@ struct EditProfileView: View {
                     }
                     .disabled(!editViewModel.isFormValid || editViewModel.isSaving || editViewModel.isUploadingAvatar)
                 }
+            }
+            .sheet(isPresented: $showInterestsPicker) {
+                InterestsPickerSheet(
+                    selectedIds: editViewModel.selectedInterestIds,
+                    onToggle: { editViewModel.toggleInterest($0) }
+                )
             }
             .sheet(isPresented: $editViewModel.showPickerOptions) {
                 AvatarPickerOptionsView(
@@ -231,6 +240,51 @@ struct EditProfileView: View {
         )
     }
     
+    // MARK: - Interests Section
+
+    private var interestsSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("INTERESTS")
+                    .font(.system(size: 11, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color.theme.secondaryText)
+
+                Spacer()
+
+                Button(selectedInterests.isEmpty ? "Add" : "Edit") {
+                    showInterestsPicker = true
+                }
+                .font(.system(size: 13, weight: .bold))
+                .foregroundStyle(Color.theme.accent)
+            }
+
+            if selectedInterests.isEmpty {
+                Text("Add a few interests so MoodMate can tune what it shows you.")
+                    .font(.system(size: 13))
+                    .foregroundStyle(Color.theme.secondaryText)
+                    .fixedSize(horizontal: false, vertical: true)
+            } else {
+                FlowLayout(spacing: 8, lineSpacing: 8) {
+                    ForEach(selectedInterests) { interest in
+                        InterestChip(interest: interest)
+                    }
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(16)
+        .background(Color.theme.cardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .stroke(Color.theme.border, lineWidth: 1)
+        )
+    }
+
+    private var selectedInterests: [Interest] {
+        InterestCatalog.interests(ids: editViewModel.interests)
+    }
+
     // MARK: - Form Fields Section
     
     private var formFieldsSection: some View {

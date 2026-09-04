@@ -92,6 +92,7 @@ final class ProfileRepository: ProfileRepositoryProtocol {
         birthday: Date? = nil,
         privacySetting: Visibility = .publicVisibility,
         avatarColorHex: String,
+        interests: [String] = [],
         avatarImageData: Data? = nil,
         clearAvatar: Bool = false
     ) async throws -> UserProfile {
@@ -109,6 +110,7 @@ final class ProfileRepository: ProfileRepositoryProtocol {
         profile.birthday = birthday
         profile.privacySetting = privacySetting
         profile.avatarColorHex = avatarColorHex
+        profile.interests = interests
 
         if clearAvatar {
             profile.avatarImageData = nil
@@ -118,6 +120,21 @@ final class ProfileRepository: ProfileRepositoryProtocol {
             let compressedData = try await avatarRepository.saveAvatar(data: newAvatarData, userId: actualId)
             profile.avatarImageData = compressedData
         }
+
+        setProfile(profile)
+        return profile
+    }
+
+    func updateInterests(_ interestIds: [String], forId id: String) async throws -> UserProfile {
+        try await Task.sleep(nanoseconds: 200_000_000)
+
+        let actualId = id.isEmpty ? AppSessionManager.currentUserId() : id
+        guard var profile = profiles[actualId] else {
+            throw AppError.notFound("User profile")
+        }
+
+        profile.interests = interestIds
+        profile.hasCompletedOnboarding = true
 
         setProfile(profile)
         return profile

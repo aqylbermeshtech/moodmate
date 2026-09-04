@@ -24,9 +24,14 @@ protocol ProfileRepositoryProtocol: AnyObject {
         birthday: Date?,
         privacySetting: Visibility,
         avatarColorHex: String,
+        interests: [String],
         avatarImageData: Data?,
         clearAvatar: Bool
     ) async throws -> UserProfile
+
+    /// Saves the user's interest picks and marks onboarding as done. Used by
+    /// the onboarding flow, which has no other profile fields to write.
+    func updateInterests(_ interestIds: [String], forId id: String) async throws -> UserProfile
 
     func uploadAvatar(image: UIImage, userId: String) async throws -> Data
 
