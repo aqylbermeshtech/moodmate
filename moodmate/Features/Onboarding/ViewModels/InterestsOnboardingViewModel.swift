@@ -17,17 +17,26 @@ final class InterestsOnboardingViewModel: ObservableObject {
     /// user chose them rather than in catalog order.
     private var pickOrder: [String] = []
 
-    private let profileRepository: ProfileRepositoryProtocol
-    private let authService: AuthServiceProtocol
+    private let updateInterestsUseCase: UpdateInterestsUseCaseProtocol
+    private let signOutUseCase: SignOutUseCaseProtocol
+    private let fetchCurrentAuthUserUseCase: FetchCurrentAuthUserUseCaseProtocol
+    private let fetchProfileUseCase: FetchProfileUseCaseProtocol
+    private let currentUserProvider: CurrentUserProviderProtocol
 
     init(
-        profileRepository: ProfileRepositoryProtocol = ProfileRepository.shared,
-        authService: AuthServiceProtocol = FirebaseAuthService.shared
+        updateInterestsUseCase: UpdateInterestsUseCaseProtocol = DIContainer.shared.updateInterestsUseCase,
+        signOutUseCase: SignOutUseCaseProtocol = DIContainer.shared.signOutUseCase,
+        fetchCurrentAuthUserUseCase: FetchCurrentAuthUserUseCaseProtocol = DIContainer.shared.fetchCurrentAuthUserUseCase,
+        fetchProfileUseCase: FetchProfileUseCaseProtocol = DIContainer.shared.fetchProfileUseCase,
+        currentUserProvider: CurrentUserProviderProtocol = DIContainer.shared.currentUserProvider
     ) {
-        self.profileRepository = profileRepository
-        self.authService = authService
+        self.updateInterestsUseCase = updateInterestsUseCase
+        self.signOutUseCase = signOutUseCase
+        self.fetchCurrentAuthUserUseCase = fetchCurrentAuthUserUseCase
+        self.fetchProfileUseCase = fetchProfileUseCase
+        self.currentUserProvider = currentUserProvider
 
-        if let existing = profileRepository.getProfile(forId: nil)?.interests, !existing.isEmpty {
+        if let existing = fetchProfileUseCase.execute(forId: nil)?.interests, !existing.isEmpty {
             pickOrder = existing
             selectedIds = Set(existing)
         }
@@ -36,7 +45,7 @@ final class InterestsOnboardingViewModel: ObservableObject {
     // MARK: - Presentation
 
     var greeting: String {
-        guard let name = authService.currentUserDisplayName, !name.isEmpty else {
+        guard let name = fetchCurrentAuthUserUseCase.execute()?.resolvedDisplayName, !name.isEmpty else {
             return "What are you into?"
         }
         return "What are you into, \(name)?"
@@ -75,9 +84,9 @@ final class InterestsOnboardingViewModel: ObservableObject {
         errorMessage = nil
 
         do {
-            _ = try await profileRepository.updateInterests(
+            _ = try await updateInterestsUseCase.execute(
                 pickOrder,
-                forId: AppSessionManager.currentUserId()
+                forId: currentUserProvider.currentUserId
             )
         } catch {
             errorMessage = "Couldn't save your interests. Please try again."
@@ -90,7 +99,7 @@ final class InterestsOnboardingViewModel: ObservableObject {
     /// unsaveable profile would have nowhere to go.
     func signOut() {
         do {
-            try authService.signOut()
+            try signOutUseCase.execute()
         } catch {
             errorMessage = error.localizedDescription
         }

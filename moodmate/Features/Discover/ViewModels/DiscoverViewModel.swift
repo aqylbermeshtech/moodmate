@@ -62,19 +62,37 @@ final class DiscoverViewModel: ObservableObject {
     }
     
     // MARK: - Init
-    
-    private let discoverService: DiscoverServiceProtocol
-    private let profileRepository: ProfileRepositoryProtocol
-    private let postRepository: PostRepositoryProtocol
+
+    private let fetchSuggestedUsersUseCase: FetchSuggestedUsersUseCaseProtocol
+    private let fetchTrendingHashtagsUseCase: FetchTrendingHashtagsUseCaseProtocol
+    private let fetchDiscoverCategoriesUseCase: FetchDiscoverCategoriesUseCaseProtocol
+    private let fetchDiscoverPostsUseCase: FetchDiscoverPostsUseCaseProtocol
+    private let searchDiscoverUseCase: SearchDiscoverUseCaseProtocol
+    private let toggleFollowUseCase: ToggleFollowUseCaseProtocol
+    private let togglePostLikeUseCase: TogglePostLikeUseCaseProtocol
+    private let observeFeedPostsUseCase: ObserveFeedPostsUseCaseProtocol
+    private let observeProfileUpdatesUseCase: ObserveProfileUpdatesUseCaseProtocol
 
     init(
-        discoverService: DiscoverServiceProtocol = DiscoverService.shared,
-        profileRepository: ProfileRepositoryProtocol = ProfileRepository.shared,
-        postRepository: PostRepositoryProtocol = PostRepository.shared
+        fetchSuggestedUsersUseCase: FetchSuggestedUsersUseCaseProtocol = DIContainer.shared.fetchSuggestedUsersUseCase,
+        fetchTrendingHashtagsUseCase: FetchTrendingHashtagsUseCaseProtocol = DIContainer.shared.fetchTrendingHashtagsUseCase,
+        fetchDiscoverCategoriesUseCase: FetchDiscoverCategoriesUseCaseProtocol = DIContainer.shared.fetchDiscoverCategoriesUseCase,
+        fetchDiscoverPostsUseCase: FetchDiscoverPostsUseCaseProtocol = DIContainer.shared.fetchDiscoverPostsUseCase,
+        searchDiscoverUseCase: SearchDiscoverUseCaseProtocol = DIContainer.shared.searchDiscoverUseCase,
+        toggleFollowUseCase: ToggleFollowUseCaseProtocol = DIContainer.shared.toggleFollowUseCase,
+        togglePostLikeUseCase: TogglePostLikeUseCaseProtocol = DIContainer.shared.togglePostLikeUseCase,
+        observeFeedPostsUseCase: ObserveFeedPostsUseCaseProtocol = DIContainer.shared.observeFeedPostsUseCase,
+        observeProfileUpdatesUseCase: ObserveProfileUpdatesUseCaseProtocol = DIContainer.shared.observeProfileUpdatesUseCase
     ) {
-        self.discoverService = discoverService
-        self.profileRepository = profileRepository
-        self.postRepository = postRepository
+        self.fetchSuggestedUsersUseCase = fetchSuggestedUsersUseCase
+        self.fetchTrendingHashtagsUseCase = fetchTrendingHashtagsUseCase
+        self.fetchDiscoverCategoriesUseCase = fetchDiscoverCategoriesUseCase
+        self.fetchDiscoverPostsUseCase = fetchDiscoverPostsUseCase
+        self.searchDiscoverUseCase = searchDiscoverUseCase
+        self.toggleFollowUseCase = toggleFollowUseCase
+        self.togglePostLikeUseCase = togglePostLikeUseCase
+        self.observeFeedPostsUseCase = observeFeedPostsUseCase
+        self.observeProfileUpdatesUseCase = observeProfileUpdatesUseCase
         loadRecentSearches()
         setupSearchDebounce()
         observeProfileUpdates()
@@ -82,7 +100,7 @@ final class DiscoverViewModel: ObservableObject {
     }
 
     private func observePostUpdates() {
-        postRepository.postsPublisher
+        observeFeedPostsUseCase.publisher
             .receive(on: DispatchQueue.main)
             .sink { [weak self] allPosts in
                 guard let self else { return }
@@ -99,7 +117,7 @@ final class DiscoverViewModel: ObservableObject {
     }
     
     private func observeProfileUpdates() {
-        profileRepository.profileUpdatesPublisher
+        observeProfileUpdatesUseCase.publisher
             .receive(on: DispatchQueue.main)
             .sink { [weak self] updatedProfile in
                 guard let self = self else { return }
@@ -128,10 +146,10 @@ final class DiscoverViewModel: ObservableObject {
         errorMessage = nil
         currentPage = 0
         
-        async let users = discoverService.getSuggestedUsers()
-        async let tags = discoverService.getHashtags()
-        async let cats = discoverService.getCategories()
-        async let posts = discoverService.getDiscoverPosts(page: 0)
+        async let users = fetchSuggestedUsersUseCase.execute()
+        async let tags = fetchTrendingHashtagsUseCase.execute()
+        async let cats = fetchDiscoverCategoriesUseCase.execute()
+        async let posts = fetchDiscoverPostsUseCase.execute(page: 0, category: nil, hashtag: nil)
 
         self.suggestedUsers = await users
         self.trendingHashtags = await tags
@@ -150,7 +168,7 @@ final class DiscoverViewModel: ObservableObject {
         isLoadingMore = true
         currentPage += 1
         
-        let newPosts = await discoverService.getDiscoverPosts(
+        let newPosts = await fetchDiscoverPostsUseCase.execute(
             page: currentPage,
             category: selectedCategory,
             hashtag: selectedHashtag
@@ -170,7 +188,7 @@ final class DiscoverViewModel: ObservableObject {
         hasMorePages = true
         errorMessage = nil
         
-        let posts = await discoverService.getDiscoverPosts(
+        let posts = await fetchDiscoverPostsUseCase.execute(
             page: 0,
             category: selectedCategory,
             hashtag: selectedHashtag
@@ -223,7 +241,7 @@ final class DiscoverViewModel: ObservableObject {
         currentPage = 0
         hasMorePages = true
 
-        let posts = await discoverService.getDiscoverPosts(
+        let posts = await fetchDiscoverPostsUseCase.execute(
             page: 0,
             category: selectedCategory,
             hashtag: selectedHashtag
@@ -258,7 +276,7 @@ final class DiscoverViewModel: ObservableObject {
             return
         }
         
-        let results = await discoverService.search(query: query)
+        let results = await searchDiscoverUseCase.execute(query: query)
         
         withAnimation(.easeOut(duration: 0.2)) {
             self.searchResults = results
@@ -296,7 +314,7 @@ final class DiscoverViewModel: ObservableObject {
     
     func toggleFollow(user: SuggestedUser) {
         withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-            discoverService.toggleFollow(userId: user.id)
+            _ = toggleFollowUseCase.execute(targetId: user.id)
             if let index = suggestedUsers.firstIndex(where: { $0.id == user.id }) {
                 suggestedUsers[index].isFollowing.toggle()
             }
@@ -317,7 +335,7 @@ final class DiscoverViewModel: ObservableObject {
 
         Task {
             do {
-                try await postRepository.setLike(postId: post.id, isLiked: desiredLikeState)
+                try await togglePostLikeUseCase.execute(postId: post.id, isLiked: desiredLikeState)
             } catch {
                 if let rollbackIndex = self.discoverPosts.firstIndex(where: { $0.id == post.id }) {
                     self.discoverPosts[rollbackIndex].isLiked = previousLiked

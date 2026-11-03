@@ -11,23 +11,16 @@ final class ChatListViewModel: ObservableObject {
 
     @Published private(set) var conversations: [Conversation] = []
 
-    private let friendsRepository: FriendsRepositoryProtocol
+    private let fetchConversationsUseCase: FetchConversationsUseCaseProtocol
 
-    init(friendsRepository: FriendsRepositoryProtocol = FriendsRepository()) {
-        self.friendsRepository = friendsRepository
+    init(fetchConversationsUseCase: FetchConversationsUseCaseProtocol = DIContainer.shared.fetchConversationsUseCase) {
+        self.fetchConversationsUseCase = fetchConversationsUseCase
         loadConversations()
     }
 
     /// One row per account the user follows. Message history stays empty until
     /// there is a real message store behind it.
     private func loadConversations() {
-        conversations = friendsRepository.loadFriends().map { friend in
-            Conversation(
-                id: friend.id,
-                participant: friend,
-                messages: [],
-                unreadCount: 0
-            )
-        }
+        conversations = fetchConversationsUseCase.execute()
     }
 }

@@ -94,7 +94,7 @@ private struct SearchResultRow: View {
     let result: SearchResult
     var onFollowUser: (String) -> Void
     var onLikePost: (String) -> Void
-    var userStore: UserStoreProtocol = UserStore.shared
+    var userStore: UserStoreProtocol = DIContainer.shared.userStore
 
     @State private var postThumbnail: UIImage?
 

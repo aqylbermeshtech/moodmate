@@ -4,8 +4,8 @@
 //
 //  Decides which of the three post-authentication screens `RootView` shows.
 //  Reads the current profile synchronously on refresh and then follows
-//  `profileUpdatesPublisher`, so finishing onboarding moves the app on with
-//  no extra plumbing between the two screens.
+//  current-user profile updates, so finishing onboarding moves the app on
+//  with no extra plumbing between the two screens.
 //
 
 import Foundation
@@ -24,11 +24,11 @@ final class OnboardingGateViewModel: ObservableObject {
 
     @Published private(set) var status: Status = .undetermined
 
-    private let profileRepository: ProfileRepositoryProtocol
+    private let observeCurrentProfileUseCase: ObserveCurrentProfileUseCaseProtocol
     private var cancellables = Set<AnyCancellable>()
 
-    init(profileRepository: ProfileRepositoryProtocol = ProfileRepository.shared) {
-        self.profileRepository = profileRepository
+    init(observeCurrentProfileUseCase: ObserveCurrentProfileUseCaseProtocol = DIContainer.shared.observeCurrentProfileUseCase) {
+        self.observeCurrentProfileUseCase = observeCurrentProfileUseCase
         observeProfileUpdates()
     }
 
@@ -37,15 +37,14 @@ final class OnboardingGateViewModel: ObservableObject {
             status = .undetermined
             return
         }
-        apply(profileRepository.getProfile(forId: AppSessionManager.currentUserId()))
+        apply(observeCurrentProfileUseCase.currentProfile())
     }
 
     private func observeProfileUpdates() {
-        profileRepository.profileUpdatesPublisher
+        observeCurrentProfileUseCase.currentUserProfileUpdates
             .receive(on: DispatchQueue.main)
             .sink { [weak self] profile in
-                guard let self, profile.id == AppSessionManager.currentUserId() else { return }
-                self.apply(profile)
+                self?.apply(profile)
             }
             .store(in: &cancellables)
     }

@@ -16,9 +16,9 @@ MoodMate is a minimal social networking iOS app built around daily emotional che
 ## Tech Stack
 
 - **Swift 5** / **SwiftUI**
-- **MVVM** architecture (`Views` + `ViewModels`, repository layer for data access)
-- **Swift Concurrency** (async/await)
-- **Firebase Auth** (via Firebase iOS SDK, added as a Swift Package)
+- **Clean Architecture** — Domain (entities, use cases, repository protocols), Data (repository/service implementations), Presentation (SwiftUI views + view models), with a composition-root DI container
+- **Swift Concurrency** (async/await) + **Combine** (store observation)
+- **Firebase Auth** (via Firebase iOS SDK, added as a Swift Package) — isolated behind `AuthServiceProtocol`; the rest of the app only ever sees the domain `AuthUser`
 - Interest-based onboarding: new accounts pick their core interests before reaching the app, and those picks live on the profile
 - On-device local stores for posts and profiles, persisted to JSON in the app's documents directory (no live backend for content yet — see [Current Limitations](#current-limitations))
 
@@ -26,25 +26,40 @@ MoodMate is a minimal social networking iOS app built around daily emotional che
 
 ```
 moodmate/
-├── App/                     # App entry point, AppDelegate, Info.plist, GoogleService-Info.plist
-├── Core/
+├── App/                     # Composition root: entry point, AppDelegate, AppSessionManager,
+│   └── DI/                  #   DIContainer — the only place that knows concrete types
+├── Domain/                  # Pure Swift (Foundation only — no SwiftUI/UIKit/Firebase)
+│   ├── Entities/            # PostModel, UserProfile, AppUser, AuthUser, Visibility, Interest,
+│   │                        #   chat and discover models
+│   ├── Errors/              # AppError
+│   ├── Repositories/        # All repository/service protocols (the domain's contracts)
+│   └── UseCases/            # One file per feature: Auth, Feed, CreatePost, Profile,
+│                            #   Discover, Chat, Onboarding
+├── Data/                    # Implementations of the domain's contracts
+│   ├── Repositories/        # Post, Profile, Follow, Avatar, UserStore, Friends
+│   ├── Services/            # FirebaseAuthService, DiscoverService, DraftManager
+│   ├── Mappers/             # Firebase User → AuthUser
+│   └── Session/             # CurrentUserProvider (replaces the old static currentUserId())
+├── Core/                    # Presentation infrastructure
 │   ├── Components/          # Shared reusable views (avatar, text field, post card, toast)
-│   ├── Errors/               # App-wide error types
-│   ├── Extensions/           # Color, String, View extensions
-│   ├── Models/                # Shared domain models
-│   ├── Navigation/            # AppRouter, Route definitions
-│   ├── Repositories/           # Post, Follow, Avatar, Profile, UserStore repositories (+ protocols)
-│   └── Theme/                  # ThemeColors, ThemeManager
-└── Features/
-    ├── Authentication/          # Sign in / sign up, Firebase auth manager, session manager
-    ├── Chat/                    # Conversation list and thread views
-    ├── CreatePost/               # Mood/photo/caption post composer
-    ├── Discover/                  # Search, moods, hashtags, trending topics, suggested users
-    ├── Home/                       # Feed, tab container, bottom navigation
-    └── Profile/                     # Own/other profile, edit profile, follow lists, settings
+│   ├── Extensions/          # Color, String, View extensions
+│   ├── Navigation/          # AppRouter, Route definitions
+│   ├── Theme/               # ThemeColors, ThemeManager
+│   └── Utilities/           # ImageCompressor (UIImage → JPEG Data)
+└── Features/                # Presentation layer: Views + ViewModels per feature
+    ├── Authentication/      # Sign in / sign up
+    ├── Chat/                # Conversation list and thread views
+    ├── CreatePost/          # Mood/photo/caption post composer
+    ├── Discover/            # Search, moods, hashtags, trending topics, suggested users
+    ├── Home/                # Feed, tab container, bottom navigation
+    ├── Onboarding/          # Interest picker + onboarding gate
+    └── Profile/             # Own/other profile, edit profile, follow lists, settings
 ```
 
-Each feature module follows the same shape: `Models/`, `ViewModels/`, `Views/`, and (where needed) `Components/` and `Services/` or `Repositories/`.
+**Dependency rule:** Presentation → Domain ← Data. View models depend on use-case
+protocols (never on repositories or Firebase directly); repositories implement domain
+protocols; `DIContainer` wires the graph and view models default their dependencies to
+`DIContainer.shared.<useCase>` so tests can inject fakes through the same initializers.
 
 ## Requirements
 

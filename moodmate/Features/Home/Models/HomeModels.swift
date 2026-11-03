@@ -4,33 +4,12 @@
 //
 //  Created by Nurtore on 22.07.2026.
 //
+//  Presentation model for the feed. The domain entity is `PostModel`;
+//  `FeedPost` flattens it for display (pre-formatted timestamp, defaults
+//  filled) and carries the optimistic interaction state.
+//
 
-import SwiftUI
-
-struct AppUser: Identifiable, Codable, Equatable {
-    let id: String
-    var name: String
-    var username: String
-    var avatarImageName: String?
-    var avatarImageData: Data?
-    var avatarColorHex: String
-
-    init(
-        id: String,
-        name: String,
-        username: String,
-        avatarImageName: String? = nil,
-        avatarImageData: Data? = nil,
-        avatarColorHex: String = "38B2AC"
-    ) {
-        self.id = id
-        self.name = name
-        self.username = username
-        self.avatarImageName = avatarImageName
-        self.avatarImageData = avatarImageData
-        self.avatarColorHex = avatarColorHex
-    }
-}
+import Foundation
 
 struct FeedPost: Identifiable, Equatable {
     let id: String

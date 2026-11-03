@@ -6,33 +6,33 @@
 //
 
 import SwiftUI
-import FirebaseAuth
 import Combine
 
 @MainActor
 final class OwnProfileViewModel: ProfileViewModel {
-    private let authService: AuthServiceProtocol
+    private let signOutUseCase: SignOutUseCaseProtocol
+    private let syncProfileWithAuthUserUseCase: SyncProfileWithAuthUserUseCaseProtocol
 
-    init(profileRepository: ProfileRepositoryProtocol = ProfileRepository.shared,
-         followRepository: FollowRepositoryProtocol = FollowRepository.shared,
-         sessionManager: AppSessionManager = AppSessionManager.shared,
-         authService: AuthServiceProtocol = FirebaseAuthService.shared,
-         postRepository: PostRepositoryProtocol = PostRepository.shared) {
-        self.authService = authService
+    init(signOutUseCase: SignOutUseCaseProtocol = DIContainer.shared.signOutUseCase,
+         syncProfileWithAuthUserUseCase: SyncProfileWithAuthUserUseCaseProtocol = DIContainer.shared.syncProfileWithAuthUserUseCase,
+         sessionManager: AppSessionManager? = nil) {
+        self.signOutUseCase = signOutUseCase
+        self.syncProfileWithAuthUserUseCase = syncProfileWithAuthUserUseCase
+
+        // Resolved in the (MainActor) init body: default argument expressions
+        // are nonisolated in Swift 5 language mode.
+        let sessionManager = sessionManager ?? DIContainer.shared.sessionManager
 
         // Placeholder — `targetUserId` is overridden, so this value is never read.
-        super.init(userId: sessionManager.currentUser?.uid ?? "",
-                    profileRepository: profileRepository,
-                    followRepository: followRepository,
-                    sessionManager: sessionManager,
-                    postRepository: postRepository)
+        super.init(userId: sessionManager.currentUser?.id ?? "",
+                   sessionManager: sessionManager)
 
         sessionManager.$currentUser
             .receive(on: DispatchQueue.main)
             .sink { [weak self] user in
                 guard let self else { return }
                 if let user {
-                    profileRepository.syncWithFirebaseUser(user: user)
+                    self.syncProfileWithAuthUserUseCase.execute(user: user)
                     self.loadProfile()
                 } else {
                     self.profile = nil
@@ -50,6 +50,6 @@ final class OwnProfileViewModel: ProfileViewModel {
     }
 
     func signOut() throws {
-        try authService.signOut()
+        try signOutUseCase.execute()
     }
 }

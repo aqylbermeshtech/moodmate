@@ -7,7 +7,6 @@
 
 import SwiftUI
 import Combine
-import FirebaseAuth
 
 @MainActor
 final class SignInViewModel: ObservableObject {
@@ -17,14 +16,10 @@ final class SignInViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var successMessage: String?
 
-    private let authService: AuthServiceProtocol
+    private let signInUseCase: SignInUseCaseProtocol
 
-    init(authService: AuthServiceProtocol) {
-        self.authService = authService
-    }
-
-    convenience init() {
-        self.init(authService: FirebaseAuthService.shared)
+    init(signInUseCase: SignInUseCaseProtocol = DIContainer.shared.signInUseCase) {
+        self.signInUseCase = signInUseCase
     }
 
     func submit() {
@@ -34,7 +29,7 @@ final class SignInViewModel: ObservableObject {
 
         Task {
             do {
-                _ = try await authService.signIn(email: email, password: password)
+                _ = try await signInUseCase.execute(email: email, password: password)
                 self.isLoading = false
                 self.successMessage = "Welcome back to MoodMate!"
             } catch {

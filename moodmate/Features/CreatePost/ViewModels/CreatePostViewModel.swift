@@ -8,7 +8,6 @@
 import SwiftUI
 import Combine
 import UIKit
-import FirebaseAuth
 
 @MainActor
 final class CreatePostViewModel: ObservableObject {
@@ -27,25 +26,39 @@ final class CreatePostViewModel: ObservableObject {
     @Published var errorMessage: String? = nil
 
     // MARK: - Dependencies
-    private let postRepository: PostRepositoryProtocol
-    private let draftManager: DraftManager
-    private let profileRepository: ProfileRepositoryProtocol
+    private let createPostUseCase: CreatePostUseCaseProtocol
+    private let savePostDraftUseCase: SavePostDraftUseCaseProtocol
+    private let loadPostDraftUseCase: LoadPostDraftUseCaseProtocol
+    private let clearPostDraftUseCase: ClearPostDraftUseCaseProtocol
+    private let fetchProfileUseCase: FetchProfileUseCaseProtocol
+    private let observeProfileUpdatesUseCase: ObserveProfileUpdatesUseCaseProtocol
+    private let fetchCurrentAuthUserUseCase: FetchCurrentAuthUserUseCaseProtocol
+    private let currentUserProvider: CurrentUserProviderProtocol
     private var cancellables = Set<AnyCancellable>()
 
     @Published var currentUser: AppUser
 
     init(
-        postRepository: PostRepositoryProtocol = PostRepository.shared,
-        draftManager: DraftManager = DraftManager.shared,
-        profileRepository: ProfileRepositoryProtocol = ProfileRepository.shared,
-        authService: AuthServiceProtocol = FirebaseAuthService.shared
+        createPostUseCase: CreatePostUseCaseProtocol = DIContainer.shared.createPostUseCase,
+        savePostDraftUseCase: SavePostDraftUseCaseProtocol = DIContainer.shared.savePostDraftUseCase,
+        loadPostDraftUseCase: LoadPostDraftUseCaseProtocol = DIContainer.shared.loadPostDraftUseCase,
+        clearPostDraftUseCase: ClearPostDraftUseCaseProtocol = DIContainer.shared.clearPostDraftUseCase,
+        fetchProfileUseCase: FetchProfileUseCaseProtocol = DIContainer.shared.fetchProfileUseCase,
+        observeProfileUpdatesUseCase: ObserveProfileUpdatesUseCaseProtocol = DIContainer.shared.observeProfileUpdatesUseCase,
+        fetchCurrentAuthUserUseCase: FetchCurrentAuthUserUseCaseProtocol = DIContainer.shared.fetchCurrentAuthUserUseCase,
+        currentUserProvider: CurrentUserProviderProtocol = DIContainer.shared.currentUserProvider
     ) {
-        self.postRepository = postRepository
-        self.draftManager = draftManager
-        self.profileRepository = profileRepository
+        self.createPostUseCase = createPostUseCase
+        self.savePostDraftUseCase = savePostDraftUseCase
+        self.loadPostDraftUseCase = loadPostDraftUseCase
+        self.clearPostDraftUseCase = clearPostDraftUseCase
+        self.fetchProfileUseCase = fetchProfileUseCase
+        self.observeProfileUpdatesUseCase = observeProfileUpdatesUseCase
+        self.fetchCurrentAuthUserUseCase = fetchCurrentAuthUserUseCase
+        self.currentUserProvider = currentUserProvider
 
-        let userId = AppSessionManager.currentUserId()
-        if let profile = profileRepository.getProfile(forId: userId) {
+        let userId = currentUserProvider.currentUserId
+        if let profile = fetchProfileUseCase.execute(forId: userId) {
             self.currentUser = AppUser(
                 id: profile.id,
                 name: profile.displayName,
@@ -56,15 +69,15 @@ final class CreatePostViewModel: ObservableObject {
             )
         } else {
             // No stored profile yet (sign-up still settling): show whatever the
-            // Firebase user carries, and let `observeProfileUpdates` fill in the
+            // auth user carries, and let `observeProfileUpdates` fill in the
             // rest as soon as the profile lands.
             var userName = ""
             var userHandle = ""
-            if let firebaseUser = authService.currentUser {
-                if let name = firebaseUser.displayName, !name.isEmpty {
+            if let authUser = fetchCurrentAuthUserUseCase.execute() {
+                if let name = authUser.displayName, !name.isEmpty {
                     userName = name
                 }
-                if let email = firebaseUser.email, let prefix = email.components(separatedBy: "@").first {
+                if let email = authUser.email, let prefix = email.components(separatedBy: "@").first {
                     if userName.isEmpty { userName = prefix.capitalized }
                     userHandle = prefix.lowercased()
                 }
@@ -84,12 +97,11 @@ final class CreatePostViewModel: ObservableObject {
     }
 
     private func observeProfileUpdates() {
-        profileRepository.profileUpdatesPublisher
+        observeProfileUpdatesUseCase.publisher
             .receive(on: DispatchQueue.main)
             .sink { [weak self] profile in
                 guard let self = self else { return }
-                let currentId = AppSessionManager.currentUserId()
-                if profile.id == currentId {
+                if profile.id == self.currentUserProvider.currentUserId {
                     self.currentUser = AppUser(
                         id: profile.id,
                         name: profile.displayName,
@@ -177,12 +189,12 @@ final class CreatePostViewModel: ObservableObject {
             savedAt: Date()
         )
 
-        draftManager.saveDraft(draft)
+        savePostDraftUseCase.execute(draft)
         UINotificationFeedbackGenerator().notificationOccurred(.success)
     }
 
     func loadDraftIfAvailable() {
-        guard let draft = draftManager.loadDraft() else { return }
+        guard let draft = loadPostDraftUseCase.execute() else { return }
 
         self.text = draft.text
         self.visibility = draft.visibility
@@ -197,7 +209,7 @@ final class CreatePostViewModel: ObservableObject {
     }
 
     func clearDraft() {
-        draftManager.clearDraft()
+        clearPostDraftUseCase.execute()
     }
 
     func handleCancelTap(onDismiss: () -> Void) {
@@ -223,25 +235,13 @@ final class CreatePostViewModel: ObservableObject {
             }
         }
 
-        let newPost = PostModel(
-            id: "post_\(UUID().uuidString.prefix(8))",
-            authorId: currentUser.id,
-            text: text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : text,
-            images: imageStrings,
-            visibility: visibility,
-            createdAt: Date(),
-            likesCount: 0,
-            commentsCount: 0,
-            bookmarksCount: 0,
-            isLiked: false,
-            isBookmarked: false,
-            gradientStartHex: "38B2AC",
-            gradientEndHex: "805AD5"
-        )
-
         Task {
             do {
-                let created = try await postRepository.createPost(newPost)
+                let created = try await createPostUseCase.execute(
+                    text: text,
+                    imageBase64Strings: imageStrings,
+                    visibility: visibility
+                )
 
                 clearDraft()
 

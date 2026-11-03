@@ -25,7 +25,7 @@ struct PostCardView: View {
     /// Supplied only when the viewer is allowed to delete this post — the
     /// overflow menu is the delete affordance, so it stays hidden without it.
     var onDelete: (() -> Void)? = nil
-    var userStore: UserStoreProtocol = UserStore.shared
+    var userStore: UserStoreProtocol = DIContainer.shared.userStore
     @EnvironmentObject private var router: AppRouter
 
     @State private var showDeleteConfirmation = false
