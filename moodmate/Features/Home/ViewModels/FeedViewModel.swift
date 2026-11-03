@@ -41,19 +41,37 @@ final class FeedViewModel {
 
     // MARK: - Dependencies
 
-    private let postRepository: PostRepositoryProtocol
-    private let profileRepository: ProfileRepositoryProtocol
+    private let fetchFeedPostsUseCase: FetchFeedPostsUseCaseProtocol
+    private let observeFeedPostsUseCase: ObserveFeedPostsUseCaseProtocol
+    private let fetchFollowedAuthorIdsUseCase: FetchFollowedAuthorIdsUseCaseProtocol
+    private let togglePostLikeUseCase: TogglePostLikeUseCaseProtocol
+    private let togglePostBookmarkUseCase: TogglePostBookmarkUseCaseProtocol
+    private let deletePostUseCase: DeletePostUseCaseProtocol
+    private let observeProfileUpdatesUseCase: ObserveProfileUpdatesUseCaseProtocol
+    private let currentUserProvider: CurrentUserProviderProtocol
     private var cancellables = Set<AnyCancellable>()
     private let logger = Logger(subsystem: "com.moodmate", category: "FeedViewModel")
 
     // MARK: - Init
 
     init(
-        postRepository: PostRepositoryProtocol = PostRepository.shared,
-        profileRepository: ProfileRepositoryProtocol = ProfileRepository.shared
+        fetchFeedPostsUseCase: FetchFeedPostsUseCaseProtocol = DIContainer.shared.fetchFeedPostsUseCase,
+        observeFeedPostsUseCase: ObserveFeedPostsUseCaseProtocol = DIContainer.shared.observeFeedPostsUseCase,
+        fetchFollowedAuthorIdsUseCase: FetchFollowedAuthorIdsUseCaseProtocol = DIContainer.shared.fetchFollowedAuthorIdsUseCase,
+        togglePostLikeUseCase: TogglePostLikeUseCaseProtocol = DIContainer.shared.togglePostLikeUseCase,
+        togglePostBookmarkUseCase: TogglePostBookmarkUseCaseProtocol = DIContainer.shared.togglePostBookmarkUseCase,
+        deletePostUseCase: DeletePostUseCaseProtocol = DIContainer.shared.deletePostUseCase,
+        observeProfileUpdatesUseCase: ObserveProfileUpdatesUseCaseProtocol = DIContainer.shared.observeProfileUpdatesUseCase,
+        currentUserProvider: CurrentUserProviderProtocol = DIContainer.shared.currentUserProvider
     ) {
-        self.postRepository = postRepository
-        self.profileRepository = profileRepository
+        self.fetchFeedPostsUseCase = fetchFeedPostsUseCase
+        self.observeFeedPostsUseCase = observeFeedPostsUseCase
+        self.fetchFollowedAuthorIdsUseCase = fetchFollowedAuthorIdsUseCase
+        self.togglePostLikeUseCase = togglePostLikeUseCase
+        self.togglePostBookmarkUseCase = togglePostBookmarkUseCase
+        self.deletePostUseCase = deletePostUseCase
+        self.observeProfileUpdatesUseCase = observeProfileUpdatesUseCase
+        self.currentUserProvider = currentUserProvider
     }
 
     // MARK: - Lifecycle
@@ -71,7 +89,7 @@ final class FeedViewModel {
         Task { [weak self] in
             guard let self else { return }
             do {
-                let initialPosts = try await postRepository.fetchPosts()
+                let initialPosts = try await fetchFeedPostsUseCase.execute()
                 self.posts = initialPosts.map { FeedPost(from: $0) }
             } catch {
                 self.errorMessage = error.localizedDescription
@@ -110,7 +128,7 @@ final class FeedViewModel {
 
         Task {
             do {
-                try await postRepository.setLike(postId: post.id, isLiked: desiredLikeState)
+                try await togglePostLikeUseCase.execute(postId: post.id, isLiked: desiredLikeState)
             } catch {
                 if let rollbackIndex = self.posts.firstIndex(where: { $0.id == post.id }) {
                     self.posts[rollbackIndex].isLiked    = previousLiked
@@ -124,7 +142,7 @@ final class FeedViewModel {
     /// Only your own posts can be deleted — there's no moderation path for
     /// anyone else's.
     func canDelete(_ post: FeedPost) -> Bool {
-        !post.authorId.isEmpty && post.authorId == AppSessionManager.currentUserId()
+        !post.authorId.isEmpty && post.authorId == currentUserProvider.currentUserId
     }
 
     func deletePost(_ post: FeedPost) {
@@ -135,7 +153,7 @@ final class FeedViewModel {
 
         Task {
             do {
-                try await postRepository.deletePost(id: post.id)
+                try await deletePostUseCase.execute(postId: post.id)
             } catch {
                 // Put it back where it was so the feed still matches the store.
                 if let index, !posts.contains(where: { $0.id == post.id }) {
@@ -155,7 +173,7 @@ final class FeedViewModel {
 
         Task {
             do {
-                try await postRepository.toggleBookmark(postId: post.id)
+                try await togglePostBookmarkUseCase.execute(postId: post.id)
             } catch {
                 if let rollbackIndex = posts.firstIndex(where: { $0.id == post.id }) {
                     posts[rollbackIndex].isBookmarked = previousBookmarked
@@ -172,15 +190,11 @@ final class FeedViewModel {
     // MARK: - Private Observation
 
     private func refreshFollowedAuthors() {
-        followedAuthorIds = Set(
-            profileRepository.allProfiles()
-                .filter(\.isFollowing)
-                .map(\.id)
-        )
+        followedAuthorIds = fetchFollowedAuthorIdsUseCase.execute()
     }
 
     private func observeFollowChanges() {
-        profileRepository.profileUpdatesPublisher
+        observeProfileUpdatesUseCase.publisher
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 self?.refreshFollowedAuthors()
@@ -189,7 +203,7 @@ final class FeedViewModel {
     }
 
     private func observePosts() {
-        postRepository.postsPublisher
+        observeFeedPostsUseCase.publisher
             .receive(on: DispatchQueue.main)
             .sink { [weak self] postModels in
                 guard let self else { return }

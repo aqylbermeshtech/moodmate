@@ -7,7 +7,6 @@
 
 import SwiftUI
 import Combine
-import FirebaseAuth
 
 @MainActor
 final class SignUpViewModel: ObservableObject {
@@ -19,16 +18,10 @@ final class SignUpViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var successMessage: String?
 
-    private let authService: AuthServiceProtocol
-    private let profileRepository: ProfileRepositoryProtocol
+    private let signUpUseCase: SignUpUseCaseProtocol
 
-    init(authService: AuthServiceProtocol, profileRepository: ProfileRepositoryProtocol = ProfileRepository.shared) {
-        self.authService = authService
-        self.profileRepository = profileRepository
-    }
-
-    convenience init() {
-        self.init(authService: FirebaseAuthService.shared)
+    init(signUpUseCase: SignUpUseCaseProtocol = DIContainer.shared.signUpUseCase) {
+        self.signUpUseCase = signUpUseCase
     }
 
     func submit() {
@@ -39,17 +32,7 @@ final class SignUpViewModel: ObservableObject {
         Task {
             do {
                 let displayName = self.name.trimmingCharacters(in: .whitespacesAndNewlines)
-                let user = try await authService.signUp(email: email, password: password, displayName: displayName)
-
-                // Apply the name directly, not via user.displayName: Firebase's
-                // auth-state listener can fire before the displayName write
-                // commits and would fall back to an email-derived name.
-                if !displayName.isEmpty {
-                    var profile = self.profileRepository.getProfile(forId: user.uid)
-                        ?? ProfileRepository.profile(for: user)
-                    profile.displayName = displayName
-                    self.profileRepository.setProfile(profile)
-                }
+                _ = try await signUpUseCase.execute(name: displayName, email: email, password: password)
 
                 self.isLoading = false
                 self.successMessage = "Account created! Welcome to MoodMate\(displayName.isEmpty ? "" : ", " + displayName)."

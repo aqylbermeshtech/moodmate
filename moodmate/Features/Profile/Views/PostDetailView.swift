@@ -18,43 +18,38 @@ struct PostComment: Identifiable {
 }
 
 struct PostDetailView: View {
-    let postId: String
-    var postRepository: PostRepositoryProtocol = PostRepository.shared
-    var profileRepository: ProfileRepositoryProtocol = ProfileRepository.shared
+    @StateObject private var viewModel: PostDetailViewModel
     @Environment(\.dismiss) private var dismiss
 
-    /// Comments live only for the lifetime of this screen — there is no
-    /// comment store behind them yet.
-    @State private var comments: [PostComment] = []
     @State private var commentText = ""
-    @State private var displayPost: FeedPost?
-    @State private var cancellables = Set<AnyCancellable>()
-    @State private var errorMessage: String?
-    @State private var didLoad = false
+
+    init(postId: String) {
+        _viewModel = StateObject(wrappedValue: PostDetailViewModel(postId: postId))
+    }
 
     var body: some View {
         ZStack(alignment: .bottom) {
             Color.theme.primaryBackground
                 .ignoresSafeArea()
 
-            if let currentPost = displayPost {
+            if let currentPost = viewModel.displayPost {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 20) {
                         PostCardView(
                             post: currentPost,
                             style: .detail,
-                            onLike: toggleLike,
-                            onBookmark: toggleBookmark,
+                            onLike: { viewModel.toggleLike() },
+                            onBookmark: { viewModel.toggleBookmark() },
                             onComment: {},
-                            onDelete: deleteAction(for: currentPost)
+                            onDelete: viewModel.canDelete ? { deletePost() } : nil
                         )
-                        Text("Comments (\(comments.count))")
+                        Text("Comments (\(viewModel.comments.count))")
                             .font(.system(size: 16, weight: .bold, design: .rounded))
                             .foregroundStyle(Color.theme.primaryText)
                             .padding(.horizontal, 20)
                             .padding(.top, 4)
 
-                        if comments.isEmpty {
+                        if viewModel.comments.isEmpty {
                             VStack(spacing: 8) {
                                 Image(systemName: "bubble.left.and.bubble.right")
                                     .font(.system(size: 32))
@@ -70,7 +65,7 @@ struct PostDetailView: View {
                             .padding(.vertical, 24)
                         } else {
                             LazyVStack(spacing: 16) {
-                                ForEach(comments) { comment in
+                                ForEach(viewModel.comments) { comment in
                                     commentRow(comment: comment)
                                 }
                             }
@@ -84,7 +79,7 @@ struct PostDetailView: View {
                 .scrollDismissesKeyboard(.interactively)
 
                 commentInputBar
-            } else if didLoad {
+            } else if viewModel.didLoad {
                 notFoundView
             }
         }
@@ -102,9 +97,9 @@ struct PostDetailView: View {
             }
         }
         .onAppear {
-            initializePostState()
+            viewModel.onAppear()
         }
-        .errorAlert($errorMessage)
+        .errorAlert($viewModel.errorMessage)
     }
 
     private var notFoundView: some View {
@@ -198,105 +193,17 @@ struct PostDetailView: View {
         )
     }
     
-    // MARK: - Actions & Helpers
-    private func initializePostState() {
-        guard !didLoad else { return }
-
-        if let post = postRepository.post(id: postId) {
-            self.displayPost = FeedPost(from: post)
-        }
-        didLoad = true
-
-        postRepository.postsPublisher
-            .receive(on: DispatchQueue.main)
-            .sink { updatedPosts in
-                guard let matching = updatedPosts.first(where: { $0.id == postId }) else { return }
-                var updated = FeedPost(from: matching)
-                updated.commentsCount = max(updated.commentsCount, comments.count)
-                displayPost = updated
-            }
-            .store(in: &cancellables)
-    }
-
-    /// Only your own posts can be deleted — mirrors `FeedViewModel.canDelete`.
-    /// Returns nil for anyone else's post, which hides the overflow menu.
-    private func deleteAction(for post: FeedPost) -> (() -> Void)? {
-        guard let currentUserId = profileRepository.getProfile(forId: nil)?.id,
-              post.authorId == currentUserId else {
-            return nil
-        }
-        return deletePost
-    }
+    // MARK: - Actions
 
     private func deletePost() {
-        Task {
-            do {
-                try await postRepository.deletePost(id: postId)
-                dismiss()
-            } catch {
-                errorMessage = "Could not delete that post. Please try again."
-            }
-        }
-    }
-
-    private func toggleLike() {
-        guard let currentPost = displayPost else { return }
-        let desiredLikeState = !currentPost.isLiked
-        let previousLiked = currentPost.isLiked
-        let previousCount = currentPost.likesCount
-        withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-            displayPost?.isLiked = desiredLikeState
-            displayPost?.likesCount += desiredLikeState ? 1 : -1
-        }
-        Task {
-            do {
-                try await postRepository.setLike(postId: postId, isLiked: desiredLikeState)
-            } catch {
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-                    displayPost?.isLiked = previousLiked
-                    displayPost?.likesCount = previousCount
-                }
-                errorMessage = "Could not update like. Please try again."
-            }
-        }
-    }
-
-    private func toggleBookmark() {
-        guard let currentPost = displayPost else { return }
-        let previousBookmarked = currentPost.isBookmarked
-        withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-            displayPost?.isBookmarked.toggle()
-        }
-        Task {
-            do {
-                try await postRepository.toggleBookmark(postId: postId)
-            } catch {
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-                    displayPost?.isBookmarked = previousBookmarked
-                }
-                errorMessage = "Could not update bookmark. Please try again."
-            }
+        viewModel.deletePost {
+            dismiss()
         }
     }
 
     private func addComment() {
-        guard !commentText.isEmpty else { return }
-
-        let author = profileRepository.getProfile(forId: nil)
-
-        let newComment = PostComment(
-            name: author?.displayName ?? "You",
-            username: author?.username ?? "",
-            avatarColorHex: author?.avatarColorHex ?? UserProfile.defaultAvatarColorHex,
-            text: commentText,
-            timeAgo: "Just now"
-        )
-
-        withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-            comments.append(newComment)
-            commentText = ""
-            displayPost?.commentsCount = comments.count
-        }
+        viewModel.addComment(text: commentText)
+        commentText = ""
     }
 }
 

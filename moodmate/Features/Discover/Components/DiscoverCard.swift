@@ -10,7 +10,7 @@ import SwiftUI
 struct DiscoverCard: View {
     let post: DiscoverPost
     var onLike: () -> Void
-    var userStore: UserStoreProtocol = UserStore.shared
+    var userStore: UserStoreProtocol = DIContainer.shared.userStore
 
     /// Decoded once when the card appears rather than on every body pass —
     /// base64 JPEG decoding is far too expensive to repeat while scrolling.

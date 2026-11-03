@@ -14,23 +14,31 @@ final class HomeViewModel: ObservableObject {
 
     let feed: FeedViewModel
 
-    // MARK: - Dependencies (all injected — no singletons)
+    // MARK: - Dependencies
 
-    private let profileRepository: ProfileRepositoryProtocol
-    private let authService: AuthServiceProtocol
+    private let fetchProfileUseCase: FetchProfileUseCaseProtocol
+    private let observeProfileUpdatesUseCase: ObserveProfileUpdatesUseCaseProtocol
+    private let fetchCurrentAuthUserUseCase: FetchCurrentAuthUserUseCaseProtocol
+    private let currentUserProvider: CurrentUserProviderProtocol
 
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Init
 
     init(
-        postRepository: PostRepositoryProtocol = PostRepository.shared,
-        profileRepository: ProfileRepositoryProtocol = ProfileRepository.shared,
-        authService: AuthServiceProtocol = FirebaseAuthService.shared
+        feed: FeedViewModel? = nil,
+        fetchProfileUseCase: FetchProfileUseCaseProtocol = DIContainer.shared.fetchProfileUseCase,
+        observeProfileUpdatesUseCase: ObserveProfileUpdatesUseCaseProtocol = DIContainer.shared.observeProfileUpdatesUseCase,
+        fetchCurrentAuthUserUseCase: FetchCurrentAuthUserUseCaseProtocol = DIContainer.shared.fetchCurrentAuthUserUseCase,
+        currentUserProvider: CurrentUserProviderProtocol = DIContainer.shared.currentUserProvider
     ) {
-        self.profileRepository = profileRepository
-        self.authService       = authService
-        self.feed = FeedViewModel(postRepository: postRepository, profileRepository: profileRepository)
+        // Resolved in the (MainActor) init body: default argument expressions
+        // are nonisolated in Swift 5 language mode.
+        self.feed = feed ?? FeedViewModel()
+        self.fetchProfileUseCase = fetchProfileUseCase
+        self.observeProfileUpdatesUseCase = observeProfileUpdatesUseCase
+        self.fetchCurrentAuthUserUseCase = fetchCurrentAuthUserUseCase
+        self.currentUserProvider = currentUserProvider
     }
 
     // MARK: - Lifecycle
@@ -62,23 +70,21 @@ final class HomeViewModel: ObservableObject {
 private extension HomeViewModel {
 
     func loadCurrentUser() {
-        let userId = AppSessionManager.currentUserId()
-        if let profile = profileRepository.getProfile(forId: userId) {
+        let userId = currentUserProvider.currentUserId
+        if let profile = fetchProfileUseCase.execute(forId: userId) {
             applyCurrentUser(profile)
-        } else if let name = authService.currentUserDisplayName {
+        } else if let name = fetchCurrentAuthUserUseCase.execute()?.resolvedDisplayName {
             currentUserDisplayName = name
         }
     }
 
     func observeProfileUpdates() {
-        profileRepository.profileUpdatesPublisher
+        observeProfileUpdatesUseCase.publisher
             .receive(on: DispatchQueue.main)
             .sink { [weak self] profile in
                 guard let self else { return }
-                let currentId = AppSessionManager.currentUserId()
-
-                if profile.id == currentId {
-                    applyCurrentUser(profile)
+                if profile.id == self.currentUserProvider.currentUserId {
+                    self.applyCurrentUser(profile)
                 }
             }
             .store(in: &cancellables)

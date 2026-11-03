@@ -6,16 +6,19 @@
 //
 
 import SwiftUI
-import FirebaseAuth
 import Combine
 
 @MainActor
 class ProfileViewModel: ObservableObject {
     let userId: String
-    let profileRepository: ProfileRepositoryProtocol
-    let followRepository: FollowRepositoryProtocol
+
+    private let fetchProfileUseCase: FetchProfileUseCaseProtocol
+    private let observeProfileUpdatesUseCase: ObserveProfileUpdatesUseCaseProtocol
+    private let observeFeedPostsUseCase: ObserveFeedPostsUseCaseProtocol
+    private let toggleFollowUseCase: ToggleFollowUseCaseProtocol
+    private let fetchFollowListsUseCase: FetchFollowListsUseCaseProtocol
+    private let currentUserProvider: CurrentUserProviderProtocol
     let sessionManager: AppSessionManager
-    let postRepository: PostRepositoryProtocol
 
     @Published var profile: UserProfile?
     @Published var posts: [PostModel] = []
@@ -28,15 +31,23 @@ class ProfileViewModel: ObservableObject {
     var cancellables = Set<AnyCancellable>()
 
     init(userId: String,
-         profileRepository: ProfileRepositoryProtocol = ProfileRepository.shared,
-         followRepository: FollowRepositoryProtocol = FollowRepository.shared,
-         sessionManager: AppSessionManager = AppSessionManager.shared,
-         postRepository: PostRepositoryProtocol = PostRepository.shared) {
+         fetchProfileUseCase: FetchProfileUseCaseProtocol = DIContainer.shared.fetchProfileUseCase,
+         observeProfileUpdatesUseCase: ObserveProfileUpdatesUseCaseProtocol = DIContainer.shared.observeProfileUpdatesUseCase,
+         observeFeedPostsUseCase: ObserveFeedPostsUseCaseProtocol = DIContainer.shared.observeFeedPostsUseCase,
+         toggleFollowUseCase: ToggleFollowUseCaseProtocol = DIContainer.shared.toggleFollowUseCase,
+         fetchFollowListsUseCase: FetchFollowListsUseCaseProtocol = DIContainer.shared.fetchFollowListsUseCase,
+         currentUserProvider: CurrentUserProviderProtocol = DIContainer.shared.currentUserProvider,
+         sessionManager: AppSessionManager? = nil) {
         self.userId = userId
-        self.profileRepository = profileRepository
-        self.followRepository = followRepository
-        self.sessionManager = sessionManager
-        self.postRepository = postRepository
+        self.fetchProfileUseCase = fetchProfileUseCase
+        self.observeProfileUpdatesUseCase = observeProfileUpdatesUseCase
+        self.observeFeedPostsUseCase = observeFeedPostsUseCase
+        self.toggleFollowUseCase = toggleFollowUseCase
+        self.fetchFollowListsUseCase = fetchFollowListsUseCase
+        self.currentUserProvider = currentUserProvider
+        // Resolved in the (MainActor) init body: default argument expressions
+        // are nonisolated in Swift 5 language mode.
+        self.sessionManager = sessionManager ?? DIContainer.shared.sessionManager
 
         observePostUpdates()
         subscribeToProfileUpdates()
@@ -47,7 +58,7 @@ class ProfileViewModel: ObservableObject {
     var targetUserId: String { userId }
 
     private func observePostUpdates() {
-        postRepository.postsPublisher
+        observeFeedPostsUseCase.publisher
             .receive(on: DispatchQueue.main)
             .sink { [weak self] allPosts in
                 guard let self else { return }
@@ -62,7 +73,7 @@ class ProfileViewModel: ObservableObject {
     }
 
     private func subscribeToProfileUpdates() {
-        profileRepository.profileUpdatesPublisher
+        observeProfileUpdatesUseCase.publisher
             .receive(on: DispatchQueue.main)
             .sink { [weak self] updatedProfile in
                 guard let self else { return }
@@ -81,7 +92,7 @@ class ProfileViewModel: ObservableObject {
     }
 
     func getCurrentUserId() -> String {
-        sessionManager.currentUser?.uid ?? AppSessionManager.currentUserId()
+        currentUserProvider.currentUserId
     }
 
     func loadProfile() {
@@ -98,17 +109,17 @@ class ProfileViewModel: ObservableObject {
     }
 
     private func loadProfileData(for profileId: String) async {
-        self.followers = followRepository.getFollowers(forId: profileId)
-        self.following = followRepository.getFollowing(forId: profileId)
+        self.followers = fetchFollowListsUseCase.followers(forId: profileId)
+        self.following = fetchFollowListsUseCase.following(forId: profileId)
 
         do {
-            self.profile = try await profileRepository.fetchProfile(forId: profileId)
+            self.profile = try await fetchProfileUseCase.executeAsync(forId: profileId)
         } catch {
             self.profile = nil
         }
 
         if self.profile == nil {
-            self.profile = profileRepository.getProfile(forId: profileId)
+            self.profile = fetchProfileUseCase.execute(forId: profileId)
         }
 
         if self.profile == nil {
@@ -125,11 +136,9 @@ class ProfileViewModel: ObservableObject {
 
     @discardableResult
     func toggleFollow(for targetId: String) -> UserProfile? {
-        guard targetId != getCurrentUserId() else { return nil }
-
         var updated: UserProfile?
         withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-            updated = followRepository.toggleFollow(targetId: targetId)
+            updated = toggleFollowUseCase.execute(targetId: targetId)
             if let updated, updated.id == profile?.id {
                 self.profile = updated
             }
@@ -138,7 +147,7 @@ class ProfileViewModel: ObservableObject {
     }
 
     func loadFollowersAndFollowing() {
-        self.followers = followRepository.getFollowers(forId: targetUserId)
-        self.following = followRepository.getFollowing(forId: targetUserId)
+        self.followers = fetchFollowListsUseCase.followers(forId: targetUserId)
+        self.following = fetchFollowListsUseCase.following(forId: targetUserId)
     }
 }

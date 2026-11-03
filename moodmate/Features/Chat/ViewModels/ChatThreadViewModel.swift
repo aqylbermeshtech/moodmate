@@ -13,25 +13,17 @@ final class ChatThreadViewModel: ObservableObject {
     @Published private(set) var messages: [ChatMessage] = []
 
     private let userId: String
-    private let profileRepository: ProfileRepositoryProtocol
+    private let fetchChatParticipantUseCase: FetchChatParticipantUseCaseProtocol
 
-    init(userId: String, profileRepository: ProfileRepositoryProtocol = ProfileRepository.shared) {
+    init(userId: String, fetchChatParticipantUseCase: FetchChatParticipantUseCaseProtocol = DIContainer.shared.fetchChatParticipantUseCase) {
         self.userId = userId
-        self.profileRepository = profileRepository
+        self.fetchChatParticipantUseCase = fetchChatParticipantUseCase
         loadThread()
     }
 
     /// Resolves the participant only. `messages` stays empty until there is a
     /// real message store behind it.
     private func loadThread() {
-        guard let profile = profileRepository.getProfile(forId: userId) else { return }
-
-        participant = AppUser(
-            id: profile.id,
-            name: profile.displayName,
-            username: profile.username,
-            avatarImageData: profile.avatarImageData,
-            avatarColorHex: profile.avatarColorHex
-        )
+        participant = fetchChatParticipantUseCase.execute(userId: userId)
     }
 }
